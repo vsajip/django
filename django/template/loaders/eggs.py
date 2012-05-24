@@ -22,7 +22,10 @@ class Loader(BaseLoader):
             pkg_name = 'templates/' + template_name
             for app in settings.INSTALLED_APPS:
                 try:
-                    return (resource_string(app, pkg_name).decode(settings.FILE_CHARSET), 'egg:%s:%s' % (app, pkg_name))
+                    resource_name = resource_string(app, pkg_name)
+                    if hasattr(resource_name, 'decode'):
+                        resource_name = resource_name.decode(settings.FILE_CHARSET)
+                    return (resource_name, 'egg:%s:%s' % (app, pkg_name))
                 except:
                     pass
         raise TemplateDoesNotExist(template_name)

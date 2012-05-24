@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import time
 
 from django.core import signing
@@ -14,7 +16,7 @@ class TestSigner(TestCase):
         for s in (
             b'hello',
             b'3098247:529:087:',
-            u'\u2019'.encode('utf-8'),
+            '\u2019'.encode('utf-8'),
         ):
             self.assertEqual(
                 signer.signature(s),
@@ -42,12 +44,15 @@ class TestSigner(TestCase):
             '3098247529087',
             '3098247:529:087:',
             'jkw osanteuh ,rcuh nthu aou oauh ,ud du',
-            u'\u2019',
+            '\u2019',
         )
         for example in examples:
-            self.assertNotEqual(
-                force_unicode(example), force_unicode(signer.sign(example)))
-            self.assertEqual(example, signer.unsign(signer.sign(example)))
+            s1 = force_unicode(example)
+            s2 = force_unicode(signer.sign(example))
+            self.assertNotEqual(s1, s2)
+            s1 = example
+            s2 = signer.unsign(signer.sign(example))
+            self.assertEqual(s1, s2)
 
     def unsign_detects_tampering(self):
         "unsign should raise an exception if the value has been tampered with"
@@ -69,13 +74,14 @@ class TestSigner(TestCase):
         "dumps and loads be reversible for any JSON serializable object"
         objects = (
             ['a', 'list'],
-            b'a string',
-            u'a unicode string \u2019',
+            'a string',
+            'a unicode string \u2019',
             {'a': 'dictionary'},
         )
         for o in objects:
-            self.assertNotEqual(o, signing.dumps(o))
-            self.assertEqual(o, signing.loads(signing.dumps(o)))
+            s = signing.dumps(o)
+            self.assertNotEqual(o, s)
+            self.assertEqual(o, signing.loads(s))
 
     def test_decode_detects_tampering(self):
         "loads should raise exception for tampered objects"
@@ -98,7 +104,7 @@ class TestSigner(TestCase):
 class TestTimestampSigner(TestCase):
 
     def test_timestamp_signer(self):
-        value = u'hello'
+        value = 'hello'
         _time = time.time
         time.time = lambda: 123456789
         try:

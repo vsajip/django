@@ -2,13 +2,15 @@
 # This file is distributed under the same license as the Django package.
 #
 
+from __future__ import unicode_literals
+
 # The *_FORMAT strings use the Django date format syntax,
 # see http://docs.djangoproject.com/en/dev/ref/templates/builtins/#date
-DATE_FORMAT = 'Y年n月j日'
+DATE_FORMAT = 'Y\u5e74n\u6708j\u65e5'
 TIME_FORMAT = 'G:i:s'
-DATETIME_FORMAT = 'Y年n月j日G:i:s'
-YEAR_MONTH_FORMAT = 'Y年n月'
-MONTH_DAY_FORMAT = 'n月j日'
+DATETIME_FORMAT = 'Y\u5e74n\u6708j\u65e5G:i:s'
+YEAR_MONTH_FORMAT = 'Y\u5e74n\u6708'
+MONTH_DAY_FORMAT = 'n\u6708j\u65e5'
 SHORT_DATE_FORMAT = 'Y/m/d'
 SHORT_DATETIME_FORMAT = 'Y/m/d G:i:s'
 # FIRST_DAY_OF_WEEK = 

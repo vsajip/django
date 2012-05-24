@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 from django.forms import EmailField, IntegerField
 from django.http import HttpResponse
@@ -475,16 +475,16 @@ class AssertRaisesMsgTest(SimpleTestCase):
 class AssertFieldOutputTests(SimpleTestCase):
 
     def test_assert_field_output(self):
-        error_invalid = [u'Enter a valid e-mail address.']
+        error_invalid = ['Enter a valid e-mail address.']
         self.assertFieldOutput(EmailField, {'a@a.com': 'a@a.com'}, {'aaa': error_invalid})
-        self.assertRaises(AssertionError, self.assertFieldOutput, EmailField, {'a@a.com': 'a@a.com'}, {'aaa': error_invalid + [u'Another error']})
+        self.assertRaises(AssertionError, self.assertFieldOutput, EmailField, {'a@a.com': 'a@a.com'}, {'aaa': error_invalid + ['Another error']})
         self.assertRaises(AssertionError, self.assertFieldOutput, EmailField, {'a@a.com': 'Wrong output'}, {'aaa': error_invalid})
-        self.assertRaises(AssertionError, self.assertFieldOutput, EmailField, {'a@a.com': 'a@a.com'}, {'aaa': [u'Come on, gimme some well formatted data, dude.']})
+        self.assertRaises(AssertionError, self.assertFieldOutput, EmailField, {'a@a.com': 'a@a.com'}, {'aaa': ['Come on, gimme some well formatted data, dude.']})
 
     def test_custom_required_message(self):
         class MyCustomField(IntegerField):
             default_error_messages = {
-                'required': u'This is really required.',
+                'required': 'This is really required.',
             }
         self.assertFieldOutput(MyCustomField, {}, {}, empty_value=None)
 
@@ -492,11 +492,11 @@ __test__ = {"API_TEST": r"""
 # Some checks of the doctest output normalizer.
 # Standard doctests do fairly
 >>> import json
+>>> from django.utils.py3 import long_type, StringIO
 >>> from django.utils.xmlutils import SimplerXMLGenerator
->>> from StringIO import StringIO
 
 >>> def produce_long():
-...     return 42L
+...     return long_type(42)
 
 >>> def produce_int():
 ...     return 42
@@ -534,16 +534,19 @@ __test__ = {"API_TEST": r"""
 42
 
 # ... and vice versa
->>> produce_int()
-42L
+>>> produce_int() == long_type(42)
+True
 
 # JSON output is normalized for field order, so it doesn't matter
 # which order json dictionary attributes are listed in output
->>> produce_json()
-'["foo", {"bar": ["baz", null, 1.0, 2], "whiz": 42}]'
-
->>> produce_json()
-'["foo", {"whiz": 42, "bar": ["baz", null, 1.0, 2]}]'
+>>> '["foo", {' in produce_json()
+True
+>>> '"bar": ["baz", null, 1.0, 2]' in produce_json()
+True
+>>> '"whiz": 42' in produce_json()
+True
+>>> '}]' in produce_json()
+True
 
 # XML output is normalized for attribute order, so it doesn't matter
 # which order XML element attributes are listed in output

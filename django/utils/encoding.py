@@ -1,10 +1,12 @@
-import types
-import urllib
+from __future__ import unicode_literals
+
 import locale
 import datetime
 import codecs
 from decimal import Decimal
 
+from django.utils.py3 import (bytes, integer_types, string_types,
+                              text_type, quote, PY3)
 from django.utils.functional import Promise
 
 class DjangoUnicodeDecodeError(UnicodeDecodeError):
@@ -23,8 +25,12 @@ class StrAndUnicode(object):
 
     Useful as a mix-in.
     """
-    def __str__(self):
-        return self.__unicode__().encode('utf-8')
+    if not PY3:
+        def __str__(self):
+            return self.__unicode__().encode('utf-8')
+    else:
+        def __str__(self):
+            return self.__unicode__()
 
 def smart_unicode(s, encoding='utf-8', strings_only=False, errors='strict'):
     """
@@ -44,9 +50,8 @@ def is_protected_type(obj):
     Objects of protected types are preserved as-is when passed to
     force_unicode(strings_only=True).
     """
-    return isinstance(obj, (
-        types.NoneType,
-        int, long,
+    return isinstance(obj, integer_types + (
+        type(None),
         datetime.datetime, datetime.date, datetime.time,
         float, Decimal)
     )
@@ -61,17 +66,23 @@ def force_unicode(s, encoding='utf-8', strings_only=False, errors='strict'):
     # Handle the common case first, saves 30-40% in performance when s
     # is an instance of unicode. This function gets called often in that
     # setting.
-    if isinstance(s, unicode):
+    if isinstance(s, text_type):
         return s
     if strings_only and is_protected_type(s):
         return s
     try:
-        if not isinstance(s, basestring,):
+        if not isinstance(s, string_types):
             if hasattr(s, '__unicode__'):
-                s = unicode(s)
+                s = s.__unicode__()
             else:
                 try:
-                    s = unicode(str(s), encoding, errors)
+                    if PY3:
+                        if isinstance(s, bytes):
+                            s = str(s, encoding, errors)
+                        else:
+                            s = str(s)
+                    else:
+                        s = text_type(str(s), encoding, errors)
                 except UnicodeEncodeError:
                     if not isinstance(s, Exception):
                         raise
@@ -81,10 +92,10 @@ def force_unicode(s, encoding='utf-8', strings_only=False, errors='strict'):
                     # without raising a further exception. We do an
                     # approximation to what the Exception's standard str()
                     # output should be.
-                    s = u' '.join([force_unicode(arg, encoding, strings_only,
+                    s = ' '.join([force_unicode(arg, encoding, strings_only,
                             errors) for arg in s])
-        elif not isinstance(s, unicode):
-            # Note: We use .decode() here, instead of unicode(s, encoding,
+        elif not isinstance(s, text_type):
+            # Note: We use .decode() here, instead of text_type(s, encoding,
             # errors), so that if s is a SafeString, it ends up being a
             # SafeUnicode at the end.
             s = s.decode(encoding, errors)
@@ -97,9 +108,19 @@ def force_unicode(s, encoding='utf-8', strings_only=False, errors='strict'):
             # working unicode method. Try to handle this without raising a
             # further exception by individually forcing the exception args
             # to unicode.
-            s = u' '.join([force_unicode(arg, encoding, strings_only,
+            s = ' '.join([force_unicode(arg, encoding, strings_only,
                     errors) for arg in s])
     return s
+
+# How to convert arbitrary objects to bytes?
+# 2.x: just call str()
+# 3.x: convert to str (i.e. Unicode), and encode
+if not PY3:
+    def _str_convert(obj, encoding):
+        return str(obj)
+else:
+    def _str_convert(obj, encoding):
+        return str(obj).encode(encoding)
 
 def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
     """
@@ -107,13 +128,16 @@ def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
 
     If strings_only is True, don't convert (some) non-string-like objects.
     """
-    if strings_only and isinstance(s, (types.NoneType, int)):
+    # django3: short-circuit everything if already bytes
+    if PY3 and isinstance(s, bytes):
+        return s
+    if strings_only and isinstance(s, (type(None), int)):
         return s
     if isinstance(s, Promise):
-        return unicode(s).encode(encoding, errors)
-    elif not isinstance(s, basestring):
+        return text_type(s).encode(encoding, errors)
+    elif not isinstance(s, string_types):
         try:
-            return str(s)
+            return _str_convert(s, encoding)
         except UnicodeEncodeError:
             if isinstance(s, Exception):
                 # An Exception subclass containing non-ASCII data that doesn't
@@ -121,13 +145,20 @@ def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
                 # further exception.
                 return ' '.join([smart_str(arg, encoding, strings_only,
                         errors) for arg in s])
-            return unicode(s).encode(encoding, errors)
-    elif isinstance(s, unicode):
+            return text_type(s).encode(encoding, errors)
+    elif isinstance(s, text_type):
         return s.encode(encoding, errors)
     elif s and encoding != 'utf-8':
         return s.decode('utf-8', errors).encode(encoding, errors)
     else:
         return s
+
+# smart_kw: convert into datatype for keyword arguments
+# smart_text: convert into "text" type (e.g. for output on sys.stdout)
+if not PY3:
+    smart_text = smart_str
+else:
+    smart_text = smart_unicode
 
 def iri_to_uri(iri):
     """
@@ -154,7 +185,7 @@ def iri_to_uri(iri):
     # converted.
     if iri is None:
         return iri
-    return urllib.quote(smart_str(iri), safe=b"/#%[]=:;$&()+,!?*@'~")
+    return quote(smart_str(iri), safe=b"/#%[]=:;$&()+,!?*@'~")
 
 def filepath_to_uri(path):
     """Convert an file system path to a URI portion that is suitable for
@@ -173,7 +204,7 @@ def filepath_to_uri(path):
         return path
     # I know about `os.sep` and `os.altsep` but I want to leave
     # some flexibility for hardcoding separators.
-    return urllib.quote(smart_str(path).replace("\\", "/"), safe=b"/~!*()'")
+    return quote(smart_str(path).replace(b"\\", b"/"), safe=b"/~!*()'")
 
 # The encoding of the default system locale but falls back to the
 # given fallback encoding if the encoding is unsupported by python or could

@@ -1,16 +1,16 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 # -*- coding: utf-8 -*-
-import json
 from datetime import datetime
+import json
 from xml.dom import minidom
-from StringIO import StringIO
 
 from django.conf import settings
 from django.core import serializers
 from django.db import transaction, connection
 from django.test import TestCase, TransactionTestCase, Approximate
 from django.utils import unittest
+from django.utils.py3 import StringIO, text_type, string_types, n
 
 from .models import (Category, Author, Article, AuthorProfile, Actor, Movie,
     Score, Player, Team)
@@ -113,11 +113,11 @@ class SerializersTestBase(object):
         Tests the ability to create new objects by
         modifying serialized content.
         """
-        old_headline = b"Poker has no place on ESPN"
-        new_headline = b"Poker has no place on television"
+        old_headline = "Poker has no place on ESPN"
+        new_headline = "Poker has no place on television"
         serial_str = serializers.serialize(self.serializer_name,
                                            Article.objects.all())
-        serial_str = serial_str.replace(old_headline, new_headline)
+        serial_str = n(serial_str.replace(old_headline, new_headline))
         models = list(serializers.deserialize(self.serializer_name, serial_str))
 
         # Prior to saving, old headline is in place
@@ -162,8 +162,8 @@ class SerializersTestBase(object):
 
     def test_serialize_unicode(self):
         """Tests that unicode makes the roundtrip intact"""
-        actor_name = u"Za\u017c\u00f3\u0142\u0107"
-        movie_title = u'G\u0119\u015bl\u0105 ja\u017a\u0144'
+        actor_name = "Za\u017c\u00f3\u0142\u0107"
+        movie_title = 'G\u0119\u015bl\u0105 ja\u017a\u0144'
         ac = Actor(name=actor_name)
         mv = Movie(title=movie_title, actor=ac)
         ac.save()
@@ -284,18 +284,18 @@ class SerializersTransactionTestBase(object):
 
 class XmlSerializerTestCase(SerializersTestBase, TestCase):
     serializer_name = "xml"
-    pkless_str = b"""<?xml version="1.0" encoding="utf-8"?>
+    pkless_str = n("""<?xml version="1.0" encoding="utf-8"?>
 <django-objects version="1.0">
     <object model="serializers.category">
         <field type="CharField" name="name">Reference</field>
     </object>
-</django-objects>"""
+</django-objects>""")
 
     @staticmethod
     def _comparison_value(value):
         # The XML serializer handles everything as strings, so comparisons
         # need to be performed on the stringified value
-        return unicode(value)
+        return text_type(value)
 
     @staticmethod
     def _validate_output(serial_str):
@@ -330,7 +330,7 @@ class XmlSerializerTestCase(SerializersTestBase, TestCase):
 
 class XmlSerializerTransactionTestCase(SerializersTransactionTestBase, TransactionTestCase):
     serializer_name = "xml"
-    fwd_ref_str = b"""<?xml version="1.0" encoding="utf-8"?>
+    fwd_ref_str = n("""<?xml version="1.0" encoding="utf-8"?>
 <django-objects version="1.0">
     <object pk="1" model="serializers.article">
         <field to="serializers.author" name="author" rel="ManyToOneRel">1</field>
@@ -345,12 +345,12 @@ class XmlSerializerTransactionTestCase(SerializersTransactionTestBase, Transacti
     </object>
     <object pk="1" model="serializers.category">
         <field type="CharField" name="name">Reference</field></object>
-</django-objects>"""
+</django-objects>""")
 
 
 class JsonSerializerTestCase(SerializersTestBase, TestCase):
     serializer_name = "json"
-    pkless_str = b"""[{"pk": null, "model": "serializers.category", "fields": {"name": "Reference"}}]"""
+    pkless_str = n("""[{"pk": null, "model": "serializers.category", "fields": {"name": "Reference"}}]""")
 
     @staticmethod
     def _validate_output(serial_str):
@@ -380,7 +380,7 @@ class JsonSerializerTestCase(SerializersTestBase, TestCase):
 
 class JsonSerializerTransactionTestCase(SerializersTransactionTestBase, TransactionTestCase):
     serializer_name = "json"
-    fwd_ref_str = b"""[
+    fwd_ref_str = n("""[
     {
         "pk": 1,
         "model": "serializers.article",
@@ -404,7 +404,7 @@ class JsonSerializerTransactionTestCase(SerializersTransactionTestBase, Transact
         "fields": {
             "name": "Agnes"
         }
-    }]"""
+    }]""")
 
 try:
     import yaml
@@ -413,7 +413,7 @@ except ImportError:
 else:
     class YamlSerializerTestCase(SerializersTestBase, TestCase):
         serializer_name = "yaml"
-        fwd_ref_str = b"""- fields:
+        fwd_ref_str = n("""- fields:
     headline: Forward references pose no problem
     pub_date: 2006-06-16 15:00:00
     categories: [1]
@@ -427,12 +427,12 @@ else:
 - fields:
     name: Agnes
   pk: 1
-  model: serializers.author"""
+  model: serializers.author""")
 
-        pkless_str = b"""- fields:
+        pkless_str = n("""- fields:
     name: Reference
   pk: null
-  model: serializers.category"""
+  model: serializers.category""")
 
         @staticmethod
         def _validate_output(serial_str):
@@ -461,7 +461,7 @@ else:
                     # yaml.safe_load will return non-string objects for some
                     # of the fields we are interested in, this ensures that
                     # everything comes back as a string
-                    if isinstance(field_value, basestring):
+                    if isinstance(field_value, string_types):
                         ret_list.append(field_value)
                     else:
                         ret_list.append(str(field_value))
@@ -469,7 +469,7 @@ else:
 
     class YamlSerializerTransactionTestCase(SerializersTransactionTestBase, TransactionTestCase):
         serializer_name = "yaml"
-        fwd_ref_str = b"""- fields:
+        fwd_ref_str = n("""- fields:
     headline: Forward references pose no problem
     pub_date: 2006-06-16 15:00:00
     categories: [1]
@@ -483,4 +483,4 @@ else:
 - fields:
     name: Agnes
   pk: 1
-  model: serializers.author"""
+  model: serializers.author""")

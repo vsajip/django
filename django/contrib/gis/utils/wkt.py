@@ -2,6 +2,8 @@
  Utilities for manipulating Geometry WKT.
 """
 
+from django.utils.py3 import string_types
+
 def precision_wkt(geom, prec):
     """
     Returns WKT text of the geometry according to the given precision (an 
@@ -19,7 +21,7 @@ def precision_wkt(geom, prec):
     """
     if isinstance(prec, int):
         num_fmt = '%%.%df' % prec
-    elif isinstance(prec, basestring):
+    elif isinstance(prec, string_types):
         num_fmt = prec
     else:
         raise TypeError

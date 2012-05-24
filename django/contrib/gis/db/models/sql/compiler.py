@@ -1,8 +1,9 @@
-from future_builtins import zip
-
 from django.db.backends.util import truncate_name, typecast_timestamp
 from django.db.models.sql import compiler
 from django.db.models.sql.constants import MULTI
+from django.db.models.sql.query import get_proxied_model
+from django.utils.itercompat import izip_longest
+from django.utils.py3 import izip, iteritems
 
 SQLCompiler = compiler.SQLCompiler
 
@@ -24,7 +25,7 @@ class GeoSQLCompiler(compiler.SQLCompiler):
         qn = self.quote_name_unless_alias
         qn2 = self.connection.ops.quote_name
         result = ['(%s) AS %s' % (self.get_extra_select_format(alias) % col[0], qn2(alias))
-                  for alias, col in self.query.extra_select.iteritems()]
+                  for alias, col in iteritems(self.query.extra_select)]
         aliases = set(self.query.extra_select.keys())
         if with_aliases:
             col_aliases = aliases.copy()
@@ -33,7 +34,7 @@ class GeoSQLCompiler(compiler.SQLCompiler):
         if self.query.select:
             only_load = self.deferred_to_columns()
             # This loop customized for GeoQuery.
-            for col, field in zip(self.query.select, self.query.select_fields):
+            for col, field in izip(self.query.select, self.query.select_fields):
                 if isinstance(col, (list, tuple)):
                     alias, column = col
                     table = self.query.alias_map[alias].table_name
@@ -79,7 +80,7 @@ class GeoSQLCompiler(compiler.SQLCompiler):
         ])
 
         # This loop customized for GeoQuery.
-        for (table, col), field in zip(self.query.related_select_cols, self.query.related_select_fields):
+        for (table, col), field in izip(self.query.related_select_cols, self.query.related_select_fields):
             r = self.get_field_select(field, table, col)
             if with_aliases and col in col_aliases:
                 c_alias = 'Col%d' % len(col_aliases)
@@ -170,7 +171,7 @@ class GeoSQLCompiler(compiler.SQLCompiler):
         objects.
         """
         values = []
-        aliases = self.query.extra_select.keys()
+        aliases = list(self.query.extra_select.keys())
 
         # Have to set a starting row number offset that is used for
         # determining the correct starting row index -- needed for
@@ -185,11 +186,11 @@ class GeoSQLCompiler(compiler.SQLCompiler):
         values = [self.query.convert_values(v,
                                self.query.extra_select_fields.get(a, None),
                                self.connection)
-                  for v, a in zip(row[rn_offset:index_start], aliases)]
+                  for v, a in izip(row[rn_offset:index_start], aliases)]
         if self.connection.ops.oracle or getattr(self.query, 'geo_values', False):
             # We resolve the rest of the columns if we're on Oracle or if
             # the `geo_values` attribute is defined.
-            for value, field in map(None, row[index_start:], fields):
+            for value, field in izip_longest(row[index_start:], fields):
                 values.append(self.query.convert_values(value, field, self.connection))
         else:
             values.extend(row[index_start:])

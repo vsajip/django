@@ -2,12 +2,14 @@
 # This file is distributed under the same license as the Django package.
 #
 
+from __future__ import unicode_literals
+
 # The *_FORMAT strings use the Django date format syntax,
 # see http://docs.djangoproject.com/en/dev/ref/templates/builtins/#date
-DATE_FORMAT = 'j E Y г.'
+DATE_FORMAT = 'j E Y \u0433.'
 TIME_FORMAT = 'G:i:s'
-DATETIME_FORMAT = 'j E Y г. G:i:s'
-YEAR_MONTH_FORMAT = 'F Y г.'
+DATETIME_FORMAT = 'j E Y \u0433. G:i:s'
+YEAR_MONTH_FORMAT = 'F Y \u0433.'
 MONTH_DAY_FORMAT = 'j F'
 SHORT_DATE_FORMAT = 'd.m.Y'
 SHORT_DATETIME_FORMAT = 'd.m.Y H:i'
@@ -36,5 +38,5 @@ DATETIME_INPUT_FORMATS = (
     '%Y-%m-%d',           # '2006-10-25'
 )
 DECIMAL_SEPARATOR = ','
-THOUSAND_SEPARATOR = u'\xa0' # non-breaking space
+THOUSAND_SEPARATOR = '\xa0' # non-breaking space
 NUMBER_GROUPING = 3

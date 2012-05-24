@@ -1,3 +1,5 @@
+from django.utils.py3 import xreadlines_name
+
 class FileProxyMixin(object):
     """
     A mixin class used to forward file methods to an underlaying file
@@ -23,7 +25,7 @@ class FileProxyMixin(object):
     truncate = property(lambda self: self.file.truncate)
     write = property(lambda self: self.file.write)
     writelines = property(lambda self: self.file.writelines)
-    xreadlines = property(lambda self: self.file.xreadlines)
+    xreadlines = property(lambda self: getattr(self.file, xreadlines_name))
 
     def __iter__(self):
         return iter(self.file)

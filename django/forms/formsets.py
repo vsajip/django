@@ -1,4 +1,5 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
+
 
 from django.core.exceptions import ValidationError
 from django.forms import Form
@@ -6,6 +7,7 @@ from django.forms.fields import IntegerField, BooleanField
 from django.forms.util import ErrorList
 from django.forms.widgets import Media, HiddenInput
 from django.utils.encoding import StrAndUnicode
+from django.utils.py3 import xrange, text_type, n
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 
@@ -67,6 +69,8 @@ class BaseFormSet(StrAndUnicode):
         """All formsets have a management form which is not included in the length"""
         return True
 
+    __bool__ = __nonzero__
+
     def _management_form(self):
         """Returns the ManagementForm instance for this FormSet."""
         if self.is_bound:
@@ -91,10 +95,11 @@ class BaseFormSet(StrAndUnicode):
             total_forms = initial_forms + self.extra
             # Allow all existing related objects/inlines to be displayed,
             # but don't allow extra beyond max_num.
-            if initial_forms > self.max_num >= 0:
-                total_forms = initial_forms
-            elif total_forms > self.max_num >= 0:
-                total_forms = self.max_num
+            if self.max_num is not None:
+                if initial_forms > self.max_num >= 0:
+                    total_forms = initial_forms
+                elif total_forms > self.max_num >= 0:
+                    total_forms = self.max_num
         return total_forms
 
     def initial_form_count(self):
@@ -104,8 +109,9 @@ class BaseFormSet(StrAndUnicode):
         else:
             # Use the length of the inital data if it's there, 0 otherwise.
             initial_forms = self.initial and len(self.initial) or 0
-            if initial_forms > self.max_num >= 0:
-                initial_forms = self.max_num
+            if self.max_num is not None:
+                if initial_forms > self.max_num >= 0:
+                    initial_forms = self.max_num
         return initial_forms
 
     def _construct_forms(self):
@@ -314,11 +320,11 @@ class BaseFormSet(StrAndUnicode):
         if self.can_order:
             # Only pre-fill the ordering field for initial forms.
             if index is not None and index < self.initial_form_count():
-                form.fields[ORDERING_FIELD_NAME] = IntegerField(label=_(u'Order'), initial=index+1, required=False)
+                form.fields[ORDERING_FIELD_NAME] = IntegerField(label=_('Order'), initial=index+1, required=False)
             else:
-                form.fields[ORDERING_FIELD_NAME] = IntegerField(label=_(u'Order'), required=False)
+                form.fields[ORDERING_FIELD_NAME] = IntegerField(label=_('Order'), required=False)
         if self.can_delete:
-            form.fields[DELETION_FIELD_NAME] = BooleanField(label=_(u'Delete'), required=False)
+            form.fields[DELETION_FIELD_NAME] = BooleanField(label=_('Delete'), required=False)
 
     def add_prefix(self, index):
         return '%s-%s' % (self.prefix, index)
@@ -344,18 +350,18 @@ class BaseFormSet(StrAndUnicode):
         # XXX: there is no semantic division between forms here, there
         # probably should be. It might make sense to render each form as a
         # table row with each field as a td.
-        forms = u' '.join([form.as_table() for form in self])
-        return mark_safe(u'\n'.join([unicode(self.management_form), forms]))
+        forms = ' '.join([form.as_table() for form in self])
+        return mark_safe('\n'.join([text_type(self.management_form), forms]))
 
     def as_p(self):
         "Returns this formset rendered as HTML <p>s."
-        forms = u' '.join([form.as_p() for form in self])
-        return mark_safe(u'\n'.join([unicode(self.management_form), forms]))
+        forms = ' '.join([form.as_p() for form in self])
+        return mark_safe('\n'.join([text_type(self.management_form), forms]))
 
     def as_ul(self):
         "Returns this formset rendered as HTML <li>s."
-        forms = u' '.join([form.as_ul() for form in self])
-        return mark_safe(u'\n'.join([unicode(self.management_form), forms]))
+        forms = ' '.join([form.as_ul() for form in self])
+        return mark_safe('\n'.join([text_type(self.management_form), forms]))
 
 def formset_factory(form, formset=BaseFormSet, extra=1, can_order=False,
                     can_delete=False, max_num=None):
@@ -363,7 +369,7 @@ def formset_factory(form, formset=BaseFormSet, extra=1, can_order=False,
     attrs = {'form': form, 'extra': extra,
              'can_order': can_order, 'can_delete': can_delete,
              'max_num': max_num}
-    return type(form.__name__ + 'FormSet', (formset,), attrs)
+    return type(n(form.__name__ + 'FormSet'), (formset,), attrs)
 
 def all_valid(formsets):
     """Returns true if every formset in formsets is valid."""

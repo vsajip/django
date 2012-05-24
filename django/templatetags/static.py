@@ -1,6 +1,6 @@
-from urlparse import urljoin
 from django import template
 from django.utils.encoding import iri_to_uri
+from django.utils.py3 import urljoin
 
 register = template.Library()
 

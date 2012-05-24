@@ -1,11 +1,9 @@
-import urllib
-from urlparse import urlparse
-
 from django.conf import settings
 from django.core.handlers.wsgi import WSGIHandler
 
 from django.contrib.staticfiles import utils
 from django.contrib.staticfiles.views import serve
+from django.utils.py3 import urlparse, url2pathname
 
 class StaticFilesHandler(WSGIHandler):
     """
@@ -42,7 +40,7 @@ class StaticFilesHandler(WSGIHandler):
         Returns the relative path to the media file on disk for the given URL.
         """
         relative_url = url[len(self.base_url[2]):]
-        return urllib.url2pathname(relative_url)
+        return url2pathname(relative_url)
 
     def serve(self, request):
         """

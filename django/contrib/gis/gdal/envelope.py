@@ -52,7 +52,7 @@ class Envelope(object):
         elif len(args) == 4:
             # Individual parameters passed in.
             #  Thanks to ww for the help
-            self._from_sequence(map(float, args))
+            self._from_sequence(list(map(float, args)))
         else:
             raise OGRException('Incorrect number (%d) of arguments.' % len(args))
 

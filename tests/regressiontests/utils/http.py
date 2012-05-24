@@ -3,6 +3,7 @@ import sys
 from django.utils import http
 from django.utils import unittest
 from django.utils.datastructures import MultiValueDict
+from django.utils.py3 import maxsize, PY3
 from django.http import HttpResponse, utils
 from django.test import RequestFactory
 
@@ -102,13 +103,18 @@ class TestUtilsHttp(unittest.TestCase):
 
     def test_base36(self):
         # reciprocity works
-        for n in [0, 1, 1000, 1000000, sys.maxint]:
+        for n in [0, 1, 1000, 1000000, maxsize]:
             self.assertEqual(n, http.base36_to_int(http.int_to_base36(n)))
 
         # bad input
-        for n in [-1, sys.maxint+1, '1', 'foo', {1:2}, (1,2,3)]:
-            self.assertRaises(ValueError, http.int_to_base36, n)
-        
+        if not PY3:
+            for n in [-1, maxsize + 1, '1', 'foo', {1:2}, (1,2,3)]:
+                self.assertRaises(ValueError, http.int_to_base36, n)
+        else:
+            for n in [-1, maxsize + 1]:
+                self.assertRaises(ValueError, http.int_to_base36, n)
+            for n in ['1', 'foo', {1:2}, (1,2,3)]:
+                self.assertRaises(TypeError, http.int_to_base36, n)
         for n in ['#', ' ']:
             self.assertRaises(ValueError, http.base36_to_int, n)
 

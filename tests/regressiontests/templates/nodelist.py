@@ -45,7 +45,7 @@ class ErrorIndexTest(TestCase):
             ('{% load bad_tag %}{% for j in five %}{% badsimpletag %}{% endfor %}', (18, 37)),
         ]
         context = Context({
-            'range': range(5),
+            'range': list(range(5)),
             'five': 5,
         })
         for source, expected_error_source_index in tests:

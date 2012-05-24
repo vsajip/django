@@ -1,7 +1,8 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 from datetime import datetime
 
+from django import forms
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin import helpers
@@ -10,10 +11,10 @@ from django.contrib.admin.util import (display_for_field, label_for_field,
 from django.contrib.admin.views.main import EMPTY_CHANGELIST_VALUE
 from django.contrib.sites.models import Site
 from django.db import models, DEFAULT_DB_ALIAS
-from django import forms
 from django.test import TestCase
 from django.utils import unittest
 from django.utils.formats import localize
+from django.utils.py3 import text_type
 from django.utils.safestring import mark_safe
 
 from .models import Article, Count, Event, Location
@@ -138,7 +139,7 @@ class UtilTests(unittest.TestCase):
         # Regression test for #13071: NullBooleanField has special
         # handling.
         display_value = display_for_field(None, models.NullBooleanField())
-        expected = u'<img src="%sadmin/img/icon-unknown.gif" alt="None" />' % settings.STATIC_URL
+        expected = '<img src="%sadmin/img/icon-unknown.gif" alt="None" />' % settings.STATIC_URL
         self.assertEqual(display_value, expected)
 
         display_value = display_for_field(None, models.DecimalField())
@@ -249,17 +250,17 @@ class UtilTests(unittest.TestCase):
 
         log_entry.action_flag = admin.models.ADDITION
         self.assertTrue(
-            unicode(log_entry).startswith('Added ')
+            text_type(log_entry).startswith('Added ')
         )
 
         log_entry.action_flag = admin.models.CHANGE
         self.assertTrue(
-            unicode(log_entry).startswith('Changed ')
+            text_type(log_entry).startswith('Changed ')
         )
 
         log_entry.action_flag = admin.models.DELETION
         self.assertTrue(
-            unicode(log_entry).startswith('Deleted ')
+            text_type(log_entry).startswith('Deleted ')
         )
 
     def test_safestring_in_field_label(self):

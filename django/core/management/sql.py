@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import os
 import re
 
@@ -5,6 +7,7 @@ from django.conf import settings
 from django.core.management.base import CommandError
 from django.db import models
 from django.db.models import get_models
+from django.utils.py3 import PY3
 
 def sql_create(app, style, connection):
     "Returns a list of the CREATE TABLE SQL statements for the given app."
@@ -157,12 +160,19 @@ def custom_sql_for_model(model, style, connection):
                  os.path.join(app_dir, "%s.sql" % opts.object_name.lower())]
     for sql_file in sql_files:
         if os.path.exists(sql_file):
-            with open(sql_file, 'U') as fp:
-                for statement in statements.split(fp.read().decode(settings.FILE_CHARSET)):
-                    # Remove any comments from the file
-                    statement = re.sub(ur"--.*([\n\Z]|$)", "", statement)
-                    if statement.strip():
-                        output.append(statement + u";")
+            if not PY3:
+                with open(sql_file, 'U') as fp:
+                    sql_data = fp.read().decode(settings.FILE_CHARSET)
+            else:
+                with open(sql_file, 'r', encoding=settings.FILE_CHARSET) as fp:
+                    sql_data = fp.read()
+            for statement in statements.split(sql_data):
+                # Remove any comments from the file
+                statement = re.sub(r"--.*([\n\Z]|$)", "", statement).strip()
+                if statement:
+                    if not statement.endswith(";"):
+                        statement += ";"
+                    output.append(statement)
 
     return output
 

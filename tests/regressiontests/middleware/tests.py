@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import gzip
-import re
+import os
 import random
-import StringIO
+import re
+import sys
 
 from django.conf import settings
 from django.core import mail
@@ -15,6 +16,7 @@ from django.middleware.http import ConditionalGetMiddleware
 from django.middleware.gzip import GZipMiddleware
 from django.test import TestCase, RequestFactory
 from django.test.utils import override_settings
+from django.utils.py3 import BytesIO, xrange, PY3
 
 class CommonMiddlewareTest(TestCase):
     def setUp(self):
@@ -505,9 +507,11 @@ class GZipMiddlewareTest(TestCase):
     """
     Tests the GZip middleware.
     """
-    short_string = "This string is too short to be worth compressing."
-    compressible_string = 'a' * 500
-    uncompressible_string = ''.join(chr(random.randint(0, 255)) for _ in xrange(500))
+    short_string = b"This string is too short to be worth compressing."
+    compressible_string = b'a' * 500
+    #uncompressible_string = ''.join(chr(random.randint(0, 255)) for _ in xrange(500))
+    # django3: used an easier method to generate a random string. Works on both 2.x and 3.x.
+    uncompressible_string = os.urandom(500)
 
     def setUp(self):
         self.req = HttpRequest()
@@ -525,7 +529,7 @@ class GZipMiddlewareTest(TestCase):
 
     @staticmethod
     def decompress(gzipped_string):
-        return gzip.GzipFile(mode='rb', fileobj=StringIO.StringIO(gzipped_string)).read()
+        return gzip.GzipFile(mode='rb', fileobj=BytesIO(gzipped_string)).read()
 
     def test_compress_response(self):
         """

@@ -1,6 +1,8 @@
 """
 Israeli-specific form helpers
 """
+from __future__ import unicode_literals
+
 import re
 
 from django.core.exceptions import ValidationError
@@ -28,7 +30,7 @@ class ILPostalCodeField(RegexField):
     """
 
     default_error_messages = {
-        'invalid': _(u'Enter a postal code in the format XXXXX'),
+        'invalid': _('Enter a postal code in the format XXXXX'),
     }
 
     def __init__(self, *args, **kwargs):
@@ -47,14 +49,14 @@ class ILIDNumberField(Field):
     """
 
     default_error_messages = {
-        'invalid': _(u'Enter a valid ID number.'),
+        'invalid': _('Enter a valid ID number.'),
     }
 
     def clean(self, value):
         value = super(ILIDNumberField, self).clean(value)
 
         if value in EMPTY_VALUES:
-            return u''
+            return ''
 
         match = id_number_re.match(value)
         if not match:

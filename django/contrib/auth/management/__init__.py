@@ -1,23 +1,26 @@
 """
 Creates permissions for all installed apps that need permissions.
 """
+from __future__ import unicode_literals
+
+import sys
 import getpass
 import locale
 import unicodedata
 from django.contrib.auth import models as auth_app
 from django.db.models import get_models, signals
 from django.contrib.auth.models import User
-
+from django.utils.py3 import raw_input, iteritems, PY3
 
 def _get_permission_codename(action, opts):
-    return u'%s_%s' % (action, opts.object_name.lower())
+    return '%s_%s' % (action, opts.object_name.lower())
 
 
 def _get_all_permissions(opts):
     "Returns (codename, name) for all permissions in the given opts."
     perms = []
     for action in ('add', 'change', 'delete'):
-        perms.append((_get_permission_codename(action, opts), u'Can %s %s' % (action, opts.verbose_name_raw)))
+        perms.append((_get_permission_codename(action, opts), 'Can %s %s' % (action, opts.verbose_name_raw)))
     return perms + list(opts.permissions)
 
 
@@ -81,6 +84,8 @@ def get_system_username():
     :returns: The username as a unicode string, or an empty string if the
         username could not be determined.
     """
+    if PY3:
+        return getpass.getuser()
     try:
         return getpass.getuser().decode(locale.getdefaultlocale()[1])
     except (ImportError, KeyError, UnicodeDecodeError):
@@ -88,7 +93,7 @@ def get_system_username():
         # if there is no corresponding entry in the /etc/passwd file
         # (a very restricted chroot environment, for example).
         # UnicodeDecodeError - preventive treatment for non-latin Windows.
-        return u''
+        return ''
 
 
 def get_default_username(check_db=True):
@@ -105,7 +110,8 @@ def get_default_username(check_db=True):
     default_username = get_system_username()
     try:
         default_username = unicodedata.normalize('NFKD', default_username)\
-            .encode('ascii', 'ignore').replace(' ', '').lower()
+            .encode('ascii', 'ignore').decode('ascii', 'ignore')\
+            .replace(' ', '').lower()
     except UnicodeDecodeError:
         return ''
     if not RE_VALID_USERNAME.match(default_username):

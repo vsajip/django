@@ -1,6 +1,6 @@
 import os
 import errno
-import urlparse
+import sys
 import itertools
 from datetime import datetime
 
@@ -11,6 +11,7 @@ from django.core.files.move import file_move_safe
 from django.utils.encoding import force_unicode, filepath_to_uri
 from django.utils.functional import LazyObject
 from django.utils.importlib import import_module
+from django.utils.py3 import next, urljoin, text_type
 from django.utils.text import get_valid_filename
 from django.utils._os import safe_join, abspathu
 
@@ -193,6 +194,11 @@ class FileSystemStorage(Storage):
                     try:
                         locks.lock(fd, locks.LOCK_EX)
                         for chunk in content.chunks():
+                            # django3: This fails on Python 3 as the chunks are Unicode.
+                            # For now, convert to bytes using utf-8 (not yet sure where to
+                            # get a different encoding)
+                            if isinstance(chunk, text_type):
+                                chunk = chunk.encode('utf-8')
                             os.write(fd, chunk)
                     finally:
                         locks.unlock(fd)
@@ -252,7 +258,7 @@ class FileSystemStorage(Storage):
     def url(self, name):
         if self.base_url is None:
             raise ValueError("This file is not accessible via a URL.")
-        return urlparse.urljoin(self.base_url, filepath_to_uri(name))
+        return urljoin(self.base_url, filepath_to_uri(name))
 
     def accessed_time(self, name):
         return datetime.fromtimestamp(os.path.getatime(self.path(name)))

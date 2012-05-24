@@ -1,8 +1,10 @@
+from __future__ import unicode_literals
+
 import os
 from optparse import make_option
 from django.core.management.base import LabelCommand
-from django.utils.encoding import smart_str, smart_unicode
-
+from django.utils.encoding import smart_str, smart_unicode, smart_text
+from django.utils.py3 import PY3
 from django.contrib.staticfiles import finders
 
 class Command(LabelCommand):
@@ -21,9 +23,10 @@ class Command(LabelCommand):
         if result:
             if not isinstance(result, (list, tuple)):
                 result = [result]
-            output = u'\n  '.join(
+            output = '\n  '.join(
                 (smart_unicode(os.path.realpath(path)) for path in result))
-            self.stdout.write(u"Found '%s' here:\n  %s" % (path, output))
+            s = smart_text("Found '%s' here:\n  %s" % (path, output))
+            self.stdout.write(s)
         else:
             if verbosity >= 1:
                 self.stderr.write("No matching file found for '%s'." % path)

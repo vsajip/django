@@ -1,5 +1,7 @@
 """Default tags used by the template system, available to all templates."""
 
+from __future__ import unicode_literals
+
 import sys
 import re
 from datetime import datetime
@@ -13,9 +15,10 @@ from django.template.base import (Node, NodeList, Template, Library,
     VARIABLE_ATTRIBUTE_SEPARATOR, get_library, token_kwargs, kwarg_re)
 from django.template.smartif import IfParser, Literal
 from django.template.defaultfilters import date
-from django.utils.encoding import smart_str, smart_unicode
-from django.utils.safestring import mark_safe
 from django.utils import timezone
+from django.utils.encoding import smart_str, smart_unicode, smart_text
+from django.utils.safestring import mark_safe
+from django.utils.py3 import next, iteritems
 
 register = Library()
 
@@ -43,9 +46,9 @@ class CsrfTokenNode(Node):
         csrf_token = context.get('csrf_token', None)
         if csrf_token:
             if csrf_token == 'NOTPROVIDED':
-                return mark_safe(u"")
+                return mark_safe("")
             else:
-                return mark_safe(u"<div style='display:none'><input type='hidden' name='csrfmiddlewaretoken' value='%s' /></div>" % csrf_token)
+                return mark_safe("<div style='display:none'><input type='hidden' name='csrfmiddlewaretoken' value='%s' /></div>" % csrf_token)
         else:
             # It's very probable that the token is missing because of
             # misconfiguration, so we raise a warning
@@ -53,7 +56,7 @@ class CsrfTokenNode(Node):
             if settings.DEBUG:
                 import warnings
                 warnings.warn("A {% csrf_token %} was used in a template, but the context did not provide the value.  This is usually caused by not using RequestContext.")
-            return u''
+            return ''
 
 class CycleNode(Node):
     def __init__(self, cyclevars, variable_name=None, silent=False):
@@ -102,7 +105,7 @@ class FirstOfNode(Node):
             value = var.resolve(context, True)
             if value:
                 return smart_unicode(value)
-        return u''
+        return ''
 
 class ForNode(Node):
     child_nodelists = ('nodelist_loop', 'nodelist_empty')
@@ -390,7 +393,8 @@ class URLNode(Node):
     def render(self, context):
         from django.core.urlresolvers import reverse, NoReverseMatch
         args = [arg.resolve(context) for arg in self.args]
-        kwargs = dict([(smart_str(k, 'ascii'), v.resolve(context))
+        # django3: was smart_str, for some reason
+        kwargs = dict([(smart_text(k, 'ascii'), v.resolve(context))
                        for k, v in self.kwargs.items()])
 
         view_name = self.view_name.resolve(context)
@@ -464,7 +468,7 @@ class WithNode(Node):
 
     def render(self, context):
         values = dict([(key, val.resolve(context)) for key, val in
-                       self.extra_context.iteritems()])
+                       iteritems(self.extra_context)])
         context.update(values)
         output = self.nodelist.render(context)
         context.pop()
@@ -479,7 +483,7 @@ def autoescape(parser, token):
     if len(args) != 2:
         raise TemplateSyntaxError("'autoescape' tag requires exactly one argument.")
     arg = args[1]
-    if arg not in (u'on', u'off'):
+    if arg not in ('on', 'off'):
         raise TemplateSyntaxError("'autoescape' argument should be 'on' or 'off'")
     nodelist = parser.parse(('endautoescape',))
     parser.delete_first_token()
@@ -1179,7 +1183,7 @@ def templatetag(parser, token):
     if tag not in TemplateTagNode.mapping:
         raise TemplateSyntaxError("Invalid templatetag argument: '%s'."
                                   " Must be one of: %s" %
-                                  (tag, TemplateTagNode.mapping.keys()))
+                                  (tag, list(TemplateTagNode.mapping.keys())))
     return TemplateTagNode(tag)
 
 @register.tag

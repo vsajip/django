@@ -4,10 +4,12 @@ Code to manage the creation and SQL rendering of 'where' constraints.
 
 from __future__ import absolute_import
 
+import collections
 import datetime
 from itertools import repeat
 
 from django.utils import tree
+from django.utils.py3 import xrange, next_name
 from django.db.models.fields import Field
 from django.db.models.sql.datastructures import EmptyResultSet, FullResultSet
 from django.db.models.sql.aggregates import Aggregate
@@ -49,7 +51,7 @@ class WhereNode(tree.Node):
             return
 
         obj, lookup_type, value = data
-        if hasattr(value, '__iter__') and hasattr(value, 'next'):
+        if isinstance(value, collections.Iterator):
             # Consume any generators immediately, so that we can determine
             # emptiness and transform any non-empty values correctly.
             value = list(value)

@@ -6,6 +6,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.core.exceptions import SuspiciousOperation
 from django.shortcuts import render_to_response
 from django.utils.encoding import smart_str
+from django.utils.py3 import PY3
 from django.core.serializers.json import DjangoJSONEncoder
 from django.test.client import CONTENT_TYPE_RE
 from django.template import RequestContext
@@ -81,9 +82,9 @@ def return_json_file(request):
 
     # This just checks that the uploaded data is JSON
     obj_dict = json.loads(request.body.decode(charset))
-    obj_json = json.dumps(obj_dict, encoding=charset,
-                                cls=DjangoJSONEncoder,
-                                ensure_ascii=False)
+    kwargs = { 'cls': DjangoJSONEncoder, 'ensure_ascii': False }
+    if not PY3: kwargs['encoding'] = charset
+    obj_json = json.dumps(obj_dict, **kwargs)
     response = HttpResponse(smart_str(obj_json, encoding=charset), status=200,
                             mimetype='application/json; charset=' + charset)
     response['Content-Disposition'] = 'attachment; filename=testfile.json'

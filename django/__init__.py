@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 VERSION = (1, 5, 0, 'alpha', 0)
 
 def get_version(*args, **kwargs):

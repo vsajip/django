@@ -1,6 +1,8 @@
-import os
-from django.core.management.base import NoArgsCommand
 from optparse import make_option
+import os
+
+from django.core.management.base import NoArgsCommand
+from django.utils.py3 import execfile_, PY3
 
 class Command(NoArgsCommand):
     option_list = NoArgsCommand.option_list + (
@@ -75,9 +77,10 @@ class Command(NoArgsCommand):
                 pythonrc = os.environ.get("PYTHONSTARTUP")
                 if pythonrc and os.path.isfile(pythonrc):
                     try:
-                        execfile(pythonrc)
+                        execfile_(pythonrc)
                     except NameError:
                         pass
                 # This will import .pythonrc.py as a side-effect
-                import user
+                if not PY3:
+                    import user
             code.interact(local=imported_objects)

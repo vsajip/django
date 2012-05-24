@@ -1,6 +1,7 @@
 import os
 import sys
 from django.db.backends.creation import BaseDatabaseCreation
+from django.utils.py3 import raw_input
 
 class DatabaseCreation(BaseDatabaseCreation):
     # SQLite doesn't actually support most of these types, but it "does the right

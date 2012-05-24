@@ -4,12 +4,15 @@ Oracle database backend for Django.
 Requires cx_Oracle: http://cx-oracle.sourceforge.net/
 """
 
+from __future__ import unicode_literals
 
 import datetime
 import decimal
 import sys
 import warnings
 
+from django.utils.py3 import (long_type, next, string_types, reraise,
+                              text_type)
 
 def _setup_environment(environ):
     import platform
@@ -83,6 +86,7 @@ class DatabaseFeatures(BaseDatabaseFeatures):
     ignores_nulls_in_unique_constraints = False
     has_bulk_insert = True
     supports_tablespaces = True
+    supports_sequence_reset = False
 
 class DatabaseOperations(BaseDatabaseOperations):
     compiler_module = "django.db.backends.oracle.compiler"
@@ -159,7 +163,7 @@ WHEN (new.%(col_name)s IS NULL)
         # string instead of null, but only if the field accepts the
         # empty string.
         if value is None and field and field.empty_strings_allowed:
-            value = u''
+            value = ''
         # Convert 1 or 0 to True or False
         elif value in (1, 0) and field and field.get_internal_type() in ('BooleanField', 'NullBooleanField'):
             value = bool(value)
@@ -200,7 +204,7 @@ WHEN (new.%(col_name)s IS NULL)
         return "DROP SEQUENCE %s;" % self.quote_name(self._get_sequence_name(table))
 
     def fetch_returned_insert_id(self, cursor):
-        return long(cursor._insert_id_var.getvalue())
+        return long_type(cursor._insert_id_var.getvalue())
 
     def field_cast_sql(self, db_type):
         if db_type and db_type.endswith('LOB'):
@@ -234,7 +238,7 @@ WHEN (new.%(col_name)s IS NULL)
 
     def process_clob(self, value):
         if value is None:
-            return u''
+            return ''
         return force_unicode(value.read())
 
     def quote_name(self, name):
@@ -346,13 +350,13 @@ WHEN (new.%(col_name)s IS NULL)
             else:
                 raise ValueError("Oracle backend does not support timezone-aware datetimes when USE_TZ is False.")
 
-        return unicode(value)
+        return text_type(value)
 
     def value_to_db_time(self, value):
         if value is None:
             return None
 
-        if isinstance(value, basestring):
+        if isinstance(value, string_types):
             return datetime.datetime.strptime(value, '%H:%M:%S')
 
         # Oracle doesn't support tz-aware times
@@ -535,8 +539,8 @@ class DatabaseWrapper(BaseDatabaseWrapper):
             except Database.IntegrityError as e:
                 # In case cx_Oracle implements (now or in a future version)
                 # raising this specific exception
-                raise utils.IntegrityError, utils.IntegrityError(*tuple(e)), sys.exc_info()[2]
-            except Database.DatabaseError as e:
+                reraise(utils.IntegrityError, utils.IntegrityError(*e[1].args), e[2])
+            except Database.DatabaseError:
                 # cx_Oracle 5.0.4 raises a cx_Oracle.DatabaseError exception
                 # with the following attributes and values:
                 #  code = 2091
@@ -544,11 +548,12 @@ class DatabaseWrapper(BaseDatabaseWrapper):
                 #            'ORA-02291: integrity constraint (TEST_DJANGOTEST.SYS
                 #               _C00102056) violated - parent key not found'
                 # We convert that particular case to our IntegrityError exception
-                x = e.args[0]
+                e = sys.exc_info()
+                x = e[1].args[0]
                 if hasattr(x, 'code') and hasattr(x, 'message') \
                    and x.code == 2091 and 'ORA-02291' in x.message:
-                    raise utils.IntegrityError, utils.IntegrityError(*tuple(e)), sys.exc_info()[2]
-                raise utils.DatabaseError, utils.DatabaseError(*tuple(e)), sys.exc_info()[2]
+                    reraise(utils.IntegrityError, utils.IntegrityError(*e[1].args), e[2])
+                reraise(utils.DatabaseError, utils.DatabaseError(*e[1].args), e[2])
 
 
 class OracleParam(object):
@@ -566,8 +571,8 @@ class OracleParam(object):
         # without being converted by DateTimeField.get_db_prep_value.
         if settings.USE_TZ and isinstance(param, datetime.datetime):
             if timezone.is_naive(param):
-                warnings.warn(u"Oracle received a naive datetime (%s)"
-                              u" while time zone support is active." % param,
+                warnings.warn("Oracle received a naive datetime (%s)"
+                              " while time zone support is active." % param,
                               RuntimeWarning)
                 default_timezone = timezone.get_default_timezone()
                 param = timezone.make_aware(param, default_timezone)
@@ -578,10 +583,14 @@ class OracleParam(object):
         else:
             self.smart_str = convert_unicode(param, cursor.charset,
                                              strings_only)
+        # bools need to be converted to ints for Python 3, because cx_Oracle
+        # won't accept them (OCI-22026 DatabaseError).
+        if isinstance(self.smart_str, bool):
+            self.smart_str = int(self.smart_str)
         if hasattr(param, 'input_size'):
             # If parameter has `input_size` attribute, use that.
             self.input_size = param.input_size
-        elif isinstance(param, basestring) and len(param) > 4000:
+        elif isinstance(param, string_types) and len(param) > 4000:
             # Mark any string param greater than 4000 characters as a CLOB.
             self.input_size = Database.CLOB
         else:
@@ -673,13 +682,16 @@ class FormatStylePlaceholderCursor(object):
         self._guess_input_sizes([params])
         try:
             return self.cursor.execute(query, self._param_generator(params))
-        except Database.IntegrityError as e:
-            raise utils.IntegrityError, utils.IntegrityError(*tuple(e)), sys.exc_info()[2]
-        except Database.DatabaseError as e:
+        except Database.IntegrityError:
+            e = sys.exc_info()
+            reraise(utils.IntegrityError, utils.IntegrityError(*e[1].args), e[2])
+        except Database.DatabaseError:
+            e = sys.exc_info()
+            x = e[1]
             # cx_Oracle <= 4.4.0 wrongly raises a DatabaseError for ORA-01400.
-            if hasattr(e.args[0], 'code') and e.args[0].code == 1400 and not isinstance(e, IntegrityError):
-                raise utils.IntegrityError, utils.IntegrityError(*tuple(e)), sys.exc_info()[2]
-            raise utils.DatabaseError, utils.DatabaseError(*tuple(e)), sys.exc_info()[2]
+            if hasattr(x.args[0], 'code') and x.args[0].code == 1400 and not isinstance(x, IntegrityError):
+                reraise(utils.IntegrityError, utils.IntegrityError(*x.args), e[2])
+            reraise(utils.DatabaseError, utils.DatabaseError(*x.args), e[2])
 
     def executemany(self, query, params=None):
         # cx_Oracle doesn't support iterators, convert them to lists
@@ -702,13 +714,16 @@ class FormatStylePlaceholderCursor(object):
         try:
             return self.cursor.executemany(query,
                                 [self._param_generator(p) for p in formatted])
-        except Database.IntegrityError as e:
-            raise utils.IntegrityError, utils.IntegrityError(*tuple(e)), sys.exc_info()[2]
-        except Database.DatabaseError as e:
+        except Database.IntegrityError:
+            e = sys.exc_info()
+            reraise(utils.IntegrityError, utils.IntegrityError(*e[1].args), e[2])
+        except Database.DatabaseError:
+            e = sys.exc_info()
+            x = e[1]
             # cx_Oracle <= 4.4.0 wrongly raises a DatabaseError for ORA-01400.
-            if hasattr(e.args[0], 'code') and e.args[0].code == 1400 and not isinstance(e, IntegrityError):
-                raise utils.IntegrityError, utils.IntegrityError(*tuple(e)), sys.exc_info()[2]
-            raise utils.DatabaseError, utils.DatabaseError(*tuple(e)), sys.exc_info()[2]
+            if hasattr(x.args[0], 'code') and x.args[0].code == 1400 and not isinstance(x, IntegrityError):
+                reraise(utils.IntegrityError, utils.IntegrityError(*x.args), e[2])
+            reraise(utils.DatabaseError, utils.DatabaseError(*x.args), e[2])
 
     def fetchone(self):
         row = self.cursor.fetchone()
@@ -756,6 +771,7 @@ class CursorIterator(object):
     def next(self):
         return _rowfactory(next(self.iter), self.cursor)
 
+    __next__ = next
 
 def _rowfactory(row, cursor):
     # Cast numeric values as the appropriate Python type based upon the
@@ -809,7 +825,7 @@ def to_unicode(s):
     Convert strings to Unicode objects (and return all other data types
     unchanged).
     """
-    if isinstance(s, basestring):
+    if isinstance(s, string_types):
         return force_unicode(s)
     return s
 

@@ -1,11 +1,11 @@
 """
 FR-specific Form helpers
 """
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 import re
 
-from django.contrib.localflavor.fr.fr_department import DEPARTMENT_CHOICES
+from .fr_department import DEPARTMENT_CHOICES
 from django.core.validators import EMPTY_VALUES
 from django.forms import ValidationError
 from django.forms.fields import Field, RegexField, Select
@@ -38,11 +38,11 @@ class FRPhoneNumberField(Field):
     def clean(self, value):
         super(FRPhoneNumberField, self).clean(value)
         if value in EMPTY_VALUES:
-            return u''
+            return ''
         value = re.sub('(\.|\s)', '', smart_unicode(value))
         m = phone_digits_re.search(value)
         if m:
-            return u'%s %s %s %s %s' % (value[0:2], value[2:4], value[4:6], value[6:8], value[8:10])
+            return '%s %s %s %s %s' % (value[0:2], value[2:4], value[4:6], value[6:8], value[8:10])
         raise ValidationError(self.error_messages['invalid'])
 
 class FRDepartmentSelect(Select):

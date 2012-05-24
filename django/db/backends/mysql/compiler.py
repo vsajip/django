@@ -1,10 +1,11 @@
 from django.db.models.sql import compiler
+from django.utils.itercompat import izip_longest
 
 class SQLCompiler(compiler.SQLCompiler):
     def resolve_columns(self, row, fields=()):
         values = []
-        index_extra_select = len(self.query.extra_select.keys())
-        for value, field in map(None, row[index_extra_select:], fields):
+        index_extra_select = len(list(self.query.extra_select.keys()))
+        for value, field in izip_longest(row[index_extra_select:], fields):
             if (field and field.get_internal_type() in ("BooleanField", "NullBooleanField") and
                 value in (0, 1)):
                 value = bool(value)

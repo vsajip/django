@@ -1,7 +1,10 @@
+from __future__ import unicode_literals
+
+import base64
 import hashlib
 
-from django.dispatch import receiver
 from django.conf import settings
+from django.dispatch import receiver
 from django.test.signals import setting_changed
 from django.utils import importlib
 from django.utils.datastructures import SortedDict
@@ -9,6 +12,7 @@ from django.utils.encoding import smart_str
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.crypto import (
     pbkdf2, constant_time_compare, get_random_string)
+from django.utils.py3 import text_type
 from django.utils.translation import ugettext_noop as _
 
 
@@ -44,10 +48,10 @@ def check_password(password, encoded, setter=None, preferred='default'):
     password = smart_str(password)
     encoded = smart_str(encoded)
 
-    if len(encoded) == 32 and '$' not in encoded:
+    if len(encoded) == 32 and b'$' not in encoded:
         hasher = get_hasher('unsalted_md5')
     else:
-        algorithm = encoded.split('$', 1)[0]
+        algorithm = encoded.split(b'$', 1)[0].decode('utf-8')
         hasher = get_hasher(algorithm)
 
     must_update = hasher.algorithm != preferred.algorithm
@@ -125,7 +129,7 @@ def get_hasher(algorithm='default'):
         return HASHERS[algorithm]
 
 
-def mask_hash(hash, show=6, char="*"):
+def mask_hash(hash, show=6, char=b"*"):
     """
     Returns the given hash, with only the first ``show`` number shown. The
     rest are masked with ``char`` for security reasons.
@@ -207,22 +211,23 @@ class PBKDF2PasswordHasher(BasePasswordHasher):
 
     def encode(self, password, salt, iterations=None):
         assert password
-        assert salt and '$' not in salt
+        assert salt and b'$' not in salt
         if not iterations:
             iterations = self.iterations
         hash = pbkdf2(password, salt, iterations, digest=self.digest)
-        hash = hash.encode('base64').strip()
-        return "%s$%d$%s$%s" % (self.algorithm, iterations, salt, hash)
+        hash = base64.b64encode(hash).strip()
+        return "%s$%d$%s$%s" % (self.algorithm, iterations,
+                                salt.decode('utf-8'), hash.decode('utf-8'))
 
     def verify(self, password, encoded):
-        algorithm, iterations, salt, hash = encoded.split('$', 3)
-        assert algorithm == self.algorithm
-        encoded_2 = self.encode(password, salt, int(iterations))
+        algorithm, iterations, salt, hash = encoded.split(b'$', 3)
+        assert algorithm.decode('utf-8') == self.algorithm
+        encoded_2 = self.encode(password, salt, int(iterations)).encode('utf-8')
         return constant_time_compare(encoded, encoded_2)
 
     def safe_summary(self, encoded):
-        algorithm, iterations, salt, hash = encoded.split('$', 3)
-        assert algorithm == self.algorithm
+        algorithm, iterations, salt, hash = encoded.split(b'$', 3)
+        assert algorithm.decode('utf-8') == self.algorithm
         return SortedDict([
             (_('algorithm'), algorithm),
             (_('iterations'), iterations),
@@ -262,17 +267,17 @@ class BCryptPasswordHasher(BasePasswordHasher):
     def encode(self, password, salt):
         bcrypt = self._load_library()
         data = bcrypt.hashpw(password, salt)
-        return "%s$%s" % (self.algorithm, data)
+        return "%s$%s" % (self.algorithm, data.decode('utf-8'))
 
     def verify(self, password, encoded):
-        algorithm, data = encoded.split('$', 1)
-        assert algorithm == self.algorithm
+        algorithm, data = encoded.split(b'$', 1)
+        assert algorithm.decode('utf-8') == self.algorithm
         bcrypt = self._load_library()
         return constant_time_compare(data, bcrypt.hashpw(password, data))
 
     def safe_summary(self, encoded):
-        algorithm, empty, algostr, work_factor, data = encoded.split('$', 4)
-        assert algorithm == self.algorithm
+        algorithm, empty, algostr, work_factor, data = encoded.split(b'$', 4)
+        assert algorithm.decode('utf-8') == self.algorithm
         salt, checksum = data[:22], data[22:]
         return SortedDict([
             (_('algorithm'), algorithm),
@@ -290,19 +295,19 @@ class SHA1PasswordHasher(BasePasswordHasher):
 
     def encode(self, password, salt):
         assert password
-        assert salt and '$' not in salt
+        assert salt and b'$' not in salt
         hash = hashlib.sha1(salt + password).hexdigest()
-        return "%s$%s$%s" % (self.algorithm, salt, hash)
+        return "%s$%s$%s" % (self.algorithm, salt.decode('utf-8'), hash)
 
     def verify(self, password, encoded):
-        algorithm, salt, hash = encoded.split('$', 2)
-        assert algorithm == self.algorithm
-        encoded_2 = self.encode(password, salt)
+        algorithm, salt, hash = encoded.split(b'$', 2)
+        assert algorithm.decode('utf-8') == self.algorithm
+        encoded_2 = self.encode(password, salt).encode('utf-8')
         return constant_time_compare(encoded, encoded_2)
 
     def safe_summary(self, encoded):
-        algorithm, salt, hash = encoded.split('$', 2)
-        assert algorithm == self.algorithm
+        algorithm, salt, hash = encoded.split(b'$', 2)
+        assert algorithm.decode('utf-8') == self.algorithm
         return SortedDict([
             (_('algorithm'), algorithm),
             (_('salt'), mask_hash(salt, show=2)),
@@ -318,19 +323,19 @@ class MD5PasswordHasher(BasePasswordHasher):
 
     def encode(self, password, salt):
         assert password
-        assert salt and '$' not in salt
+        assert salt and b'$' not in salt
         hash = hashlib.md5(salt + password).hexdigest()
-        return "%s$%s$%s" % (self.algorithm, salt, hash)
+        return "%s$%s$%s" % (self.algorithm, salt.decode('utf-8'), hash)
 
     def verify(self, password, encoded):
-        algorithm, salt, hash = encoded.split('$', 2)
-        assert algorithm == self.algorithm
-        encoded_2 = self.encode(password, salt)
+        algorithm, salt, hash = encoded.split(b'$', 2)
+        assert algorithm.decode('utf-8') == self.algorithm
+        encoded_2 = self.encode(password, salt).encode('utf-8')
         return constant_time_compare(encoded, encoded_2)
 
     def safe_summary(self, encoded):
-        algorithm, salt, hash = encoded.split('$', 2)
-        assert algorithm == self.algorithm
+        algorithm, salt, hash = encoded.split(b'$', 2)
+        assert algorithm.decode('utf-8') == self.algorithm
         return SortedDict([
             (_('algorithm'), algorithm),
             (_('salt'), mask_hash(salt, show=2)),
@@ -356,7 +361,7 @@ class UnsaltedMD5PasswordHasher(BasePasswordHasher):
         return hashlib.md5(password).hexdigest()
 
     def verify(self, password, encoded):
-        encoded_2 = self.encode(password, '')
+        encoded_2 = self.encode(password, b'').encode('utf-8')
         return constant_time_compare(encoded, encoded_2)
 
     def safe_summary(self, encoded):
@@ -381,19 +386,30 @@ class CryptPasswordHasher(BasePasswordHasher):
     def encode(self, password, salt):
         crypt = self._load_library()
         assert len(salt) == 2
+        #django3: crypt expects str, not bytes
+        if not isinstance(salt, text_type):
+            salt = salt.decode('utf-8')
+        if not isinstance(password, text_type):
+            password = password.decode('utf-8')
         data = crypt.crypt(password, salt)
         # we don't need to store the salt, but Django used to do this
+        if not isinstance(data, text_type):
+            data = data.decode('utf-8')
         return "%s$%s$%s" % (self.algorithm, '', data)
 
     def verify(self, password, encoded):
         crypt = self._load_library()
-        algorithm, salt, data = encoded.split('$', 2)
-        assert algorithm == self.algorithm
+        algorithm, salt, data = encoded.split(b'$', 2)
+        assert algorithm.decode('utf-8') == self.algorithm
+        if not isinstance(data, text_type):
+            data = data.decode('utf-8')
+        if not isinstance(password, text_type):
+            password = password.decode('utf-8')
         return constant_time_compare(data, crypt.crypt(password, data))
 
     def safe_summary(self, encoded):
-        algorithm, salt, data = encoded.split('$', 2)
-        assert algorithm == self.algorithm
+        algorithm, salt, data = encoded.split(b'$', 2)
+        assert algorithm.decode('utf-8') == self.algorithm
         return SortedDict([
             (_('algorithm'), algorithm),
             (_('salt'), salt),

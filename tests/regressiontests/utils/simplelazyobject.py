@@ -1,9 +1,12 @@
+from __future__ import unicode_literals
+
 import copy
 import pickle
+import sys
 
 from django.utils.unittest import TestCase
 from django.utils.functional import SimpleLazyObject, empty
-
+from django.utils.py3 import text_type, PY3, n
 
 class _ComplexObject(object):
     def __init__(self, name):
@@ -16,15 +19,18 @@ class _ComplexObject(object):
         return hash(self.name)
 
     def __str__(self):
-        return "I am _ComplexObject(%r)" % self.name
+        if PY3:
+            return self.__unicode__()
+        else:
+            return "I am _ComplexObject(%r)" % self.name
 
     def __unicode__(self):
-        return unicode(self.name)
+        return text_type(self.name)
 
     def __repr__(self):
         return "_ComplexObject(%r)" % self.name
 
-complex_object = lambda: _ComplexObject("joe")
+complex_object = lambda: _ComplexObject(n("joe"))
 
 class TestUtilsSimpleLazyObject(TestCase):
     """
@@ -51,10 +57,11 @@ class TestUtilsSimpleLazyObject(TestCase):
         self.assertTrue("SimpleLazyObject" in repr(SimpleLazyObject(complex_object)))
 
     def test_str(self):
-        self.assertEqual("I am _ComplexObject('joe')", str(SimpleLazyObject(complex_object)))
+        if not PY3:
+            self.assertEqual("I am _ComplexObject('joe')", str(SimpleLazyObject(complex_object)))
 
     def test_unicode(self):
-        self.assertEqual(u"joe", unicode(SimpleLazyObject(complex_object)))
+        self.assertEqual("joe", text_type(SimpleLazyObject(complex_object)))
 
     def test_class(self):
         # This is important for classes that use __class__ in things like
@@ -101,8 +108,14 @@ class TestUtilsSimpleLazyObject(TestCase):
     def test_pickle_complex(self):
         # See ticket #16563
         x = SimpleLazyObject(complex_object)
-        pickled = pickle.dumps(x)
+        # django3: on Python 3.3 with default protocol,
+        # we get an error: "args[0] from __newobj__ args has the wrong class"
+        if sys.version_info[:2] < (3, 3):
+            protocol = None
+        else:
+            protocol = 1
+        pickled = pickle.dumps(x, protocol)
         unpickled = pickle.loads(pickled)
         self.assertEqual(unpickled, x)
-        self.assertEqual(unicode(unpickled), unicode(x))
+        self.assertEqual(text_type(unpickled), text_type(x))
         self.assertEqual(unpickled.name, x.name)

@@ -1,10 +1,9 @@
-import urlparse
-
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, QueryDict
 from django.template.response import TemplateResponse
 from django.utils.http import base36_to_int
+from django.utils.py3 import urlparse, urlunparse
 from django.utils.translation import ugettext as _
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.cache import never_cache
@@ -34,7 +33,7 @@ def login(request, template_name='registration/login.html',
     if request.method == "POST":
         form = authentication_form(data=request.POST)
         if form.is_valid():
-            netloc = urlparse.urlparse(redirect_to)[1]
+            netloc = urlparse(redirect_to)[1]
 
             # Use default setting if redirect_to is empty
             if not redirect_to:
@@ -80,7 +79,7 @@ def logout(request, next_page=None,
     auth_logout(request)
     redirect_to = request.REQUEST.get(redirect_field_name, '')
     if redirect_to:
-        netloc = urlparse.urlparse(redirect_to)[1]
+        netloc = urlparse(redirect_to)[1]
         # Security check -- don't allow redirection to a different host.
         if not (netloc and netloc != request.get_host()):
             return HttpResponseRedirect(redirect_to)
@@ -116,13 +115,15 @@ def redirect_to_login(next, login_url=None,
     if not login_url:
         login_url = settings.LOGIN_URL
 
-    login_url_parts = list(urlparse.urlparse(login_url))
+    # django3: force str() on login_url, which, if a proxy,
+    # causes problems in py3
+    login_url_parts = list(urlparse(str(login_url)))
     if redirect_field_name:
         querystring = QueryDict(login_url_parts[4], mutable=True)
         querystring[redirect_field_name] = next
         login_url_parts[4] = querystring.urlencode(safe='/')
 
-    return HttpResponseRedirect(urlparse.urlunparse(login_url_parts))
+    return HttpResponseRedirect(urlunparse(login_url_parts))
 
 # 4 views for password reset:
 # - password_reset sends the mail

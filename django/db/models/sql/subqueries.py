@@ -8,9 +8,9 @@ from django.db.models.sql.constants import *
 from django.db.models.sql.datastructures import Date
 from django.db.models.sql.query import Query
 from django.db.models.sql.where import AND, Constraint
-from django.utils.functional import Promise
 from django.utils.encoding import force_unicode
-
+from django.utils.functional import Promise
+from django.utils.py3 import iteritems
 
 __all__ = ['DeleteQuery', 'UpdateQuery', 'InsertQuery', 'DateQuery',
         'AggregateQuery']
@@ -86,7 +86,7 @@ class UpdateQuery(Query):
         querysets.
         """
         values_seq = []
-        for name, val in values.iteritems():
+        for name, val in iteritems(values):
             field, model, direct, m2m = self.model._meta.get_field_by_name(name)
             if not direct or m2m:
                 raise FieldError('Cannot update model field %r (only non-relations and foreign keys permitted).' % field)
@@ -128,7 +128,7 @@ class UpdateQuery(Query):
         if not self.related_updates:
             return []
         result = []
-        for model, values in self.related_updates.iteritems():
+        for model, values in iteritems(self.related_updates):
             query = UpdateQuery(model)
             query.values = values
             if self.related_ids is not None:

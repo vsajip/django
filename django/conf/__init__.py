@@ -13,8 +13,9 @@ import warnings
 
 from django.conf import global_settings
 from django.core.exceptions import ImproperlyConfigured
-from django.utils.functional import LazyObject, empty
 from django.utils import importlib
+from django.utils.functional import LazyObject, empty
+from django.utils.py3 import string_types
 
 ENVIRONMENT_VARIABLE = "DJANGO_SETTINGS_MODULE"
 
@@ -73,7 +74,7 @@ class BaseSettings(object):
         elif name == "ADMIN_MEDIA_PREFIX":
             warnings.warn("The ADMIN_MEDIA_PREFIX setting has been removed; "
                           "use STATIC_URL instead.", DeprecationWarning)
-        elif name == "ALLOWED_INCLUDE_ROOTS" and isinstance(value, basestring):
+        elif name == "ALLOWED_INCLUDE_ROOTS" and isinstance(value, string_types):
             raise ValueError("The ALLOWED_INCLUDE_ROOTS setting must be set "
                 "to a tuple, not a string.")
         object.__setattr__(self, name, value)
@@ -102,7 +103,7 @@ class Settings(BaseSettings):
             if setting == setting.upper():
                 setting_value = getattr(mod, setting)
                 if setting in tuple_settings and \
-                        isinstance(setting_value, basestring):
+                        isinstance(setting_value, string_types):
                     setting_value = (setting_value,) # In case the user forgot the comma.
                 setattr(self, setting, setting_value)
 
@@ -154,7 +155,7 @@ class UserSettingsHolder(BaseSettings):
         return getattr(self.default_settings, name)
 
     def __dir__(self):
-        return self.__dict__.keys() + dir(self.default_settings)
+        return list(self.__dict__.keys()) + dir(self.default_settings)
 
     # For Python < 2.6:
     __members__ = property(lambda self: self.__dir__())

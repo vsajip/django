@@ -1,13 +1,13 @@
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.comments.managers import CommentManager
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
-from django.db import models
 from django.core import urlresolvers
-from django.utils.translation import ugettext_lazy as _
+from django.db import models
 from django.utils import timezone
-from django.conf import settings
+from django.utils.translation import ugettext_lazy as _
 
 COMMENT_MAX_LENGTH = getattr(settings,'COMMENT_MAX_LENGTH',3000)
 

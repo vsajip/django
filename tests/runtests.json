@@ -1,0 +1,48 @@
+{
+    "version": 1,
+    "disable_existing_loggers": true,
+    "formatters": {
+        "verbose": {
+            "format": "%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s"
+        },
+        "simple": {
+            "format": "%(levelname)s %(name)s %(lineno)d %(message)s"
+        }
+    },
+    "handlers": {
+        "null": {
+            "level":"DEBUG",
+            "class":"django.utils.log.NullHandler"
+        },
+        "file":{
+            "level":"DEBUG",
+            "class":"logging.FileHandler",
+            "filename": "runtests.log",
+            "mode": "w",
+            "formatter": "simple"
+        }
+    },
+    "loggers": {
+        "django": {
+            "handlers":["null"],
+            "level": "DEBUG"
+        },
+        "django.db.backends": {
+            "handlers":["null"],
+            "level": "WARNING"
+        },
+        "regressiontests": {
+            "handlers":["null"],
+            "level": "DEBUG"
+        },
+        "modeltests": {
+            "handlers":["null"],
+            "level": "DEBUG"
+        }
+    },
+    "root": {
+        "level": "DEBUG",
+        "handlers":["file"]
+    }
+}
+

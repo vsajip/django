@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import sys
 
 from django import http
@@ -5,6 +7,7 @@ from django.core import signals
 from django.utils.encoding import force_unicode
 from django.utils.importlib import import_module
 from django.utils.log import getLogger
+from django.utils.py3 import func_name_name, reraise
 
 logger = getLogger('django.request')
 
@@ -123,7 +126,7 @@ class BaseHandler(object):
                 # Complain if the view returned None (a common error).
                 if response is None:
                     try:
-                        view_name = callback.func_name # If it's a function
+                        view_name = getattr(callback, func_name_name) # If it's a function
                     except AttributeError:
                         view_name = callback.__class__.__name__ + '.__call__' # If it's a class
                     raise ValueError("The view %s.%s didn't return an HttpResponse object." % (callback.__module__, view_name))
@@ -222,7 +225,7 @@ class BaseHandler(object):
 
         # If Http500 handler is not installed, re-raise last exception
         if resolver.urlconf_module is None:
-            raise exc_info[1], None, exc_info[2]
+            reraise(*exc_info)
         # Return an HttpResponse that displays a friendly error message.
         callback, param_dict = resolver.resolve500()
         return callback(request, **param_dict)
@@ -254,9 +257,9 @@ def get_script_name(environ):
     # rewrites. Unfortunately not every Web server (lighttpd!) passes this
     # information through all the time, so FORCE_SCRIPT_NAME, above, is still
     # needed.
-    script_url = environ.get('SCRIPT_URL', u'')
+    script_url = environ.get('SCRIPT_URL', '')
     if not script_url:
-        script_url = environ.get('REDIRECT_URL', u'')
+        script_url = environ.get('REDIRECT_URL', '')
     if script_url:
         return force_unicode(script_url[:-len(environ.get('PATH_INFO', ''))])
-    return force_unicode(environ.get('SCRIPT_NAME', u''))
+    return force_unicode(environ.get('SCRIPT_NAME', ''))

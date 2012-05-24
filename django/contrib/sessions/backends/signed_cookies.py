@@ -1,13 +1,8 @@
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
-
 from django.conf import settings
 from django.core import signing
 
 from django.contrib.sessions.backends.base import SessionBase
-
+from django.utils.py3 import pickle
 
 class PickleSerializer(object):
     """

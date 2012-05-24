@@ -61,6 +61,10 @@ class ExpressionNode(tree.Node):
     def __div__(self, other):
         return self._combine(other, self.DIV, False)
 
+    __truediv__ = __div__
+
+    __floordiv__ = __div__
+
     def __mod__(self, other):
         return self._combine(other, self.MOD, False)
 
@@ -81,6 +85,10 @@ class ExpressionNode(tree.Node):
 
     def __rdiv__(self, other):
         return self._combine(other, self.DIV, True)
+
+    __rfloordiv__ = __rdiv__
+
+    __rtruediv__ = __rdiv__
 
     def __rmod__(self, other):
         return self._combine(other, self.MOD, True)

@@ -24,7 +24,7 @@ class ProxyModelInheritanceTests(TransactionTestCase):
     def setUp(self):
         self.old_sys_path = sys.path[:]
         sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-        map(load_app, settings.INSTALLED_APPS)
+        list(map(load_app, settings.INSTALLED_APPS))
 
     def tearDown(self):
         sys.path = self.old_sys_path

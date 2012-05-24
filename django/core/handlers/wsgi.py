@@ -1,5 +1,6 @@
+from __future__ import unicode_literals
+
 import sys
-from io import BytesIO
 from threading import Lock
 
 from django import http
@@ -9,6 +10,7 @@ from django.core.urlresolvers import set_script_prefix
 from django.utils import datastructures
 from django.utils.encoding import force_unicode, iri_to_uri
 from django.utils.log import getLogger
+from django.utils.py3 import n, BytesIO
 
 logger = getLogger('django.request')
 
@@ -125,7 +127,7 @@ class LimitedStream(object):
 class WSGIRequest(http.HttpRequest):
     def __init__(self, environ):
         script_name = base.get_script_name(environ)
-        path_info = force_unicode(environ.get('PATH_INFO', u'/'))
+        path_info = force_unicode(environ.get('PATH_INFO', '/'))
         if not path_info or path_info == script_name:
             # Sometimes PATH_INFO exists, but is empty (e.g. accessing
             # the SCRIPT_NAME URL without a trailing slash). We really need to
@@ -134,7 +136,7 @@ class WSGIRequest(http.HttpRequest):
             #
             # (The comparison of path_info to script_name is to work around an
             # apparent bug in flup 1.0.1. See Django ticket #8490).
-            path_info = u'/'
+            path_info = '/'
         self.environ = environ
         self.path_info = path_info
         self.path = '%s%s' % (script_name, path_info)
@@ -230,7 +232,7 @@ class WSGIHandler(base.BaseHandler):
                 logger.warning('Bad Request (UnicodeDecodeError)',
                     exc_info=sys.exc_info(),
                     extra={
-                        'status_code': 400,
+                        n('status_code'): 400,
                     }
                 )
                 response = http.HttpResponseBadRequest()
@@ -247,5 +249,5 @@ class WSGIHandler(base.BaseHandler):
         response_headers = [(str(k), str(v)) for k, v in response.items()]
         for c in response.cookies.values():
             response_headers.append(('Set-Cookie', str(c.output(header=''))))
-        start_response(status, response_headers)
+        start_response(n(status), response_headers)
         return response

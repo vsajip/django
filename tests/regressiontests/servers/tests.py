@@ -2,12 +2,13 @@
 Tests for django.core.servers.
 """
 import os
-import urllib2
 
 from django.core.exceptions import ImproperlyConfigured
-from django.test import LiveServerTestCase
+from django.core.handlers.wsgi import WSGIHandler
 from django.core.servers.basehttp import WSGIServerException
+from django.test import LiveServerTestCase
 from django.test.utils import override_settings
+from django.utils.py3 import urllib2
 
 from .models import Person
 
@@ -141,7 +142,7 @@ class LiveServerDatabase(LiveServerBase):
         Refs #2879.
         """
         f = self.urlopen('/model_view/')
-        self.assertEqual(f.read().splitlines(), ['jane', 'robert'])
+        self.assertEqual(f.read().splitlines(), [b'jane', b'robert'])
 
     def test_database_writes(self):
         """

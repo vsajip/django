@@ -30,10 +30,7 @@
 
 import os, sys, time, signal
 
-try:
-    import thread
-except ImportError:
-    import dummy_thread as thread
+from django.utils.py3 import thread
 
 # This import does nothing, but it's necessary to avoid some race conditions
 # in the threading module. See http://code.djangoproject.com/ticket/2330 .
@@ -54,7 +51,7 @@ _win = (sys.platform == "win32")
 
 def code_changed():
     global _mtimes, _win
-    for filename in filter(lambda v: v, map(lambda m: getattr(m, "__file__", None), sys.modules.values())):
+    for filename in [v for v in [getattr(m, "__file__", None) for m in list(sys.modules.values())] if v]:
         if filename.endswith(".pyc") or filename.endswith(".pyo"):
             filename = filename[:-1]
         if filename.endswith("$py.class"):

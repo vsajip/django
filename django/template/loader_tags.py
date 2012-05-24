@@ -2,6 +2,7 @@ from django.conf import settings
 from django.template.base import TemplateSyntaxError, Library, Node, TextNode,\
     token_kwargs, Variable
 from django.template.loader import get_template
+from django.utils.py3 import iteritems
 from django.utils.safestring import mark_safe
 
 register = Library()
@@ -17,7 +18,7 @@ class BlockContext(object):
         self.blocks = {}
 
     def add_blocks(self, blocks):
-        for name, block in blocks.iteritems():
+        for name, block in iteritems(blocks):
             if name in self.blocks:
                 self.blocks[name].insert(0, block)
             else:
@@ -130,7 +131,7 @@ class BaseIncludeNode(Node):
 
     def render_template(self, template, context):
         values = dict([(name, var.resolve(context)) for name, var
-                       in self.extra_context.iteritems()])
+                       in iteritems(self.extra_context)])
         if self.isolated_context:
             return template.render(context.new(values))
         context.update(values)

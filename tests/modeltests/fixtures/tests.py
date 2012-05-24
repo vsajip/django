@@ -1,11 +1,10 @@
 from __future__ import absolute_import
 
-import StringIO
-
 from django.contrib.sites.models import Site
 from django.core import management
 from django.db import connection
 from django.test import TestCase, TransactionTestCase, skipUnlessDBFeature
+from django.utils.py3 import StringIO
 
 from .models import Article, Book, Spy, Tag, Visa
 
@@ -26,7 +25,7 @@ class FixtureLoadingTests(TestCase):
 
     def _dumpdata_assert(self, args, output, format='json', natural_keys=False,
                          use_base_manager=False, exclude_list=[]):
-        new_io = StringIO.StringIO()
+        new_io = StringIO()
         management.call_command('dumpdata', *args, **{'format':format,
                                                       'stdout':new_io,
                                                       'stderr':new_io,
@@ -43,7 +42,7 @@ class FixtureLoadingTests(TestCase):
         ])
 
     def test_loading_and_dumping(self):
-        new_io = StringIO.StringIO()
+        new_io = StringIO()
 
         Site.objects.all().delete()
         # Load fixture 1. Single JSON file, with two objects.
@@ -232,7 +231,7 @@ class FixtureLoadingTests(TestCase):
 
     def test_ambiguous_compressed_fixture(self):
         # The name "fixture5" is ambigous, so loading it will raise an error
-        new_io = StringIO.StringIO()
+        new_io = StringIO()
         management.call_command('loaddata', 'fixture5', verbosity=0, stderr=new_io, commit=False)
         output = new_io.getvalue().strip().split('\n')
         self.assertEqual(len(output), 1)
@@ -258,7 +257,7 @@ class FixtureLoadingTests(TestCase):
         # is closed at the end of each test.
         if connection.vendor == 'mysql':
             connection.cursor().execute("SET sql_mode = 'TRADITIONAL'")
-        new_io = StringIO.StringIO()
+        new_io = StringIO()
         management.call_command('loaddata', 'invalid.json', verbosity=0, stderr=new_io, commit=False)
         output = new_io.getvalue().strip().split('\n')
         self.assertRegexpMatches(output[-1], "Error: Could not load fixtures.Article\(pk=1\): .*$")
@@ -300,7 +299,7 @@ class FixtureLoadingTests(TestCase):
 
 class FixtureTransactionTests(TransactionTestCase):
     def _dumpdata_assert(self, args, output, format='json'):
-        new_io = StringIO.StringIO()
+        new_io = StringIO()
         management.call_command('dumpdata', *args, **{'format':format, 'stdout':new_io})
         command_output = new_io.getvalue().strip()
         self.assertEqual(command_output, output)
@@ -316,7 +315,7 @@ class FixtureTransactionTests(TransactionTestCase):
 
         # Try to load fixture 2 using format discovery; this will fail
         # because there are two fixture2's in the fixtures directory
-        new_io = StringIO.StringIO()
+        new_io = StringIO()
         management.call_command('loaddata', 'fixture2', verbosity=0, stderr=new_io)
         output = new_io.getvalue().strip().split('\n')
         self.assertEqual(len(output), 1)

@@ -1,14 +1,16 @@
 """Translation helper functions."""
 
+from __future__ import unicode_literals
+
 import locale
 import os
 import re
 import sys
 import gettext as gettext_module
-from io import BytesIO
 from threading import local
 
 from django.utils.importlib import import_module
+from django.utils.py3 import StringIO, PY3, n
 from django.utils.safestring import mark_safe, SafeData
 
 
@@ -25,7 +27,7 @@ _default = None
 _accepted = {}
 
 # magic gettext number to separate context from message
-CONTEXT_SEPARATOR = u"\x04"
+CONTEXT_SEPARATOR = "\x04"
 
 # Format of Accept-Language header values. From RFC 2616, section 14.4 and 3.9.
 accept_language_re = re.compile(r'''
@@ -258,12 +260,15 @@ def do_translate(message, translation_function):
 def gettext(message):
     return do_translate(message, 'gettext')
 
-def ugettext(message):
-    return do_translate(message, 'ugettext')
+if not PY3:
+    def ugettext(message):
+        return do_translate(message, 'ugettext')
+else:
+    ugettext = gettext
 
 def pgettext(context, message):
-    result = do_translate(
-        u"%s%s%s" % (context, CONTEXT_SEPARATOR, message), 'ugettext')
+    result = ugettext(
+        "%s%s%s" % (context, CONTEXT_SEPARATOR, message))
     if CONTEXT_SEPARATOR in result:
         # Translation not found
         result = message
@@ -302,14 +307,20 @@ def ungettext(singular, plural, number):
     plural, based on the number.
     """
     return do_ntranslate(singular, plural, number, 'ungettext')
+if PY3:
+    ungettext = ngettext
 
 def npgettext(context, singular, plural, number):
-    result = do_ntranslate(u"%s%s%s" % (context, CONTEXT_SEPARATOR, singular),
-                           u"%s%s%s" % (context, CONTEXT_SEPARATOR, plural),
-                           number, 'ungettext')
+    if PY3:
+        ung = 'ngettext'
+    else:
+        ung = 'ungettext'
+    result = do_ntranslate("%s%s%s" % (context, CONTEXT_SEPARATOR, singular),
+                           "%s%s%s" % (context, CONTEXT_SEPARATOR, plural),
+                           number, ung)
     if CONTEXT_SEPARATOR in result:
         # Translation not found
-        result = do_ntranslate(singular, plural, number, 'ungettext')
+        result = do_ntranslate(singular, plural, number, ung)
     return result
 
 def all_locale_paths():
@@ -438,7 +449,7 @@ def templatize(src, origin=None):
     """
     from django.template import (Lexer, TOKEN_TEXT, TOKEN_VAR, TOKEN_BLOCK,
             TOKEN_COMMENT, TRANSLATOR_COMMENT_MARK)
-    out = BytesIO()
+    out = StringIO()
     message_context = None
     intrans = False
     inplural = False
@@ -449,16 +460,16 @@ def templatize(src, origin=None):
     for t in Lexer(src, origin).tokenize():
         if incomment:
             if t.token_type == TOKEN_BLOCK and t.contents == 'endcomment':
-                content = b''.join(comment)
+                content = n('').join(comment)
                 translators_comment_start = None
                 for lineno, line in enumerate(content.splitlines(True)):
-                    if line.lstrip().startswith(TRANSLATOR_COMMENT_MARK):
+                    if line.lstrip().startswith(n(TRANSLATOR_COMMENT_MARK)):
                         translators_comment_start = lineno
                 for lineno, line in enumerate(content.splitlines(True)):
                     if translators_comment_start is not None and lineno >= translators_comment_start:
-                        out.write(b' # %s' % line)
+                        out.write(n(' # %s') % line)
                     else:
-                        out.write(b' #\n')
+                        out.write(' #\n')
                 incomment = False
                 comment = []
             else:
@@ -470,18 +481,18 @@ def templatize(src, origin=None):
                 if endbmatch:
                     if inplural:
                         if message_context:
-                            out.write(b' npgettext(%r, %r, %r,count) ' % (message_context, ''.join(singular), ''.join(plural)))
+                            out.write(' npgettext(%r, %r, %r,count) ' % (message_context, ''.join(singular), ''.join(plural)))
                         else:
-                            out.write(b' ngettext(%r, %r, count) ' % (''.join(singular), ''.join(plural)))
+                            out.write(' ngettext(%r, %r, count) ' % (''.join(singular), ''.join(plural)))
                         for part in singular:
                             out.write(blankout(part, 'S'))
                         for part in plural:
                             out.write(blankout(part, 'P'))
                     else:
                         if message_context:
-                            out.write(b' pgettext(%r, %r) ' % (message_context, ''.join(singular)))
+                            out.write(' pgettext(%r, %r) ' % (message_context, ''.join(singular)))
                         else:
-                            out.write(b' gettext(%r) ' % ''.join(singular))
+                            out.write(' gettext(%r) ' % ''.join(singular))
                         for part in singular:
                             out.write(blankout(part, 'S'))
                     message_context = None
@@ -527,10 +538,10 @@ def templatize(src, origin=None):
                             message_context = message_context.strip('"')
                         elif message_context[0] == "'":
                             message_context = message_context.strip("'")
-                        out.write(b' pgettext(%r, %r) ' % (message_context, g))
+                        out.write(' pgettext(%r, %r) ' % (message_context, g))
                         message_context = None
                     else:
-                        out.write(b' gettext(%r) ' % g)
+                        out.write(' gettext(%r) ' % g)
                 elif bmatch:
                     for fmatch in constant_re.findall(t.contents):
                         out.write(' _(%s) ' % fmatch)
@@ -548,7 +559,7 @@ def templatize(src, origin=None):
                     plural = []
                 elif cmatches:
                     for cmatch in cmatches:
-                        out.write(b' _(%s) ' % cmatch)
+                        out.write(' _(%s) ' % cmatch)
                 elif t.contents == 'comment':
                     incomment = True
                 else:
@@ -557,14 +568,14 @@ def templatize(src, origin=None):
                 parts = t.contents.split('|')
                 cmatch = constant_re.match(parts[0])
                 if cmatch:
-                    out.write(b' _(%s) ' % cmatch.group(1))
+                    out.write(' _(%s) ' % cmatch.group(1))
                 for p in parts[1:]:
                     if p.find(':_(') >= 0:
-                        out.write(b' %s ' % p.split(':',1)[1])
+                        out.write(' %s ' % p.split(':',1)[1])
                     else:
                         out.write(blankout(p, 'F'))
             elif t.token_type == TOKEN_COMMENT:
-                out.write(b' # %s' % t.contents)
+                out.write(' # %s' % t.contents)
             else:
                 out.write(blankout(t.contents, 'X'))
     return out.getvalue()

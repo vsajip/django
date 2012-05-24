@@ -13,13 +13,13 @@ import sys
 
 from django import conf, bin, get_version
 from django.conf import settings
+from django.db import connection
+from django.test import LiveServerTestCase
 from django.test.simple import DjangoTestSuiteRunner
 from django.utils import unittest
-from django.test import LiveServerTestCase
+from django.utils.py3 import PY3
 
 test_dir = os.path.dirname(os.path.dirname(__file__))
-expected_query_re = re.compile(r'CREATE TABLE [`"]admin_scripts_article[`"]', re.IGNORECASE)
-
 
 class AdminScriptTestCase(unittest.TestCase):
     def write_settings(self, filename, apps=None, is_dir=False, sdict=None):
@@ -72,6 +72,10 @@ class AdminScriptTestCase(unittest.TestCase):
                 os.remove(full_name + 'c')
         except OSError:
             pass
+        # django3: also remove a __pycache__ directory, if it exists
+        cache_name = os.path.join(test_dir, '__pycache__')
+        if os.path.isdir(cache_name):
+            shutil.rmtree(cache_name)
 
     def _ext_backend_paths(self):
         """
@@ -161,6 +165,8 @@ class AdminScriptTestCase(unittest.TestCase):
 
     def assertOutput(self, stream, msg):
         "Utility assertion: assert that the given message exists in the output"
+        if PY3: 
+            stream = str(stream, encoding='utf8')
         self.assertTrue(msg in stream, "'%s' does not match actual output text '%s'" % (msg, stream))
 
     def assertNotInOutput(self, stream, msg):
@@ -859,14 +865,18 @@ class ManageAlternateSettings(AdminScriptTestCase):
         "alternate: manage.py builtin commands work with settings provided as argument"
         args = ['sqlall', '--settings=alternate_settings', 'admin_scripts']
         out, err = self.run_manage(args)
-        self.assertRegexpMatches(out, expected_query_re)
+        expected = ('create table %s'
+                    % connection.ops.quote_name('admin_scripts_article')).encode('utf-8')
+        self.assertTrue(expected.lower() in out.lower())
         self.assertNoOutput(err)
 
     def test_builtin_with_environment(self):
         "alternate: manage.py builtin commands work if settings are provided in the environment"
         args = ['sqlall', 'admin_scripts']
         out, err = self.run_manage(args, 'alternate_settings')
-        self.assertRegexpMatches(out, expected_query_re)
+        expected = ('create table %s'
+                    % connection.ops.quote_name('admin_scripts_article')).encode('utf-8')
+        self.assertTrue(expected.lower() in out.lower())
         self.assertNoOutput(err)
 
     def test_builtin_with_bad_settings(self):
@@ -1001,7 +1011,11 @@ class ManageSettingsWithImportError(AdminScriptTestCase):
         args = ['sqlall', 'admin_scripts']
         out, err = self.run_manage(args)
         self.assertNoOutput(out)
-        self.assertOutput(err, "No module named foo42bar")
+        if sys.version_info[:2] < (3, 3):
+            s = "No module named foo42bar"
+        else:
+            s = "No module named 'foo42bar'"
+        self.assertOutput(err, s)
 
 class ManageValidate(AdminScriptTestCase):
     def tearDown(self):
@@ -1013,7 +1027,11 @@ class ManageValidate(AdminScriptTestCase):
         args = ['validate']
         out, err = self.run_manage(args)
         self.assertNoOutput(out)
-        self.assertOutput(err, 'No module named admin_scriptz')
+        if sys.version_info[:2] < (3, 3):
+            s = 'No module named admin_scriptz'
+        else:
+            s = "No module named 'admin_scriptz"
+        self.assertOutput(err, s)
 
     def test_broken_app(self):
         "manage.py validate reports an ImportError if an app's models.py raises one on import"
@@ -1191,12 +1209,12 @@ class CommandTypes(AdminScriptTestCase):
         "help --commands shows the list of all available commands"
         args = ['help', '--commands']
         out, err = self.run_manage(args)
-        self.assertNotInOutput(out, 'Usage:')
-        self.assertNotInOutput(out, 'Options:')
-        self.assertNotInOutput(out, '[django]')
+        self.assertNotInOutput(out, b'Usage:')
+        self.assertNotInOutput(out, b'Options:')
+        self.assertNotInOutput(out, b'[django]')
         self.assertOutput(out, 'startapp')
         self.assertOutput(out, 'startproject')
-        self.assertNotInOutput(out, '\n\n')
+        self.assertNotInOutput(out, b'\n\n')
 
     def test_help_alternative(self):
         "--help is equivalent to help"

@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import urllib
 
 from django.db import models
@@ -7,7 +9,7 @@ from django.contrib.sites.models import Site
 from django.http import HttpRequest, Http404
 from django.test import TestCase
 from django.utils.encoding import smart_str
-
+from django.utils.py3 import quote, text_type
 
 class FooWithoutUrl(models.Model):
     """
@@ -26,7 +28,7 @@ class FooWithUrl(FooWithoutUrl):
     """
 
     def get_absolute_url(self):
-        return "/users/%s/" % urllib.quote(smart_str(self.name))
+        return "/users/%s/" % quote(smart_str(self.name))
 
 class FooWithBrokenAbsoluteUrl(FooWithoutUrl):
     """
@@ -181,4 +183,4 @@ class ContentTypesTests(TestCase):
             app_label = 'contenttypes',
             model = 'OldModel',
         )
-        self.assertEqual(unicode(ct), u'Old model')
+        self.assertEqual(text_type(ct), 'Old model')

@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 import re
 import types
 from datetime import datetime, timedelta
 
 from django.core.exceptions import ValidationError
 from django.core.validators import *
+from django.utils.py3 import py3_prefix, PY3, n
 from django.utils.unittest import TestCase
 
 
@@ -43,7 +46,6 @@ TEST_DATA = (
     (validate_slug, ' text ', ValidationError),
     (validate_slug, ' ', ValidationError),
     (validate_slug, 'some@mail.com', ValidationError),
-    (validate_slug, '你好', ValidationError),
     (validate_slug, '\n', ValidationError),
 
     (validate_ipv4_address, '1.1.1.1', None),
@@ -153,6 +155,10 @@ TEST_DATA = (
 
     (RegexValidator('x'), 'y', ValidationError),
     (RegexValidator(re.compile('x')), 'y', ValidationError),
+    # django3: The following is not valid for PY3 - it's skipped below
+    # and was moved to the end so that numbering of test methods is
+    # least affected
+    (validate_slug, '\u4f60\u597d', ValidationError),
 )
 
 def create_simple_test_method(validator, expected, value, num):
@@ -176,21 +182,23 @@ def create_simple_test_method(validator, expected, value, num):
 class TestSimpleValidators(TestCase):
     def test_single_message(self):
         v = ValidationError('Not Valid')
-        self.assertEqual(str(v), "[u'Not Valid']")
-        self.assertEqual(repr(v), "ValidationError([u'Not Valid'])")
+        self.assertEqual(str(v), py3_prefix("[%(_)s'Not Valid']"))
+        self.assertEqual(repr(v), py3_prefix("ValidationError([%(_)s'Not Valid'])"))
 
     def test_message_list(self):
         v = ValidationError(['First Problem', 'Second Problem'])
-        self.assertEqual(str(v), "[u'First Problem', u'Second Problem']")
-        self.assertEqual(repr(v), "ValidationError([u'First Problem', u'Second Problem'])")
+        self.assertEqual(str(v), py3_prefix("[%(_)s'First Problem', %(_)s'Second Problem']"))
+        self.assertEqual(repr(v), py3_prefix("ValidationError([%(_)s'First Problem', %(_)s'Second Problem'])"))
 
     def test_message_dict(self):
-        v = ValidationError({'first': 'First Problem'})
+        v = ValidationError({n('first'): n('First Problem')})
         self.assertEqual(str(v), "{'first': 'First Problem'}")
         self.assertEqual(repr(v), "ValidationError({'first': 'First Problem'})")
 
 test_counter = 0
 for validator, value, expected in TEST_DATA:
+    if PY3 and value == '\u4f60\u597d':
+        continue
     name, method = create_simple_test_method(validator, expected, value, test_counter)
     setattr(TestSimpleValidators, name, method)
     test_counter += 1

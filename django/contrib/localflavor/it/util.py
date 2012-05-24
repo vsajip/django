@@ -34,7 +34,8 @@ def ssn_check_digit(value):
 
 def vat_number_check_digit(vat_number):
     "Calculate Italian VAT number check digit."
-    normalized_vat_number = smart_str(vat_number).zfill(10)
+    # django3: was smart_str
+    normalized_vat_number = smart_unicode(vat_number).zfill(10)
     total = 0
     for i in range(0, 10, 2):
         total += int(normalized_vat_number[i])

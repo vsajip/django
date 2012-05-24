@@ -5,6 +5,7 @@ from django.utils import translation
 
 from django.contrib.gis.gdal import OGRException
 from django.contrib.gis.geos import GEOSGeometry, GEOSException
+from django.utils.py3 import string_types
 
 # Creating a template context that contains Django settings
 # values needed by admin map templates.
@@ -25,7 +26,7 @@ class OpenLayersWidget(Textarea):
 
         # If a string reaches here (via a validation error on another
         # field) then just reconstruct the Geometry.
-        if isinstance(value, basestring):
+        if isinstance(value, string_types):
             try:
                 value = GEOSGeometry(value)
             except (GEOSException, ValueError):

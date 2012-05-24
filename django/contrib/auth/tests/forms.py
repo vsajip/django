@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import os
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import (UserCreationForm, AuthenticationForm,
@@ -6,8 +7,8 @@ from django.core import mail
 from django.forms.fields import Field, EmailField
 from django.test import TestCase
 from django.test.utils import override_settings
-from django.utils.encoding import force_unicode
 from django.utils import translation
+from django.utils.encoding import force_unicode
 from django.utils.translation import ugettext as _
 
 
@@ -200,7 +201,7 @@ class PasswordChangeFormTest(TestCase):
     def test_field_order(self):
         # Regression test - check the order of fields:
         user = User.objects.get(username='testclient')
-        self.assertEqual(PasswordChangeForm(user, {}).fields.keys(),
+        self.assertEqual(list(PasswordChangeForm(user, {}).fields.keys()),
                          ['old_password', 'new_password1', 'new_password2'])
 
 
@@ -299,7 +300,7 @@ class PasswordResetFormTest(TestCase):
             # potential case where contrib.sites is not installed. Refs #16412.
             form.save(domain_override='example.com')
             self.assertEqual(len(mail.outbox), 1)
-            self.assertEqual(mail.outbox[0].subject, u'Custom password reset on example.com')
+            self.assertEqual(mail.outbox[0].subject, 'Custom password reset on example.com')
 
     def test_bug_5605(self):
         # bug #5605, preserve the case of the user name (before the @ in the
@@ -328,4 +329,4 @@ class PasswordResetFormTest(TestCase):
         form = PasswordResetForm(data)
         self.assertFalse(form.is_valid())
         self.assertEqual(form["email"].errors,
-                         [_(u"The user account associated with this e-mail address cannot reset the password.")])
+                         [_("The user account associated with this e-mail address cannot reset the password.")])

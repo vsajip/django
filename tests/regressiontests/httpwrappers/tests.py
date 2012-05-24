@@ -1,10 +1,12 @@
+from __future__ import unicode_literals
+
 import copy
 import pickle
 
 from django.http import (QueryDict, HttpResponse, SimpleCookie, BadHeaderError,
         parse_cookie)
 from django.utils import unittest
-
+from django.utils.py3 import unichr, next, PY3, n
 
 class QueryDictTests(unittest.TestCase):
     def test_missing_key(self):
@@ -28,13 +30,14 @@ class QueryDictTests(unittest.TestCase):
     def test_immutable_basic_operations(self):
         q = QueryDict('')
         self.assertEqual(q.getlist('foo'), [])
-        self.assertEqual(q.has_key('foo'), False)
+        if not PY3:
+            self.assertEqual(q.has_key('foo'), False)
         self.assertEqual('foo' in q, False)
-        self.assertEqual(q.items(), [])
+        self.assertEqual(list(q.items()), [])
         self.assertEqual(q.lists(), [])
-        self.assertEqual(q.items(), [])
-        self.assertEqual(q.keys(), [])
-        self.assertEqual(q.values(), [])
+        self.assertEqual(list(q.items()), [])
+        self.assertEqual(list(q.keys()), [])
+        self.assertEqual(list(q.values()), [])
         self.assertEqual(len(q), 0)
         self.assertEqual(q.urlencode(), '')
 
@@ -54,15 +57,17 @@ class QueryDictTests(unittest.TestCase):
         self.assertRaises(AttributeError, q.setlist, 'foo', ['bar'])
         self.assertRaises(AttributeError, q.appendlist, 'foo', ['bar'])
 
-        self.assertTrue(q.has_key('foo'))
+        if not PY3:
+            self.assertTrue(q.has_key('foo'))
         self.assertTrue('foo' in q)
-        self.assertFalse(q.has_key('bar'))
+        if not PY3:
+            self.assertFalse(q.has_key('bar'))
         self.assertFalse('bar' in q)
 
-        self.assertEqual(q.items(), [(u'foo', u'bar')])
-        self.assertEqual(q.lists(), [(u'foo', [u'bar'])])
-        self.assertEqual(q.keys(), ['foo'])
-        self.assertEqual(q.values(), ['bar'])
+        self.assertEqual(list(q.items()), [('foo', 'bar')])
+        self.assertEqual(q.lists(), [('foo', ['bar'])])
+        self.assertEqual(list(q.keys()), ['foo'])
+        self.assertEqual(list(q.values()), ['bar'])
         self.assertEqual(len(q), 1)
 
         self.assertRaises(AttributeError, q.update, {'foo': 'bar'})
@@ -79,7 +84,7 @@ class QueryDictTests(unittest.TestCase):
         self.assertEqual(q.urlencode(), 'next=%2Fa%26b%2F')
         self.assertEqual(q.urlencode(safe='/'), 'next=/a%26b/')
         q = QueryDict('', mutable=True)
-        q['next'] = u'/t\xebst&key/'
+        q['next'] = '/t\xebst&key/'
         self.assertEqual(q.urlencode(), 'next=%2Ft%C3%ABst%26key%2F')
         self.assertEqual(q.urlencode(safe='/'), 'next=/t%C3%ABst%26key/')
 
@@ -111,20 +116,21 @@ class QueryDictTests(unittest.TestCase):
         q.appendlist('foo', 'another')
         self.assertEqual(q.getlist('foo'), ['bar', 'baz', 'another'])
         self.assertEqual(q['foo'], 'another')
-        self.assertTrue(q.has_key('foo'))
+        if not PY3:
+            self.assertTrue(q.has_key('foo'))
         self.assertTrue('foo' in q)
 
-        self.assertEqual(q.items(),  [(u'foo', u'another'), (u'name', u'john')])
-        self.assertEqual(q.lists(), [(u'foo', [u'bar', u'baz', u'another']), (u'name', [u'john'])])
-        self.assertEqual(q.keys(), [u'foo', u'name'])
-        self.assertEqual(q.values(), [u'another', u'john'])
+        self.assertEqual(list(q.items()),  [('foo', 'another'), ('name', 'john')])
+        self.assertEqual(q.lists(), [('foo', ['bar', 'baz', 'another']), ('name', ['john'])])
+        self.assertEqual(list(q.keys()), ['foo', 'name'])
+        self.assertEqual(list(q.values()), ['another', 'john'])
         self.assertEqual(len(q), 2)
 
         q.update({'foo': 'hello'})
         self.assertEqual(q['foo'], 'hello')
         self.assertEqual(q.get('foo', 'not available'), 'hello')
-        self.assertEqual(q.getlist('foo'), [u'bar', u'baz', u'another', u'hello'])
-        self.assertEqual(q.pop('foo'), [u'bar', u'baz', u'another', u'hello'])
+        self.assertEqual(q.getlist('foo'), ['bar', 'baz', 'another', 'hello'])
+        self.assertEqual(q.pop('foo'), ['bar', 'baz', 'another', 'hello'])
         self.assertEqual(q.pop('foo', 'not there'), 'not there')
         self.assertEqual(q.get('foo', 'not there'), 'not there')
         self.assertEqual(q.setdefault('foo', 'bar'), 'bar')
@@ -140,26 +146,28 @@ class QueryDictTests(unittest.TestCase):
 
         q = QueryDict('vote=yes&vote=no')
 
-        self.assertEqual(q['vote'], u'no')
+        self.assertEqual(q['vote'], 'no')
         self.assertRaises(AttributeError, q.__setitem__, 'something', 'bar')
 
-        self.assertEqual(q.get('vote', 'default'), u'no')
+        self.assertEqual(q.get('vote', 'default'), 'no')
         self.assertEqual(q.get('foo', 'default'), 'default')
-        self.assertEqual(q.getlist('vote'), [u'yes', u'no'])
+        self.assertEqual(q.getlist('vote'), ['yes', 'no'])
         self.assertEqual(q.getlist('foo'), [])
 
         self.assertRaises(AttributeError, q.setlist, 'foo', ['bar', 'baz'])
         self.assertRaises(AttributeError, q.setlist, 'foo', ['bar', 'baz'])
         self.assertRaises(AttributeError, q.appendlist, 'foo', ['bar'])
 
-        self.assertEqual(q.has_key('vote'), True)
+        if not PY3:
+            self.assertEqual(q.has_key('vote'), True)
         self.assertEqual('vote' in q, True)
-        self.assertEqual(q.has_key('foo'), False)
+        if not PY3:
+            self.assertEqual(q.has_key('foo'), False)
         self.assertEqual('foo' in q, False)
-        self.assertEqual(q.items(), [(u'vote', u'no')])
-        self.assertEqual(q.lists(), [(u'vote', [u'yes', u'no'])])
-        self.assertEqual(q.keys(), [u'vote'])
-        self.assertEqual(q.values(), [u'no'])
+        self.assertEqual(list(q.items()), [('vote', 'no')])
+        self.assertEqual(q.lists(), [('vote', ['yes', 'no'])])
+        self.assertEqual(list(q.keys()), ['vote'])
+        self.assertEqual(list(q.values()), ['no'])
         self.assertEqual(len(q), 1)
 
         self.assertRaises(AttributeError, q.update, {'foo': 'bar'})
@@ -169,14 +177,15 @@ class QueryDictTests(unittest.TestCase):
         self.assertRaises(AttributeError, q.setdefault, 'foo', 'bar')
         self.assertRaises(AttributeError, q.__delitem__, 'vote')
 
+    @unittest.skipIf(PY3, 'django3: Invalid encoding handling differs between 2.x and 3.x.')
     def test_invalid_input_encoding(self):
         """
         QueryDicts must be able to handle invalid input encoding (in this
         case, bad UTF-8 encoding).
         """
         q = QueryDict(b'foo=bar&foo=\xff')
-        self.assertEqual(q['foo'], u'\ufffd')
-        self.assertEqual(q.getlist('foo'), [u'bar', u'\ufffd'])
+        self.assertEqual(q['foo'], '\ufffd')
+        self.assertEqual(q.getlist('foo'), ['bar', '\ufffd'])
 
     def test_pickle(self):
         q = QueryDict('')
@@ -194,49 +203,51 @@ class QueryDictTests(unittest.TestCase):
         x = QueryDict("a=1&a=2", mutable=True)
         y = QueryDict("a=3&a=4")
         x.update(y)
-        self.assertEqual(x.getlist('a'), [u'1', u'2', u'3', u'4'])
+        self.assertEqual(x.getlist('a'), ['1', '2', '3', '4'])
 
+    @unittest.skipIf(PY3, 'django3: rot-13 encoding is not straightforward on Python 3.x.')
     def test_non_default_encoding(self):
         """#13572 - QueryDict with a non-default encoding"""
-        q = QueryDict(b'sbb=one', encoding='rot_13')
-        self.assertEqual(q.encoding , 'rot_13' )
-        self.assertEqual(q.items() , [(u'foo', u'bar')] )
-        self.assertEqual(q.urlencode() , 'sbb=one' )
+        ENCODING = 'rot_13'
+        q = QueryDict(n('sbb=one'), encoding=ENCODING)
+        self.assertEqual(q.encoding , ENCODING)
+        self.assertEqual(list(q.items()) , [('foo', 'bar')])
+        self.assertEqual(q.urlencode() , 'sbb=one')
         q = q.copy()
-        self.assertEqual(q.encoding , 'rot_13' )
-        self.assertEqual(q.items() , [(u'foo', u'bar')] )
-        self.assertEqual(q.urlencode() , 'sbb=one' )
-        self.assertEqual(copy.copy(q).encoding , 'rot_13' )
-        self.assertEqual(copy.deepcopy(q).encoding , 'rot_13')
+        self.assertEqual(q.encoding, ENCODING)
+        self.assertEqual(list(q.items()) , [('foo', 'bar')])
+        self.assertEqual(q.urlencode(), 'sbb=one')
+        self.assertEqual(copy.copy(q).encoding, ENCODING)
+        self.assertEqual(copy.deepcopy(q).encoding , ENCODING)
 
 class HttpResponseTests(unittest.TestCase):
     def test_unicode_headers(self):
         r = HttpResponse()
 
         # If we insert a unicode value it will be converted to an ascii
-        r['value'] = u'test value'
+        r['value'] = 'test value'
         self.assertTrue(isinstance(r['value'], str))
 
         # An error is raised when a unicode object with non-ascii is assigned.
-        self.assertRaises(UnicodeEncodeError, r.__setitem__, 'value', u't\xebst value')
+        self.assertRaises(UnicodeEncodeError, r.__setitem__, 'value', 't\xebst value')
 
         # An error is raised when  a unicode object with non-ASCII format is
         # passed as initial mimetype or content_type.
         self.assertRaises(UnicodeEncodeError, HttpResponse,
-                content_type=u't\xebst value')
+                content_type='t\xebst value')
 
         # HttpResponse headers must be convertible to ASCII.
         self.assertRaises(UnicodeEncodeError, HttpResponse,
-                content_type=u't\xebst value')
+                content_type='t\xebst value')
 
         # The response also converts unicode keys to strings.)
-        r[u'test'] = 'testing key'
+        r['test'] = 'testing key'
         l = list(r.items())
         l.sort()
         self.assertEqual(l[1], ('test', 'testing key'))
 
         # It will also raise errors for keys with non-ascii data.
-        self.assertRaises(UnicodeEncodeError, r.__setitem__, u't\xebst key', 'value')
+        self.assertRaises(UnicodeEncodeError, r.__setitem__, 't\xebst key', 'value')
 
     def test_newlines_in_headers(self):
         # Bug #10188: Do not allow newlines in headers (CR or LF)
@@ -254,29 +265,29 @@ class HttpResponseTests(unittest.TestCase):
     def test_non_string_content(self):
         #Bug 16494: HttpResponse should behave consistently with non-strings
         r = HttpResponse(12345)
-        self.assertEqual(r.content, '12345')
+        self.assertEqual(r.content, b'12345')
 
         #test content via property
         r = HttpResponse()
         r.content = 12345
-        self.assertEqual(r.content, '12345')
+        self.assertEqual(r.content, b'12345')
 
     def test_iter_content(self):
         r = HttpResponse(['abc', 'def', 'ghi'])
-        self.assertEqual(r.content, 'abcdefghi')
+        self.assertEqual(r.content, b'abcdefghi')
 
         #test iter content via property
         r = HttpResponse()
         r.content = ['idan', 'alex', 'jacob']
-        self.assertEqual(r.content, 'idanalexjacob')
+        self.assertEqual(r.content, b'idanalexjacob')
 
         r = HttpResponse()
         r.content = [1, 2, 3]
-        self.assertEqual(r.content, '123')
+        self.assertEqual(r.content, b'123')
 
         #test retrieval explicitly using iter and odd inputs
         r = HttpResponse()
-        r.content = ['1', u'2', 3, unichr(1950)]
+        r.content = ['1', '2', 3, unichr(1950)]
         result = []
         my_iter = r.__iter__()
         while True:
@@ -285,16 +296,19 @@ class HttpResponseTests(unittest.TestCase):
             except StopIteration:
                 break
         #'\xde\x9e' == unichr(1950).encode('utf-8')
-        self.assertEqual(result, ['1', '2', '3', b'\xde\x9e'])
+        self.assertEqual(result, [b'1', b'2', b'3', b'\xde\x9e'])
         self.assertEqual(r.content, b'123\xde\x9e')
 
         #with Content-Encoding header
         r = HttpResponse([1,1,2,4,8])
         r['Content-Encoding'] = 'winning'
-        self.assertEqual(r.content, '11248')
+        self.assertEqual(r.content, b'11248')
+        # django3: The following checks has changed,
+        # since we have changed the handling of iterated content
         r.content = [unichr(1950),]
-        self.assertRaises(UnicodeEncodeError,
-                          getattr, r, 'content')
+        #self.assertRaises(UnicodeEncodeError,
+        #                  getattr, r, 'content')
+        self.assertEqual(r.content, b'\xde\x9e')
 
 class CookieTests(unittest.TestCase):
     def test_encode(self):
@@ -302,7 +316,7 @@ class CookieTests(unittest.TestCase):
         Test that we don't output tricky characters in encoded value
         """
         c = SimpleCookie()
-        c['test'] = "An,awkward;value"
+        c[n('test')] = "An,awkward;value"
         self.assertTrue(";" not in c.output().rstrip(';')) # IE compat
         self.assertTrue("," not in c.output().rstrip(';')) # Safari compat
 
@@ -311,9 +325,9 @@ class CookieTests(unittest.TestCase):
         Test that we can still preserve semi-colons and commas
         """
         c = SimpleCookie()
-        c['test'] = "An,awkward;value"
+        c[n('test')] = "An,awkward;value"
         c2 = SimpleCookie()
-        c2.load(c.output())
+        c2.load(n(c.output()))
         self.assertEqual(c['test'].value, c2['test'].value)
 
     def test_decode_2(self):
@@ -321,9 +335,9 @@ class CookieTests(unittest.TestCase):
         Test that we haven't broken normal encoding
         """
         c = SimpleCookie()
-        c['test'] = b"\xf0"
+        c[n('test')] = n("\xf0")
         c2 = SimpleCookie()
-        c2.load(c.output())
+        c2.load(n(c.output()))
         self.assertEqual(c['test'].value, c2['test'].value)
 
     def test_nonstandard_keys(self):
@@ -343,7 +357,7 @@ class CookieTests(unittest.TestCase):
         Test that we can use httponly attribute on cookies that we load
         """
         c = SimpleCookie()
-        c.load("name=val")
+        c.load(n("name=val"))
         c['name']['httponly'] = True
         self.assertTrue(c['name']['httponly'])
 

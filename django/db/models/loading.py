@@ -5,6 +5,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.utils.datastructures import SortedDict
 from django.utils.importlib import import_module
 from django.utils.module_loading import module_has_submodule
+from django.utils.py3 import iterkeys, itervalues
 
 import sys
 import os
@@ -188,9 +189,9 @@ class AppCache(object):
         else:
             if only_installed:
                 app_list = [self.app_models.get(app_label, SortedDict())
-                            for app_label in self.app_labels.iterkeys()]
+                            for app_label in iterkeys(self.app_labels)]
             else:
-                app_list = self.app_models.itervalues()
+                app_list = itervalues(self.app_models)
         model_list = []
         for app in app_list:
             model_list.extend(

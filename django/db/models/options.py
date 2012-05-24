@@ -8,8 +8,9 @@ from django.db.models.fields import AutoField, FieldDoesNotExist
 from django.db.models.fields.proxy import OrderWrt
 from django.db.models.loading import get_models, app_cache_ready
 from django.utils.translation import activate, deactivate_all, get_language, string_concat
-from django.utils.encoding import force_unicode, smart_str
+from django.utils.encoding import force_unicode, smart_str, smart_text
 from django.utils.datastructures import SortedDict
+from django.utils.py3 import itervalues, iteritems, string_types, PY3
 
 # Calculate the verbose_name by converting from InitialCaps to "lowercase with spaces".
 get_verbose_name = lambda class_name: re.sub('(((?<=[a-z])[A-Z])|([A-Z](?![A-Z]|$)))', ' \\1', class_name).lower().strip()
@@ -146,13 +147,13 @@ class Options(object):
         # self.duplicate_targets will map each duplicate field column to the
         # columns it duplicates.
         collections = {}
-        for column, target in self.duplicate_targets.iteritems():
+        for column, target in iteritems(self.duplicate_targets):
             try:
                 collections[target].add(column)
             except KeyError:
                 collections[target] = set([column])
         self.duplicate_targets = {}
-        for elt in collections.itervalues():
+        for elt in itervalues(collections):
             if len(elt) == 1:
                 continue
             for column in elt:
@@ -198,7 +199,7 @@ class Options(object):
         return '<Options for %s>' % self.object_name
 
     def __str__(self):
-        return "%s.%s" % (smart_str(self.app_label), smart_str(self.module_name))
+        return "%s.%s" % (smart_text(self.app_label), smart_text(self.module_name))
 
     def verbose_name_raw(self):
         """
@@ -257,7 +258,7 @@ class Options(object):
             self._m2m_cache
         except AttributeError:
             self._fill_m2m_cache()
-        return self._m2m_cache.keys()
+        return list(self._m2m_cache.keys())
     many_to_many = property(_many_to_many)
 
     def get_m2m_with_model(self):
@@ -268,7 +269,7 @@ class Options(object):
             self._m2m_cache
         except AttributeError:
             self._fill_m2m_cache()
-        return self._m2m_cache.items()
+        return list(self._m2m_cache.items())
 
     def _fill_m2m_cache(self):
         cache = SortedDict()
@@ -325,7 +326,7 @@ class Options(object):
             cache = self._name_map
         except AttributeError:
             cache = self.init_name_map()
-        names = cache.keys()
+        names = list(cache.keys())
         names.sort()
         # Internal-only names end with "+" (symmetrical m2m related names being
         # the main example). Trim them.
@@ -400,7 +401,7 @@ class Options(object):
         proxy_cache = cache.copy()
         for klass in get_models(include_auto_created=True, only_installed=False):
             for f in klass._meta.local_fields:
-                if f.rel and not isinstance(f.rel.to, basestring):
+                if f.rel and not isinstance(f.rel.to, string_types):
                     if self == f.rel.to._meta:
                         cache[RelatedObject(f.rel.to, klass, f)] = None
                         proxy_cache[RelatedObject(f.rel.to, klass, f)] = None
@@ -416,7 +417,7 @@ class Options(object):
             cache = self._fill_related_many_to_many_cache()
         if local_only:
             return [k for k, v in cache.items() if not v]
-        return cache.keys()
+        return list(cache.keys())
 
     def get_all_related_m2m_objects_with_model(self):
         """
@@ -427,7 +428,7 @@ class Options(object):
             cache = self._related_many_to_many_cache
         except AttributeError:
             cache = self._fill_related_many_to_many_cache()
-        return cache.items()
+        return list(cache.items())
 
     def _fill_related_many_to_many_cache(self):
         cache = SortedDict()
@@ -442,7 +443,7 @@ class Options(object):
                     cache[obj] = model
         for klass in get_models(only_installed=False):
             for f in klass._meta.local_many_to_many:
-                if f.rel and not isinstance(f.rel.to, basestring) and self == f.rel.to._meta:
+                if f.rel and not isinstance(f.rel.to, string_types) and self == f.rel.to._meta:
                     cache[RelatedObject(f.rel.to, klass, f)] = None
         if app_cache_ready():
             self._related_many_to_many_cache = cache

@@ -2,9 +2,9 @@
 Chile specific form helpers.
 """
 
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
-from django.contrib.localflavor.cl.cl_regions import REGION_CHOICES
+from .cl_regions import REGION_CHOICES
 from django.core.validators import EMPTY_VALUES
 from django.forms import ValidationError
 from django.forms.fields import RegexField, Select
@@ -50,7 +50,7 @@ class CLRutField(RegexField):
         """
         super(CLRutField, self).clean(value)
         if value in EMPTY_VALUES:
-            return u''
+            return ''
         rut, verificador = self._canonify(value)
         if self._algorithm(rut) == verificador:
             return self._format(rut, verificador)
@@ -68,7 +68,7 @@ class CLRutField(RegexField):
             multi += 1
             if multi == 8:
                 multi = 2
-        return u'0123456789K0'[11 - suma % 11]
+        return '0123456789K0'[11 - suma % 11]
 
     def _canonify(self, rut):
         """
@@ -93,5 +93,5 @@ class CLRutField(RegexField):
             else:
                 new_dot = pos - 3
             code = code[:new_dot] + '.' + code[new_dot:]
-        return u'%s-%s' % (code, verifier)
+        return '%s-%s' % (code, verifier)
 

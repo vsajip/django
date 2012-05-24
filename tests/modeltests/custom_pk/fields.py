@@ -2,7 +2,7 @@ import random
 import string
 
 from django.db import models
-
+from django.utils.py3 import with_metaclass, text_type
 
 class MyWrapper(object):
     def __init__(self, value):
@@ -14,13 +14,14 @@ class MyWrapper(object):
     def __unicode__(self):
         return self.value
 
+    __str__ = __unicode__
+
     def __eq__(self, other):
         if isinstance(other, self.__class__):
             return self.value == other.value
         return self.value == other
 
-class MyAutoField(models.CharField):
-    __metaclass__ = models.SubfieldBase
+class MyAutoField(with_metaclass(models.SubfieldBase, models.CharField)):
 
     def __init__(self, *args, **kwargs):
         kwargs['max_length'] = 10
@@ -29,7 +30,7 @@ class MyAutoField(models.CharField):
     def pre_save(self, instance, add):
         value = getattr(instance, self.attname, None)
         if not value:
-            value = MyWrapper(''.join(random.sample(string.lowercase, 10)))
+            value = MyWrapper(''.join(random.sample(string.ascii_lowercase, 10)))
             setattr(instance, self.attname, value)
         return value
 
@@ -44,12 +45,12 @@ class MyAutoField(models.CharField):
         if not value:
             return
         if isinstance(value, MyWrapper):
-            return unicode(value)
+            return text_type(value)
         return value
 
     def get_db_prep_value(self, value, connection, prepared=False):
         if not value:
             return
         if isinstance(value, MyWrapper):
-            return unicode(value)
+            return text_type(value)
         return value

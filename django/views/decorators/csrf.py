@@ -1,8 +1,8 @@
+from functools import wraps
 import warnings
 
 from django.middleware.csrf import CsrfViewMiddleware, get_token
 from django.utils.decorators import decorator_from_middleware, available_attrs
-from functools import wraps
 
 csrf_protect = decorator_from_middleware(CsrfViewMiddleware)
 csrf_protect.__name__ = "csrf_protect"

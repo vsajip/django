@@ -1,10 +1,14 @@
+from __future__ import unicode_literals
+
 import datetime
+import sys
 import decimal
 import hashlib
 from time import time
 
 from django.conf import settings
 from django.utils.log import getLogger
+from django.utils.py3 import PY3, text_type, n
 from django.utils.timezone import utc
 
 
@@ -46,8 +50,8 @@ class CursorDebugWrapper(CursorWrapper):
                 'sql': sql,
                 'time': "%.3f" % duration,
             })
-            logger.debug('(%.3f) %s; args=%s' % (duration, sql, params),
-                extra={'duration': duration, 'sql': sql, 'params': params}
+            logger.debug(n('(%.3f) %s; args=%s') % (duration, sql, params),
+                extra={n('duration'):duration, n('sql'): sql, n('params'): params}
             )
 
     def executemany(self, sql, param_list):
@@ -66,32 +70,55 @@ class CursorDebugWrapper(CursorWrapper):
                 'sql': '%s times: %s' % (times, sql),
                 'time': "%.3f" % duration,
             })
-            logger.debug('(%.3f) %s; args=%s' % (duration, sql, param_list),
-                extra={'duration': duration, 'sql': sql, 'params': param_list}
+            logger.debug(n('(%.3f) %s; args=%s') % (duration, sql, param_list),
+                extra={n('duration'): duration, n('sql'): sql, n('params'): param_list}
             )
 
+
+###############################################
+# Converters from a byte objects to strings #
+###############################################
+
+if PY3:
+    def py3_string_conversion(s):
+        # Convert byte s to str
+        if isinstance(s, bytes):
+                s = str(s, encoding='utf8')
+        return s
+else:
+    def py3_string_conversion(s):
+        return s
 
 ###############################################
 # Converters from database (string) to Python #
 ###############################################
 
 def typecast_date(s):
+    s = py3_string_conversion(s)
     return s and datetime.date(*map(int, s.split('-'))) or None # returns None if s is null
 
 def typecast_time(s): # does NOT store time zone information
     if not s: return None
-    hour, minutes, seconds = s.split(':')
-    if '.' in seconds: # check whether seconds have a fractional part
-        seconds, microseconds = seconds.split('.')
+    if isinstance(s, text_type): s = s.encode('utf-8')
+    hour, minutes, seconds = s.split(b':')
+    if b'.' in seconds: # check whether seconds have a fractional part
+        seconds, microseconds = seconds.split(b'.')
     else:
-        microseconds = '0'
-    return datetime.time(int(hour), int(minutes), int(seconds), int(float('.'+microseconds) * 1000000))
+        microseconds = b'0'
+    return datetime.time(int(hour), int(minutes), int(seconds), int(float(b'.'+microseconds) * 1000000))
 
 def typecast_timestamp(s): # does NOT store time zone information
     # "2005-07-29 15:48:00.590358-05"
     # "2005-07-29 09:56:00-05"
     if not s: return None
+    # XXX should the database pass in Unicode here already?
+    #s = s.decode("ascii")
+    
+    # Convert s to str anyway, granted that s is not yet a str
+    s = py3_string_conversion(s)
+
     if not ' ' in s: return typecast_date(s)
+    
     d, t = s.split()
     # Extract timezone information, if it exists. Currently we just throw
     # it away, but in the future we may make use of it.
@@ -116,6 +143,7 @@ def typecast_timestamp(s): # does NOT store time zone information
         int((microseconds + '000000')[:6]), tzinfo)
 
 def typecast_decimal(s):
+    s = py3_string_conversion(s)
     if s is None or s == '':
         return None
     return decimal.Decimal(s)
@@ -135,7 +163,7 @@ def truncate_name(name, length=None, hash_len=4):
     if length is None or len(name) <= length:
         return name
 
-    hsh = hashlib.md5(name).hexdigest()[:hash_len]
+    hsh = hashlib.md5(name.encode('utf-8')).hexdigest()[:hash_len]
     return '%s%s' % (name[:length-hash_len], hsh)
 
 def format_number(value, max_digits, decimal_places):
@@ -146,6 +174,6 @@ def format_number(value, max_digits, decimal_places):
     if isinstance(value, decimal.Decimal):
         context = decimal.getcontext().copy()
         context.prec = max_digits
-        return u'%s' % str(value.quantize(decimal.Decimal(".1") ** decimal_places, context=context))
+        return '%s' % str(value.quantize(decimal.Decimal(".1") ** decimal_places, context=context))
     else:
-        return u"%.*f" % (decimal_places, value)
+        return "%.*f" % (decimal_places, value)

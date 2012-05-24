@@ -1,6 +1,7 @@
 from django.contrib.gis.geos import GEOSGeometry, LinearRing, Polygon, Point
 from django.contrib.gis.maps.google.gmap import GoogleMapException
 from math import pi, sin, log, exp, atan
+from django.utils.py3 import xrange
 
 # Constants used for degree to radian conversion, and vice-versa.
 DTOR = pi / 180.

@@ -5,6 +5,7 @@ from django.contrib.gis.geos import *
 from django.contrib.gis.geos.base import gdal, numpy, GEOSBase
 from django.contrib.gis.geos.libgeos import GEOS_PREPARE
 from django.contrib.gis.geometry.test_data import TestDataMixin
+from django.utils.py3 import StringIO, xrange, pickle, string_types, PY3
 
 class GEOSTest(unittest.TestCase, TestDataMixin):
 
@@ -203,12 +204,11 @@ class GEOSTest(unittest.TestCase, TestDataMixin):
 
     def test01k_fromfile(self):
         "Testing the fromfile() factory."
-        from io import BytesIO
         ref_pnt = GEOSGeometry('POINT(5 23)')
 
-        wkt_f = BytesIO()
+        wkt_f = StringIO()
         wkt_f.write(ref_pnt.wkt)
-        wkb_f = BytesIO()
+        wkb_f = StringIO()
         wkb_f.write(str(ref_pnt.wkb))
 
         # Other tests use `fromfile()` on string filenames so those
@@ -937,8 +937,6 @@ class GEOSTest(unittest.TestCase, TestDataMixin):
 
     def test25_pickle(self):
         "Testing pickling and unpickling support."
-        # Using both pickle and cPickle -- just 'cause.
-        import pickle, cPickle
 
         # Creating a list of test geometries for pickling,
         # and setting the SRID on some of them.
@@ -992,7 +990,7 @@ class GEOSTest(unittest.TestCase, TestDataMixin):
 
         g = GEOSGeometry("POINT(0 0)")
         self.assertTrue(g.valid)
-        self.assertTrue(isinstance(g.valid_reason, basestring))
+        self.assertTrue(isinstance(g.valid_reason, string_types))
         self.assertEqual(g.valid_reason, "Valid Geometry")
 
         print("\nBEGIN - expecting GEOS_NOTICE; safe to ignore.\n")
@@ -1000,7 +998,7 @@ class GEOSTest(unittest.TestCase, TestDataMixin):
         g = GEOSGeometry("LINESTRING(0 0, 0 0)")
 
         self.assertTrue(not g.valid)
-        self.assertTrue(isinstance(g.valid_reason, basestring))
+        self.assertTrue(isinstance(g.valid_reason, string_types))
         self.assertTrue(g.valid_reason.startswith("Too few points in geometry component"))
 
         print("\nEND - expecting GEOS_NOTICE; safe to ignore.\n")

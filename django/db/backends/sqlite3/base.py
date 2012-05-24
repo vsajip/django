@@ -5,6 +5,8 @@ Works with either the pysqlite2 module or the sqlite3 module in the
 standard library.
 """
 
+from __future__ import unicode_literals
+
 import datetime
 import decimal
 import warnings
@@ -18,6 +20,7 @@ from django.db.backends.sqlite3.client import DatabaseClient
 from django.db.backends.sqlite3.creation import DatabaseCreation
 from django.db.backends.sqlite3.introspection import DatabaseIntrospection
 from django.utils.dateparse import parse_date, parse_datetime, parse_time
+from django.utils.py3 import reraise, text_type, PY3, n
 from django.utils.safestring import SafeString
 from django.utils import timezone
 
@@ -35,7 +38,7 @@ DatabaseError = Database.DatabaseError
 IntegrityError = Database.IntegrityError
 
 def parse_datetime_with_timezone_support(value):
-    dt = parse_datetime(value)
+    dt = util.typecast_timestamp(value)
     # Confirm that dt is naive before overwriting its tzinfo.
     if dt is not None and settings.USE_TZ and timezone.is_naive(dt):
         dt = dt.replace(tzinfo=timezone.utc)
@@ -45,21 +48,21 @@ def adapt_datetime_with_timezone_support(value):
     # Equivalent to DateTimeField.get_db_prep_value. Used only by raw SQL.
     if settings.USE_TZ:
         if timezone.is_naive(value):
-            warnings.warn(u"SQLite received a naive datetime (%s)"
-                          u" while time zone support is active." % value,
+            warnings.warn("SQLite received a naive datetime (%s)"
+                          " while time zone support is active." % value,
                           RuntimeWarning)
             default_timezone = timezone.get_default_timezone()
             value = timezone.make_aware(value, default_timezone)
         value = value.astimezone(timezone.utc).replace(tzinfo=None)
-    return value.isoformat(b" ")
+    return value.isoformat(n(" "))
 
-Database.register_converter(b"bool", lambda s: str(s) == '1')
-Database.register_converter(b"time", parse_time)
-Database.register_converter(b"date", parse_date)
-Database.register_converter(b"datetime", parse_datetime_with_timezone_support)
-Database.register_converter(b"timestamp", parse_datetime_with_timezone_support)
-Database.register_converter(b"TIMESTAMP", parse_datetime_with_timezone_support)
-Database.register_converter(b"decimal", util.typecast_decimal)
+Database.register_converter(n("bool"), lambda s: s == b'1')
+Database.register_converter(n("time"), util.typecast_time)
+Database.register_converter(n("date"), util.typecast_date)
+Database.register_converter(n("datetime"), parse_datetime_with_timezone_support)
+Database.register_converter(n("timestamp"), parse_datetime_with_timezone_support)
+Database.register_converter(n("TIMESTAMP"), parse_datetime_with_timezone_support)
+Database.register_converter(n("decimal"), util.typecast_decimal)
 Database.register_adapter(datetime.datetime, adapt_datetime_with_timezone_support)
 Database.register_adapter(decimal.Decimal, util.rev_typecast_decimal)
 if Database.version_info >= (2, 4, 1):
@@ -118,7 +121,7 @@ class DatabaseOperations(BaseDatabaseOperations):
         # values differently. So instead we register our own function that
         # formats the datetime combined with the delta in a manner suitable
         # for comparisons.
-        return  u'django_format_dtdelta(%s, "%s", "%d", "%d", "%d")' % (sql,
+        return  'django_format_dtdelta(%s, "%s", "%d", "%d", "%d")' % (sql,
             connector, timedelta.days, timedelta.seconds, timedelta.microseconds)
 
     def date_trunc_sql(self, lookup_type, field_name):
@@ -166,7 +169,7 @@ class DatabaseOperations(BaseDatabaseOperations):
             else:
                 raise ValueError("SQLite backend does not support timezone-aware datetimes when USE_TZ is False.")
 
-        return unicode(value)
+        return text_type(value)
 
     def value_to_db_time(self, value):
         if value is None:
@@ -176,7 +179,7 @@ class DatabaseOperations(BaseDatabaseOperations):
         if timezone.is_aware(value):
             raise ValueError("SQLite backend does not support timezone-aware times.")
 
-        return unicode(value)
+        return text_type(value)
 
     def year_lookup_bounds(self, value):
         first = '%s-01-01'
@@ -336,18 +339,18 @@ class SQLiteCursorWrapper(Database.Cursor):
         try:
             return Database.Cursor.execute(self, query, params)
         except Database.IntegrityError as e:
-            raise utils.IntegrityError, utils.IntegrityError(*tuple(e)), sys.exc_info()[2]
+            reraise(utils.IntegrityError, utils.IntegrityError(*e.args), sys.exc_info()[2])
         except Database.DatabaseError as e:
-            raise utils.DatabaseError, utils.DatabaseError(*tuple(e)), sys.exc_info()[2]
+            reraise(utils.DatabaseError, utils.DatabaseError(*e.args), sys.exc_info()[2])
 
     def executemany(self, query, param_list):
         query = self.convert_query(query)
         try:
             return Database.Cursor.executemany(self, query, param_list)
         except Database.IntegrityError as e:
-            raise utils.IntegrityError, utils.IntegrityError(*tuple(e)), sys.exc_info()[2]
+            reraise(utils.IntegrityError, utils.IntegrityError(*e.args), sys.exc_info()[2])
         except Database.DatabaseError as e:
-            raise utils.DatabaseError, utils.DatabaseError(*tuple(e)), sys.exc_info()[2]
+            reraise(utils.DatabaseError, utils.DatabaseError(*e.args), sys.exc_info()[2])
 
     def convert_query(self, query):
         return FORMAT_QMARK_REGEX.sub('?', query).replace('%%','%')

@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 from datetime import datetime
 from operator import attrgetter
@@ -333,7 +333,7 @@ class M2mThroughTests(TestCase):
         # Jim showed up twice, because he joined two groups ('Rock', and 'Roll'):
         self.assertEqual(
             [(m.person.name, m.group.name) for m in Membership.objects.filter(date_joined__gt=datetime(2004, 1, 1))],
-            [(u'Jane', u'Rock'), (u'Jim', u'Rock'), (u'Jim', u'Roll')]
+            [('Jane', 'Rock'), ('Jim', 'Rock'), ('Jim', 'Roll')]
         )
         # QuerySet's distinct() method can correct this problem.
         self.assertQuerysetEqual(

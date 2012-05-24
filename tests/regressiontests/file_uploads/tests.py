@@ -1,6 +1,6 @@
 #! -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 import base64
 import errno
@@ -8,19 +8,19 @@ import hashlib
 import json
 import os
 import shutil
-from StringIO import StringIO
 
 from django.core.files import temp as tempfile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.http.multipartparser import MultiPartParser
 from django.test import TestCase, client
 from django.utils import unittest
+from django.utils.py3 import StringIO, PY3
 
 from . import uploadhandler
 from .models import FileModel, temp_storage, UPLOAD_TO
 
 
-UNICODE_FILENAME = u'test-0123456789_中文_Orléans.jpg'
+UNICODE_FILENAME = 'test-0123456789_\u4e2d\u6587_Orl\xe9ans.jpg'
 
 class FileUploadTests(TestCase):
     def test_simple_upload(self):
@@ -49,12 +49,13 @@ class FileUploadTests(TestCase):
             'file_field2': file2,
             }
 
-        for key in post_data.keys():
+        for key in list(post_data.keys()):
             try:
                 post_data[key + '_hash'] = hashlib.sha1(post_data[key].read()).hexdigest()
                 post_data[key].seek(0)
             except AttributeError:
-                post_data[key + '_hash'] = hashlib.sha1(post_data[key]).hexdigest()
+                # django3: added encode()
+                post_data[key + '_hash'] = hashlib.sha1(post_data[key].encode('utf-8')).hexdigest()
 
         response = self.client.post('/file_uploads/verify/', post_data)
 
@@ -62,16 +63,18 @@ class FileUploadTests(TestCase):
 
     def test_base64_upload(self):
         test_string = "This data will be transmitted base64-encoded."
-        payload = "\r\n".join([
-            '--' + client.BOUNDARY,
+        boundary = client.BOUNDARY.decode('ascii')
+        payload = ("\r\n".join([
+            '--' + boundary,
             'Content-Disposition: form-data; name="file"; filename="test.txt"',
             'Content-Type: application/octet-stream',
             'Content-Transfer-Encoding: base64',
             '',
-            base64.b64encode(test_string),
-            '--' + client.BOUNDARY + '--',
+            # django3: added encode()
+            base64.b64encode(test_string.encode('ascii')).decode('ascii'),
+            '--' + boundary + '--',
             '',
-        ])
+        ])).encode('utf-8')
         r = {
             'CONTENT_LENGTH': len(payload),
             'CONTENT_TYPE':   client.MULTIPART_CONTENT,
@@ -80,7 +83,8 @@ class FileUploadTests(TestCase):
             'wsgi.input':     client.FakePayload(payload),
         }
         response = self.client.request(**r)
-        received = json.loads(response.content)
+        # django3: added decode()
+        received = json.loads(response.content.decode('utf-8'))
 
         self.assertEqual(received['file'], test_string)
 
@@ -88,7 +92,11 @@ class FileUploadTests(TestCase):
         tdir = tempfile.gettempdir()
 
         # This file contains chinese symbols and an accented char in the name.
-        with open(os.path.join(tdir, UNICODE_FILENAME.encode('utf-8')), 'w+b') as file1:
+        if PY3:
+            fn = os.path.join(tdir, UNICODE_FILENAME)
+        else:
+            fn = os.path.join(tdir, UNICODE_FILENAME.encode('utf-8'))
+        with open(fn, 'w+b') as file1:
             file1.write(b'b' * (2 ** 10))
             file1.seek(0)
 
@@ -127,20 +135,21 @@ class FileUploadTests(TestCase):
         ]
 
         payload = []
+        boundary = client.BOUNDARY.decode('ascii')
         for i, name in enumerate(scary_file_names):
             payload.extend([
-                '--' + client.BOUNDARY,
+                '--' + boundary,
                 'Content-Disposition: form-data; name="file%s"; filename="%s"' % (i, name),
                 'Content-Type: application/octet-stream',
                 '',
                 'You got pwnd.'
             ])
         payload.extend([
-            '--' + client.BOUNDARY + '--',
+            '--' + boundary + '--',
             '',
         ])
 
-        payload = "\r\n".join(payload)
+        payload = ("\r\n".join(payload)).encode('utf-8')
         r = {
             'CONTENT_LENGTH': len(payload),
             'CONTENT_TYPE':   client.MULTIPART_CONTENT,
@@ -151,23 +160,24 @@ class FileUploadTests(TestCase):
         response = self.client.request(**r)
 
         # The filenames should have been sanitized by the time it got to the view.
-        recieved = json.loads(response.content)
+        received = json.loads(response.content.decode('utf-8'))
         for i, name in enumerate(scary_file_names):
-            got = recieved["file%s" % i]
+            got = received["file%s" % i]
             self.assertEqual(got, "hax0rd.txt")
 
     def test_filename_overflow(self):
         """File names over 256 characters (dangerous on some platforms) get fixed up."""
         name = "%s.txt" % ("f"*500)
-        payload = "\r\n".join([
-            '--' + client.BOUNDARY,
+        boundary = client.BOUNDARY.decode('ascii')
+        payload = ("\r\n".join([
+            '--' + boundary,
             'Content-Disposition: form-data; name="file"; filename="%s"' % name,
             'Content-Type: application/octet-stream',
             '',
             'Oops.'
-            '--' + client.BOUNDARY + '--',
+            '--' + boundary + '--',
             '',
-        ])
+        ])).encode('utf-8')
         r = {
             'CONTENT_LENGTH': len(payload),
             'CONTENT_TYPE':   client.MULTIPART_CONTENT,
@@ -175,7 +185,7 @@ class FileUploadTests(TestCase):
             'REQUEST_METHOD': 'POST',
             'wsgi.input':     client.FakePayload(payload),
         }
-        got = json.loads(self.client.request(**r).content)
+        got = json.loads(self.client.request(**r).content.decode('utf-8'))
         self.assertTrue(len(got['file']) < 256, "Got a long file name (%s characters)." % len(got['file']))
 
     def test_truncated_multipart_handled_gracefully(self):
@@ -184,15 +194,16 @@ class FileUploadTests(TestCase):
         attempt to read beyond the end of the stream, and simply will handle
         the part that can be parsed gracefully.
         """
-        payload = "\r\n".join([
-            '--' + client.BOUNDARY,
+        boundary = client.BOUNDARY.decode('ascii')
+        payload = ("\r\n".join([
+            '--' + boundary,
             'Content-Disposition: form-data; name="file"; filename="foo.txt"',
             'Content-Type: application/octet-stream',
             '',
             'file contents'
-            '--' + client.BOUNDARY + '--',
+            '--' + boundary + '--',
             '',
-        ])
+        ])).encode('utf-8')
         payload = payload[:-10]
         r = {
             'CONTENT_LENGTH': len(payload),
@@ -201,7 +212,7 @@ class FileUploadTests(TestCase):
             'REQUEST_METHOD': 'POST',
             'wsgi.input': client.FakePayload(payload),
         }
-        got = json.loads(self.client.request(**r).content)
+        got = json.loads(self.client.request(**r).content.decode('utf-8'))
         self.assertEqual(got, {})
 
     def test_empty_multipart_handled_gracefully(self):
@@ -216,7 +227,7 @@ class FileUploadTests(TestCase):
             'REQUEST_METHOD': 'POST',
             'wsgi.input': client.FakePayload(b''),
         }
-        got = json.loads(self.client.request(**r).content)
+        got = json.loads(self.client.request(**r).content.decode('utf-8'))
         self.assertEqual(got, {})
 
     def test_custom_upload_handler(self):
@@ -232,12 +243,12 @@ class FileUploadTests(TestCase):
 
         # Small file posting should work.
         response = self.client.post('/file_uploads/quota/', {'f': smallfile})
-        got = json.loads(response.content)
+        got = json.loads(response.content.decode('utf-8'))
         self.assertTrue('f' in got)
 
         # Large files don't go through.
         response = self.client.post("/file_uploads/quota/", {'f': bigfile})
-        got = json.loads(response.content)
+        got = json.loads(response.content.decode('utf-8'))
         self.assertTrue('f' not in got)
 
     def test_broken_custom_upload_handler(self):
@@ -268,14 +279,14 @@ class FileUploadTests(TestCase):
 
         response = self.client.post('/file_uploads/getlist_count/', {
             'file1': file1,
-            'field1': u'test',
-            'field2': u'test3',
-            'field3': u'test5',
-            'field4': u'test6',
-            'field5': u'test7',
+            'field1': 'test',
+            'field2': 'test3',
+            'field3': 'test5',
+            'field4': 'test6',
+            'field5': 'test7',
             'file2': (file2, file2a)
         })
-        got = json.loads(response.content)
+        got = json.loads(response.content.decode('utf-8'))
 
         self.assertEqual(got.get('file1'), 1)
         self.assertEqual(got.get('file2'), 2)
@@ -300,8 +311,11 @@ class FileUploadTests(TestCase):
         # it raises when there is an attempt to read more than the available bytes:
         try:
             client.FakePayload(b'a').read(2)
-        except Exception as reference_error:
-            pass
+        except Exception as e:
+            # django3: under 3.x, using 'as reference_error' in the
+            # exception statement does not create the binding in
+            # local scope, and it's needed later. Special case :-(
+            reference_error = e
 
         # install the custom handler that tries to access request.POST
         self.client.handler = POSTAccessingHandler()
@@ -363,16 +377,16 @@ class DirectoryCreationTests(unittest.TestCase):
         if not os.path.isdir(temp_storage.location):
             os.makedirs(temp_storage.location)
         if os.path.isdir(UPLOAD_TO):
-            os.chmod(UPLOAD_TO, 0700)
+            os.chmod(UPLOAD_TO, 0x1c0)  # 0700
             shutil.rmtree(UPLOAD_TO)
 
     def tearDown(self):
-        os.chmod(temp_storage.location, 0700)
+        os.chmod(temp_storage.location, 0x1c0)  # 0700
         shutil.rmtree(temp_storage.location)
 
     def test_readonly_root(self):
         """Permission errors are not swallowed"""
-        os.chmod(temp_storage.location, 0500)
+        os.chmod(temp_storage.location, 0x140)  # 0500
         try:
             self.obj.testfile.save('foo.txt', SimpleUploadedFile('foo.txt', b'x'))
         except OSError as err:

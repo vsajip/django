@@ -39,6 +39,9 @@ __all__ = ['A', 'Area', 'D', 'Distance']
 from decimal import Decimal
 
 from django.utils.functional import total_ordering
+from django.utils.py3 import iteritems, integer_types
+
+NUMERIC_TYPES = integer_types + (float, Decimal)
 
 class MeasureBase(object):
     def default_units(self, kwargs):
@@ -47,7 +50,7 @@ class MeasureBase(object):
         from the given keyword arguments dictionary.
         """
         val = 0.0
-        for unit, value in kwargs.iteritems():
+        for unit, value in iteritems(kwargs):
             if not isinstance(value, float): value = float(value)
             if unit in self.UNITS:
                 val += self.UNITS[unit] * value
@@ -187,6 +190,8 @@ class Distance(MeasureBase):
         else:
             return NotImplemented
 
+    __hash__ = object.__hash__
+
     def __lt__(self, other):
         if isinstance(other, Distance):
             return self.m < other.m
@@ -220,7 +225,7 @@ class Distance(MeasureBase):
             raise TypeError('Distance must be subtracted from Distance')
 
     def __mul__(self, other):
-        if isinstance(other, (int, float, long, Decimal)):
+        if isinstance(other, NUMERIC_TYPES):
             return Distance(default_unit=self._default_unit, m=(self.m * float(other)))
         elif isinstance(other, Distance):
             return Area(default_unit='sq_' + self._default_unit, sq_m=(self.m * other.m))
@@ -228,7 +233,7 @@ class Distance(MeasureBase):
             raise TypeError('Distance must be multiplied with number or Distance')
 
     def __imul__(self, other):
-        if isinstance(other, (int, float, long, Decimal)):
+        if isinstance(other, NUMERIC_TYPES):
             self.m *= float(other)
             return self
         else:
@@ -238,13 +243,13 @@ class Distance(MeasureBase):
         return self * other
 
     def __div__(self, other):
-        if isinstance(other, (int, float, long, Decimal)):
+        if isinstance(other, NUMERIC_TYPES):
             return Distance(default_unit=self._default_unit, m=(self.m / float(other)))
         else:
             raise TypeError('Distance must be divided with number')
 
     def __idiv__(self, other):
-        if isinstance(other, (int, float, long, Decimal)):
+        if isinstance(other, NUMERIC_TYPES):
             self.m /= float(other)
             return self
         else:
@@ -252,6 +257,8 @@ class Distance(MeasureBase):
 
     def __nonzero__(self):
         return bool(self.m)
+
+    __bool__ = __nonzero__
 
 @total_ordering
 class Area(MeasureBase):
@@ -282,6 +289,8 @@ class Area(MeasureBase):
             return self.sq_m == other.sq_m
         else:
             return NotImplemented
+
+    __hash__ = object.__hash__
 
     def __lt__(self, other):
         if isinstance(other, Area):
@@ -316,13 +325,13 @@ class Area(MeasureBase):
             raise TypeError('Area must be subtracted from Area')
 
     def __mul__(self, other):
-        if isinstance(other, (int, float, long, Decimal)):
+        if isinstance(other, NUMERIC_TYPES):
             return Area(default_unit=self._default_unit, sq_m=(self.sq_m * float(other)))
         else:
             raise TypeError('Area must be multiplied with number')
 
     def __imul__(self, other):
-        if isinstance(other, (int, float, long, Decimal)):
+        if isinstance(other, NUMERIC_TYPES):
             self.sq_m *= float(other)
             return self
         else:
@@ -332,13 +341,13 @@ class Area(MeasureBase):
         return self * other
 
     def __div__(self, other):
-        if isinstance(other, (int, float, long, Decimal)):
+        if isinstance(other, NUMERIC_TYPES):
             return Area(default_unit=self._default_unit, sq_m=(self.sq_m / float(other)))
         else:
             raise TypeError('Area must be divided with number')
 
     def __idiv__(self, other):
-        if isinstance(other, (int, float, long, Decimal)):
+        if isinstance(other, NUMERIC_TYPES):
             self.sq_m /= float(other)
             return self
         else:
@@ -346,6 +355,8 @@ class Area(MeasureBase):
 
     def __nonzero__(self):
         return bool(self.sq_m)
+
+    __bool__ = __nonzero__
 
 # Shortcuts
 D = Distance

@@ -2,6 +2,7 @@ import os
 import stat
 from os.path import join, normcase, normpath, abspath, isabs, sep
 from django.utils.encoding import force_unicode
+from django.utils.py3 import getcwdu
 
 try:
     WindowsError = WindowsError
@@ -26,7 +27,7 @@ else:
         in join when the cwd has non-ASCII characters.
         """
         if not isabs(path):
-            path = join(os.getcwdu(), path)
+            path = join(getcwdu(), path)
         return normpath(path)
 
 def safe_join(base, *paths):

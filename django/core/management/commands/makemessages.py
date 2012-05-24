@@ -11,6 +11,7 @@ import django
 from django.core.management.base import CommandError, NoArgsCommand
 from django.utils.text import get_text_list
 from django.utils.jslex import prepare_js_for_gettext
+from django.utils.py3 import PY3
 
 plural_forms_re = re.compile(r'^(?P<value>"Plural-Forms.+?\\n")\s*$', re.MULTILINE | re.DOTALL)
 
@@ -143,7 +144,10 @@ def write_pot_file(potfile, msgs, file, work_file, is_templatized):
     else:
         msgs = msgs.replace('charset=CHARSET', 'charset=UTF-8')
     with open(potfile, 'ab') as fp:
-        fp.write(msgs)
+        try:
+            fp.write(msgs)
+        except TypeError:
+            fp.write(msgs.encode('utf-8'))
 
 def process_file(file, dirpath, potfile, domain, verbosity,
                  extensions, wrap, location, stdout=sys.stdout):
@@ -239,7 +243,10 @@ def write_po_file(pofile, potfile, domain, locale, verbosity, stdout,
     msgs = msgs.replace(
         "#. #-#-#-#-#  %s.pot (PACKAGE VERSION)  #-#-#-#-#\n" % domain, "")
     with open(pofile, 'wb') as fp:
-        fp.write(msgs)
+        try:
+            fp.write(msgs)
+        except TypeError:
+            fp.write(msgs.encode('utf-8'))
     os.unlink(potfile)
     if no_obsolete:
         msgs, errors = _popen('msgattrib %s %s -o "%s" --no-obsolete "%s"' %
@@ -304,7 +311,7 @@ def make_messages(locale=None, domain='django', verbosity=1, all=False,
     if locale is not None:
         locales.append(locale)
     elif all:
-        locale_dirs = filter(os.path.isdir, glob.glob('%s/*' % localedir))
+        locale_dirs = list(filter(os.path.isdir, glob.glob('%s/*' % localedir)))
         locales = [os.path.basename(l) for l in locale_dirs]
 
     wrap = '--no-wrap' if no_wrap else ''

@@ -22,7 +22,7 @@ class Command(NoArgsCommand):
         default_settings = module_to_dict(global_settings)
 
         output = []
-        keys = user_settings.keys()
+        keys = list(user_settings.keys())
         keys.sort()
         for key in keys:
             if key not in default_settings:

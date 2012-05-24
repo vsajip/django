@@ -26,7 +26,7 @@ class ActionAdmin(admin.ModelAdmin):
         Remove all entries named 'name' from the ModelAdmin instance URL
         patterns list
         """
-        return filter(lambda e: e.name != name, super(ActionAdmin, self).get_urls())
+        return [e for e in super(ActionAdmin, self).get_urls() if e.name != name]
 
     def get_urls(self):
         # Add the URL of our custom 'add_view' view to the front of the URLs

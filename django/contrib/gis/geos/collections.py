@@ -10,6 +10,7 @@ from django.contrib.gis.geos.linestring import LineString, LinearRing
 from django.contrib.gis.geos.point import Point
 from django.contrib.gis.geos.polygon import Polygon
 from django.contrib.gis.geos import prototypes as capi
+from django.utils.py3 import xrange
 
 class GeometryCollection(GEOSGeometry):
     _typeid = 7

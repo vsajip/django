@@ -74,6 +74,8 @@ class Node(object):
         """
         return bool(self.children)
 
+    __bool__ = __nonzero__
+
     def __contains__(self, other):
         """
         Returns True is 'other' is a direct child of this instance.

@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 from django.test import TestCase
+from django.utils.py3 import xrange
 
 from .models import Reporter, Article
 

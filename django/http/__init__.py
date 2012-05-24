@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 import datetime
 import os
@@ -7,28 +7,27 @@ import sys
 import time
 import warnings
 
-from io import BytesIO
 from pprint import pformat
-from urllib import urlencode, quote
-from urlparse import urljoin, parse_qsl
+from django.utils.py3 import (urlencode, quote, urljoin, cookies, next,
+                              PY3, n, reraise, string_types, parse_qsl,
+                              StringIO, BytesIO)
 
-import Cookie
 # Some versions of Python 2.7 and later won't need this encoding bug fix:
-_cookie_encodes_correctly = Cookie.SimpleCookie().value_encode(';') == (';', '"\\073"')
+_cookie_encodes_correctly = cookies.SimpleCookie().value_encode(';') == (';', '"\\073"')
 # See ticket #13007, http://bugs.python.org/issue2193 and http://trac.edgewall.org/ticket/2256
-_tc = Cookie.SimpleCookie()
+_tc = cookies.SimpleCookie()
 try:
-    _tc.load(b'foo:bar=1')
+    _tc.load(n('foo:bar=1'))
     _cookie_allows_colon_in_names = True
-except Cookie.CookieError:
+except cookies.CookieError:
     _cookie_allows_colon_in_names = False
 
 if _cookie_encodes_correctly and _cookie_allows_colon_in_names:
-    SimpleCookie = Cookie.SimpleCookie
+    SimpleCookie = cookies.SimpleCookie
 else:
-    Morsel = Cookie.Morsel
+    Morsel = cookies.Morsel
 
-    class SimpleCookie(Cookie.SimpleCookie):
+    class SimpleCookie(cookies.SimpleCookie):
         if not _cookie_encodes_correctly:
             def value_encode(self, val):
                 # Some browsers do not support quoted-string from RFC 2109,
@@ -68,9 +67,9 @@ else:
                     M = self.get(key, Morsel())
                     M.set(key, real_value, coded_value)
                     dict.__setitem__(self, key, M)
-                except Cookie.CookieError:
+                except cookies.CookieError:
                     self.bad_cookies.add(key)
-                    dict.__setitem__(self, key, Cookie.Morsel())
+                    dict.__setitem__(self, key, cookies.Morsel())
 
 
 from django.conf import settings
@@ -79,10 +78,11 @@ from django.core.exceptions import ImproperlyConfigured
 from django.core.files import uploadhandler
 from django.http.multipartparser import MultiPartParser
 from django.http.utils import *
-from django.utils.datastructures import MultiValueDict, ImmutableList
-from django.utils.encoding import smart_str, iri_to_uri, force_unicode
-from django.utils.http import cookie_date
 from django.utils import timezone
+from django.utils.datastructures import MultiValueDict, ImmutableList
+from django.utils.encoding import smart_str, smart_unicode, iri_to_uri, force_unicode
+from django.utils.http import cookie_date
+from django.utils.py3 import bytes, text_type, binary_type
 
 RESERVED_CHARS="!*'();:@&=+$,/?%#[]"
 
@@ -131,13 +131,14 @@ def build_request_repr(request, path_override=None, GET_override=None,
     except:
         meta = '<could not parse>'
     path = path_override if path_override is not None else request.path
-    return smart_str(u'<%s\npath:%s,\nGET:%s,\nPOST:%s,\nCOOKIES:%s,\nMETA:%s>' %
+    #django: was smart_str
+    return smart_unicode('<%s\npath:%s,\nGET:%s,\nPOST:%s,\nCOOKIES:%s,\nMETA:%s>' %
                      (request.__class__.__name__,
                       path,
-                      unicode(get),
-                      unicode(post),
-                      unicode(cookies),
-                      unicode(meta)))
+                      text_type(get),
+                      text_type(post),
+                      text_type(cookies),
+                      text_type(meta)))
 
 class UnreadablePostError(IOError):
     pass
@@ -287,14 +288,15 @@ class HttpRequest(object):
                 raise Exception("You cannot access body after reading from request's data stream")
             try:
                 self._body = self.read()
-            except IOError as e:
-                raise UnreadablePostError, e, sys.exc_traceback
+            except IOError:
+                e = sys.exc_info()
+                reraise(UnreadablePostError, UnreadablePostError(*e[1].args), e[2])
             self._stream = BytesIO(self._body)
         return self._body
 
     @property
     def raw_post_data(self):
-        warnings.warn('HttpRequest.raw_post_data has been deprecated. Use HttpRequest.body instead.', DeprecationWarning)
+        warnings.warn('HttpRequest.raw_post_data has been deprecated. Use HttpRequest.body instead.', PendingDeprecationWarning)
         return self.body
 
     def _mark_post_parse_error(self):
@@ -337,7 +339,7 @@ class HttpRequest(object):
     ## Expects self._stream to be set to an appropriate source of bytes by
     ## a corresponding request subclass (e.g. WSGIRequest).
     ## Also when request data has already been read by request.POST or
-    ## request.body, self._stream points to a BytesIO instance
+    ## request.body, self._stream points to a StringIO instance
     ## containing that data.
 
     def read(self, *args, **kwargs):
@@ -377,6 +379,8 @@ class QueryDict(MultiValueDict):
         if not encoding:
             encoding = settings.DEFAULT_CHARSET
         self.encoding = encoding
+        #if isinstance(query_string, bytes):
+        #    query_string = query_string.decode('ascii')
         for key, value in parse_qsl((query_string or ''), True): # keep_blank_values=True
             self.appendlist(force_unicode(key, encoding, errors='replace'),
                             force_unicode(value, encoding, errors='replace'))
@@ -488,6 +492,7 @@ class QueryDict(MultiValueDict):
         """
         output = []
         if safe:
+            safe = n(safe)
             encode = lambda k, v: '%s=%s' % ((quote(k, safe), quote(v, safe)))
         else:
             encode = lambda k, v: urlencode({k: v})
@@ -500,11 +505,11 @@ class QueryDict(MultiValueDict):
 def parse_cookie(cookie):
     if cookie == '':
         return {}
-    if not isinstance(cookie, Cookie.BaseCookie):
+    if not isinstance(cookie, cookies.BaseCookie):
         try:
             c = SimpleCookie()
-            c.load(cookie)
-        except Cookie.CookieError:
+            c.load(n(cookie))
+        except cookies.CookieError:
             # Invalid cookie
             return {}
     else:
@@ -543,19 +548,27 @@ class HttpResponse(object):
 
     def __str__(self):
         """Full HTTP message, including headers."""
+        # django3: added decode()
         return '\n'.join(['%s: %s' % (key, value)
             for key, value in self._headers.values()]) \
-            + '\n\n' + self.content
+            + '\n\n' + self.content.decode(self._charset)
 
     def _convert_to_ascii(self, *values):
         """Converts all values to ascii strings."""
         for value in values:
-            if isinstance(value, unicode):
+            if isinstance(value, text_type):
                 try:
-                    value = value.encode('us-ascii')
+                    if not PY3:
+                        value = value.encode('us-ascii')
+                    else:
+                        # In 3k, still use Unicode strings in headers
+                        value.encode('us-ascii')
                 except UnicodeError as e:
                     e.reason += ', HTTP response headers must be in US-ASCII format'
                     raise
+            elif PY3 and isinstance(value, bytes):
+                # str(<bytes>) would result in "b'...'"
+                value = value.decode()
             else:
                 value = str(value)
             if '\n' in value or '\r' in value:
@@ -593,7 +606,7 @@ class HttpResponse(object):
     __contains__ = has_header
 
     def items(self):
-        return self._headers.values()
+        return list(self._headers.values())
 
     def get(self, header, alternate=None):
         return self._headers.get(header.lower(), (None, alternate))[1]
@@ -648,13 +661,31 @@ class HttpResponse(object):
         self.set_cookie(key, max_age=0, path=path, domain=domain,
                         expires='Thu, 01-Jan-1970 00:00:00 GMT')
 
+    def _process_chunk(self, chunk):
+        # django3: added to simplify handling of non-character content
+        # like integers (why we need this, I have no idea ;-)
+        if isinstance(chunk, text_type):
+            chunk = chunk.encode(self._charset)
+        if not isinstance(chunk, binary_type):
+            # django3: chunk could be any random object
+            # (see test_iter_content), so if it's not
+            # bytes at this point, we need to convert
+            # it to text using a str operation
+            chunk = str(chunk).encode(self._charset)
+        # Python 3.2 insists that the type is bytes,
+        # a subclass is not accepted. See Python issues #5800, #10935
+        return bytes(chunk)
+            
     def _get_content(self):
         if self.has_header('Content-Encoding'):
-            return b''.join([str(e) for e in self._container])
+            process = self._process_chunk
+            return b''.join([process(e) for e in self._container])
         return b''.join([smart_str(e, self._charset) for e in self._container])
 
     def _set_content(self, value):
-        if hasattr(value, '__iter__'):
+        # in 3.x, bytes and unicode has __iter__, but they shouldn't be considered
+        # collections here
+        if hasattr(value, '__iter__') and not isinstance(value, (bytes, text_type)):
             self._container = value
             self._base_content_is_iter = True
         else:
@@ -668,10 +699,9 @@ class HttpResponse(object):
         return self
 
     def next(self):
-        chunk = next(self._iterator)
-        if isinstance(chunk, unicode):
-            chunk = chunk.encode(self._charset)
-        return str(chunk)
+        return self._process_chunk(next(self._iterator))
+
+    __next__ = next
 
     def close(self):
         if hasattr(self._container, 'close'):
@@ -746,8 +776,8 @@ def str_to_unicode(s, encoding):
 
     Returns any non-basestring objects without change.
     """
-    if isinstance(s, str):
-        return unicode(s, encoding, 'replace')
+    if isinstance(s, bytes):
+        return text_type(s, encoding, 'replace')
     else:
         return s
 

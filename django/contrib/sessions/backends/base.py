@@ -1,10 +1,9 @@
 import base64
+import hashlib
+import os
+import random
 import time
 from datetime import datetime, timedelta
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
 
 from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
@@ -12,6 +11,8 @@ from django.utils.crypto import constant_time_compare
 from django.utils.crypto import get_random_string
 from django.utils.crypto import salted_hmac
 from django.utils import timezone
+from django.utils.py3 import (pickle, long_type, text_type,
+                              iterkeys, itervalues, iteritems)
 
 class CreateError(Exception):
     """
@@ -72,19 +73,20 @@ class SessionBase(object):
 
     def _hash(self, value):
         key_salt = "django.contrib.sessions" + self.__class__.__name__
-        return salted_hmac(key_salt, value).hexdigest()
+        return salted_hmac(key_salt, value).hexdigest().encode('utf-8')
 
     def encode(self, session_dict):
         "Returns the given session dictionary pickled and encoded as a string."
         pickled = pickle.dumps(session_dict, pickle.HIGHEST_PROTOCOL)
         hash = self._hash(pickled)
-        return base64.encodestring(hash + ":" + pickled)
+        return base64.encodestring(hash + b":" + pickled)
 
     def decode(self, session_data):
+        if isinstance(session_data, text_type): session_data = session_data.encode('utf-8')
         encoded_data = base64.decodestring(session_data)
         try:
             # could produce ValueError if there is no ':'
-            hash, pickled = encoded_data.split(':', 1)
+            hash, pickled = encoded_data.split(b':', 1)
             expected_hash = self._hash(pickled)
             if not constant_time_compare(hash, expected_hash):
                 raise SuspiciousOperation("Session data corrupted")
@@ -103,22 +105,22 @@ class SessionBase(object):
         return key in self._session
 
     def keys(self):
-        return self._session.keys()
+        return list(self._session.keys())
 
     def values(self):
-        return self._session.values()
+        return list(self._session.values())
 
     def items(self):
-        return self._session.items()
+        return list(self._session.items())
 
     def iterkeys(self):
-        return self._session.iterkeys()
+        return iterkeys(self._session)
 
     def itervalues(self):
-        return self._session.itervalues()
+        return itervalues(self._session)
 
     def iteritems(self):
-        return self._session.iteritems()
+        return iteritems(self._session)
 
     def clear(self):
         # To avoid unnecessary persistent storage accesses, we set up the

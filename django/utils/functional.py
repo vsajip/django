@@ -1,8 +1,9 @@
 import copy
-import operator
 from functools import wraps, update_wrapper
+import operator
 import sys
 
+from django.utils.py3 import bytes, dictvalues, text_type, PY3, n
 
 # You can't trivially replace this `functools.partial` because this binds to
 # classes and returns bound instances, whereas functools.partial (on CPython)
@@ -92,11 +93,13 @@ def lazy(func, *resultclasses):
                         if hasattr(cls, k):
                             continue
                         setattr(cls, k, meth)
-            cls._delegate_str = str in resultclasses
-            cls._delegate_unicode = unicode in resultclasses
+            cls._delegate_str = bytes in resultclasses
+            cls._delegate_unicode = text_type in resultclasses
             assert not (cls._delegate_str and cls._delegate_unicode), "Cannot call lazy() with both str and unicode return types."
             if cls._delegate_unicode:
                 cls.__unicode__ = cls.__unicode_cast
+                if PY3:
+                    __proxy__.__str__ = __proxy__.__unicode_cast
             elif cls._delegate_str:
                 cls.__str__ = cls.__str_cast
         __prepare_class__ = classmethod(__prepare_class__)
@@ -143,11 +146,13 @@ def lazy(func, *resultclasses):
                 other = other.__cast()
             return self.__cast() < other
 
+        __hash__ = object.__hash__
+
         def __mod__(self, rhs):
             if self._delegate_str:
-                return str(self) % rhs
+                return n(self) % rhs
             elif self._delegate_unicode:
-                return unicode(self) % rhs
+                return text_type(self) % rhs
             else:
                 raise AssertionError('__mod__ not supported for non-string types')
 
@@ -177,7 +182,7 @@ def allow_lazy(func, *resultclasses):
     """
     @wraps(func)
     def wrapper(*args, **kwargs):
-        for arg in list(args) + kwargs.values():
+        for arg in list(args) + dictvalues(kwargs):
             if isinstance(arg, Promise):
                 break
         else:
@@ -232,7 +237,9 @@ class LazyObject(object):
     __members__ = property(lambda self: self.__dir__())
     __dir__ = new_method_proxy(dir)
 
-
+# django3: workaround for Python issue #12370 - super and __class__
+# in class namespace. See the issue for details.
+_super = super
 class SimpleLazyObject(LazyObject):
     """
     A lazy object initialised from any function.
@@ -250,13 +257,13 @@ class SimpleLazyObject(LazyObject):
         value.
         """
         self.__dict__['_setupfunc'] = func
-        super(SimpleLazyObject, self).__init__()
+        _super(SimpleLazyObject, self).__init__()
 
     def _setup(self):
         self._wrapped = self._setupfunc()
 
     __str__ = new_method_proxy(str)
-    __unicode__ = new_method_proxy(unicode)
+    __unicode__ = new_method_proxy(text_type)
 
     def __deepcopy__(self, memo):
         if self._wrapped is empty:
@@ -284,7 +291,7 @@ class SimpleLazyObject(LazyObject):
     __eq__ = new_method_proxy(operator.eq)
     __hash__ = new_method_proxy(hash)
     __nonzero__ = new_method_proxy(bool)
-
+    __bool__ = __nonzero__
 
 class lazy_property(property):
     """

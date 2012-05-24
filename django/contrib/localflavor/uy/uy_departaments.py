@@ -1,24 +1,27 @@
 # -*- coding: utf-8 -*-
+
+from __future__ import unicode_literals
+
 """A list of Urguayan departaments as `choices` in a formfield."""
 
 DEPARTAMENT_CHOICES = (
-    ('G', u'Artigas'),
-    ('A', u'Canelones'),
-    ('E', u'Cerro Largo'),
-    ('L', u'Colonia'),
-    ('Q', u'Durazno'),
-    ('N', u'Flores'),
-    ('O', u'Florida'),
-    ('P', u'Lavalleja'),
-    ('B', u'Maldonado'),
-    ('S', u'Montevideo'),
-    ('I', u'Paysandú'),
-    ('J', u'Río Negro'),
-    ('F', u'Rivera'),
-    ('C', u'Rocha'),
-    ('H', u'Salto'),
-    ('M', u'San José'),
-    ('K', u'Soriano'),
-    ('R', u'Tacuarembó'),
-    ('D', u'Treinta y Tres'),
+    ('G', 'Artigas'),
+    ('A', 'Canelones'),
+    ('E', 'Cerro Largo'),
+    ('L', 'Colonia'),
+    ('Q', 'Durazno'),
+    ('N', 'Flores'),
+    ('O', 'Florida'),
+    ('P', 'Lavalleja'),
+    ('B', 'Maldonado'),
+    ('S', 'Montevideo'),
+    ('I', 'Paysand\xfa'),
+    ('J', 'R\xedo Negro'),
+    ('F', 'Rivera'),
+    ('C', 'Rocha'),
+    ('H', 'Salto'),
+    ('M', 'San Jos\xe9'),
+    ('K', 'Soriano'),
+    ('R', 'Tacuaremb\xf3'),
+    ('D', 'Treinta y Tres'),
 )

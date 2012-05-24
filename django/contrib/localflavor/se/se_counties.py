@@ -9,28 +9,30 @@ when explicitly needed.
 
 """
 
+from __future__ import unicode_literals
+
 from django.utils.translation import ugettext_lazy as _
 
 COUNTY_CHOICES = (
-    ('AB', _(u'Stockholm')),
-    ('AC', _(u'Västerbotten')),
-    ('BD', _(u'Norrbotten')),
-    ('C', _(u'Uppsala')),
-    ('D', _(u'Södermanland')),
-    ('E', _(u'Östergötland')),
-    ('F', _(u'Jönköping')),
-    ('G', _(u'Kronoberg')),
-    ('H', _(u'Kalmar')),
-    ('I', _(u'Gotland')),
-    ('K', _(u'Blekinge')),
-    ('M', _(u'Skåne')),
-    ('N', _(u'Halland')),
-    ('O', _(u'Västra Götaland')),
-    ('S', _(u'Värmland')),
-    ('T', _(u'Örebro')),
-    ('U', _(u'Västmanland')),
-    ('W', _(u'Dalarna')),
-    ('X', _(u'Gävleborg')),
-    ('Y', _(u'Västernorrland')),
-    ('Z', _(u'Jämtland')),
+    ('AB', _('Stockholm')),
+    ('AC', _('V\xe4sterbotten')),
+    ('BD', _('Norrbotten')),
+    ('C', _('Uppsala')),
+    ('D', _('S\xf6dermanland')),
+    ('E', _('\xd6sterg\xf6tland')),
+    ('F', _('J\xf6nk\xf6ping')),
+    ('G', _('Kronoberg')),
+    ('H', _('Kalmar')),
+    ('I', _('Gotland')),
+    ('K', _('Blekinge')),
+    ('M', _('Sk\xe5ne')),
+    ('N', _('Halland')),
+    ('O', _('V\xe4stra G\xf6taland')),
+    ('S', _('V\xe4rmland')),
+    ('T', _('\xd6rebro')),
+    ('U', _('V\xe4stmanland')),
+    ('W', _('Dalarna')),
+    ('X', _('G\xe4vleborg')),
+    ('Y', _('V\xe4sternorrland')),
+    ('Z', _('J\xe4mtland')),
 )

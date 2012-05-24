@@ -1,8 +1,10 @@
+from __future__ import unicode_literals
+
 import os
-from io import BytesIO
 
 from django.utils.encoding import smart_str, smart_unicode
 from django.core.files.utils import FileProxyMixin
+from django.utils.py3 import PY3, BytesIO
 
 class File(FileProxyMixin):
     DEFAULT_CHUNK_SIZE = 64 * 2**10
@@ -15,16 +17,21 @@ class File(FileProxyMixin):
         self.mode = getattr(file, 'mode', None)
 
     def __str__(self):
-        return smart_str(self.name or '')
+        if not PY3:
+            return smart_str(self.name or '')
+        else:
+            return self.__unicode__()
 
     def __unicode__(self):
-        return smart_unicode(self.name or u'')
+        return smart_unicode(self.name or '')
 
     def __repr__(self):
         return "<%s: %s>" % (self.__class__.__name__, self or "None")
 
     def __nonzero__(self):
         return bool(self.name)
+
+    __bool__ = __nonzero__
 
     def __len__(self):
         return self.size
@@ -62,7 +69,11 @@ class File(FileProxyMixin):
             chunk_size = self.DEFAULT_CHUNK_SIZE
 
         if hasattr(self, 'seek'):
-            self.seek(0)
+            # django3: test_urllib2_urlopen fails if we don't catch this
+            try:
+                self.seek(0)
+            except Exception:
+                pass
 
         while True:
             data = self.read(chunk_size)
@@ -134,6 +145,8 @@ class ContentFile(File):
 
     def __nonzero__(self):
         return True
+
+    __bool__ = __nonzero__
 
     def open(self, mode=None):
         self.seek(0)

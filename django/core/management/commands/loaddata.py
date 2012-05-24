@@ -1,5 +1,6 @@
 import sys
 import os
+from itertools import product
 import gzip
 import zipfile
 from optparse import make_option
@@ -12,7 +13,7 @@ from django.core.management.color import no_style
 from django.db import (connections, router, transaction, DEFAULT_DB_ALIAS,
       IntegrityError, DatabaseError)
 from django.db.models import get_apps
-from itertools import product
+from django.utils.py3 import reraise
 
 try:
     import bz2
@@ -197,7 +198,7 @@ class Command(BaseCommand):
                                                         'pk': obj.object.pk,
                                                         'error_msg': e
                                                     }
-                                                raise e.__class__, e.__class__(msg), sys.exc_info()[2]
+                                                reraise(e.__class__, e.__class__(msg), sys.exc_info()[2])
 
                                     loaded_object_count += loaded_objects_in_fixture
                                     fixture_object_count += objects_in_fixture
@@ -232,8 +233,7 @@ class Command(BaseCommand):
             else:
                 self.stderr.write(
                     "Problem installing fixture '%s': %s" %
-                         (full_path, ''.join(traceback.format_exception(sys.exc_type,
-                             sys.exc_value, sys.exc_traceback))))
+                         (full_path, ''.join(traceback.format_exception(*sys.exc_info()))))
             return
 
 

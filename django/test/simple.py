@@ -303,7 +303,7 @@ class DjangoTestSuiteRunner(object):
         mirrors = []
 
         for signature, (db_name, aliases) in dependency_ordered(
-            test_databases.items(), dependencies):
+            list(test_databases.items()), dependencies):
             test_db_name = None
             # Actually create the database for the first connection
 

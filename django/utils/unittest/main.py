@@ -4,6 +4,7 @@ import sys
 import os
 import types
 
+from django.utils.py3 import string_types
 from django.utils.unittest import loader, runner
 try:
     from django.utils.unittest.signals import installHandler
@@ -76,7 +77,7 @@ class TestProgram(object):
                  argv=None, testRunner=None,
                  testLoader=loader.defaultTestLoader, exit=True,
                  verbosity=1, failfast=None, catchbreak=None, buffer=None):
-        if isinstance(module, basestring):
+        if isinstance(module, string_types):
             self.module = __import__(module)
             for part in module.split('.')[1:]:
                 self.module = getattr(self.module, part)
@@ -150,7 +151,7 @@ class TestProgram(object):
             else:
                 self.testNames = (self.defaultTest,)
             self.createTests()
-        except getopt.error, msg:
+        except getopt.error as msg:
             self.usageExit(msg)
 
     def createTests(self):
@@ -218,7 +219,7 @@ class TestProgram(object):
             installHandler()
         if self.testRunner is None:
             self.testRunner = runner.TextTestRunner
-        if isinstance(self.testRunner, (type, types.ClassType)):
+        if isinstance(self.testRunner, type) or hasattr(types, 'ClassType') and isinstance(self.testRunner, types.ClassType):
             try:
                 testRunner = self.testRunner(verbosity=self.verbosity,
                                              failfast=self.failfast,

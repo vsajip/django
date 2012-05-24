@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from django.core.exceptions import ValidationError
 from django.forms.util import flatatt, ErrorDict, ErrorList
 from django.test import TestCase
+from django.utils.py3 import text_type
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy
 
@@ -14,9 +17,9 @@ class FormsUtilTestCase(TestCase):
         # flatatt #
         ###########
 
-        self.assertEqual(flatatt({'id': "header"}), u' id="header"')
-        self.assertEqual(flatatt({'class': "news", 'title': "Read this"}), u' class="news" title="Read this"')
-        self.assertEqual(flatatt({}), u'')
+        self.assertEqual(flatatt({'id': "header"}), ' id="header"')
+        self.assertEqual(flatatt({'class': "news", 'title': "Read this"}), ' class="news" title="Read this"')
+        self.assertEqual(flatatt({}), '')
 
     def test_validation_error(self):
         ###################
@@ -28,8 +31,8 @@ class FormsUtilTestCase(TestCase):
                          '<ul class="errorlist"><li>There was an error.</li></ul>')
 
         # Can take a unicode string.
-        self.assertHTMLEqual(unicode(ErrorList(ValidationError(u"Not \u03C0.").messages)),
-                         u'<ul class="errorlist"><li>Not π.</li></ul>')
+        self.assertHTMLEqual(text_type(ErrorList(ValidationError("Not \u03C0.").messages)),
+                         '<ul class="errorlist"><li>Not \u03c0.</li></ul>')
 
         # Can take a lazy string.
         self.assertHTMLEqual(str(ErrorList(ValidationError(ugettext_lazy("Error.")).messages)),
@@ -40,11 +43,11 @@ class FormsUtilTestCase(TestCase):
                          '<ul class="errorlist"><li>Error one.</li><li>Error two.</li></ul>')
 
         # Can take a mixture in a list.
-        self.assertHTMLEqual(str(ErrorList(ValidationError(["First error.", u"Not \u03C0.", ugettext_lazy("Error.")]).messages)),
-                         '<ul class="errorlist"><li>First error.</li><li>Not π.</li><li>Error.</li></ul>')
+        self.assertHTMLEqual(text_type(ErrorList(ValidationError(["First error.", "Not \u03C0.", ugettext_lazy("Error.")]).messages)),
+                         '<ul class="errorlist"><li>First error.</li><li>Not \u03c0.</li><li>Error.</li></ul>')
 
         class VeryBadError:
-            def __unicode__(self): return u"A very bad error."
+            def __unicode__(self): return "A very bad error."
 
         # Can take a non-string.
         self.assertHTMLEqual(str(ErrorList(ValidationError(VeryBadError()).messages)),

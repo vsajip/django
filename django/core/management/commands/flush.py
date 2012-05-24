@@ -7,7 +7,7 @@ from django.core.management.base import NoArgsCommand, CommandError
 from django.core.management.color import no_style
 from django.core.management.sql import sql_flush, emit_post_sync_signal
 from django.utils.importlib import import_module
-
+from django.utils.py3 import raw_input
 
 class Command(NoArgsCommand):
     option_list = NoArgsCommand.option_list + (

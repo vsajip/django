@@ -8,11 +8,11 @@ from __future__ import absolute_import
 import datetime
 import decimal
 import json
-from io import BytesIO
 
 from django.core.serializers.base import DeserializationError
 from django.core.serializers.python import Serializer as PythonSerializer
 from django.core.serializers.python import Deserializer as PythonDeserializer
+from django.utils.py3 import StringIO, string_types, text_type
 from django.utils.timezone import is_aware
 
 class Serializer(PythonSerializer):
@@ -36,12 +36,22 @@ def Deserializer(stream_or_string, **options):
     """
     Deserialize a stream or string of JSON data.
     """
-    if isinstance(stream_or_string, basestring):
-        stream = BytesIO(stream_or_string)
+    # django3: This code has been rejigged because binary data
+    # needs more careful handling on Python 3.x. Since both
+    # on 2.6+ and 3.x, json.load calls json.loads internally
+    # anyway, we don't need to worry about saving memory: just
+    # read all the data here and if binary, decode it using
+    # utf-8.
+    # simplejson might have worked differently, but that's
+    # neither here nor there.
+    if isinstance(stream_or_string, string_types):
+        string = stream_or_string
     else:
-        stream = stream_or_string
+        string = stream_or_string.read()
+        if not isinstance(string, text_type):
+            string = string.decode('utf-8')
     try:
-        for obj in PythonDeserializer(json.load(stream), **options):
+        for obj in PythonDeserializer(json.loads(string), **options):
             yield obj
     except GeneratorExit:
         raise

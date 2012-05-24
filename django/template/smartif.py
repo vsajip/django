@@ -2,6 +2,8 @@
 Parser and utilities for the smart 'if' tag
 """
 
+from django.utils.py3 import next
+
 # Using a simple top down parser, as described here:
 #    http://effbot.org/zone/simple-top-down-parsing.htm.
 # 'led' = left denotation
@@ -182,6 +184,8 @@ class IfParser(object):
             retval = self.tokens[self.pos]
             self.pos += 1
             return retval
+
+    __next__ = next
 
     def parse(self):
         retval = self.expression()

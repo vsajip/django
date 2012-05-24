@@ -1,10 +1,11 @@
 from __future__ import absolute_import
 
-from io import BytesIO
+import json
 
 from django.core import management
 from django.contrib.auth.models import User
 from django.test import TestCase
+from django.utils.py3 import StringIO, PY3
 
 from .models import (Person, Group, Membership, UserMembership, Car, Driver,
     CarDriver)
@@ -70,11 +71,11 @@ class M2MThroughTestCase(TestCase):
 
         pks = {"p_pk": p.pk, "g_pk": g.pk, "m_pk": m.pk}
 
-        out = BytesIO()
+        out = StringIO()
         management.call_command("dumpdata", "m2m_through_regress", format="json", stdout=out)
         self.assertEqual(out.getvalue().strip(), """[{"pk": %(m_pk)s, "model": "m2m_through_regress.membership", "fields": {"person": %(p_pk)s, "price": 100, "group": %(g_pk)s}}, {"pk": %(p_pk)s, "model": "m2m_through_regress.person", "fields": {"name": "Bob"}}, {"pk": %(g_pk)s, "model": "m2m_through_regress.group", "fields": {"name": "Roll"}}]""" % pks)
 
-        out = BytesIO()
+        out = StringIO()
         management.call_command("dumpdata", "m2m_through_regress", format="xml",
             indent=2, stdout=out)
         self.assertEqual(out.getvalue().strip(), """
@@ -142,6 +143,26 @@ class ThroughLoadDataTestCase(TestCase):
 
     def test_sequence_creation(self):
         "Check that sequences on an m2m_through are created for the through model, not a phantom auto-generated m2m table. Refs #11107"
-        out = BytesIO()
+        out = StringIO()
         management.call_command("dumpdata", "m2m_through_regress", format="json", stdout=out)
-        self.assertEqual(out.getvalue().strip(), """[{"pk": 1, "model": "m2m_through_regress.usermembership", "fields": {"price": 100, "group": 1, "user": 1}}, {"pk": 1, "model": "m2m_through_regress.person", "fields": {"name": "Guido"}}, {"pk": 1, "model": "m2m_through_regress.group", "fields": {"name": "Python Core Group"}}]""")
+        # django3: On 2.x you can just compare out.getvalue().strip() with the literal, but
+        # on 3.x the ordering of dumped items is different.
+        EXPECTED = """[{"pk": 1, "model": "m2m_through_regress.usermembership", "fields": {"price": 100, "group": 1, "user": 1}}, {"pk": 1, "model": "m2m_through_regress.person", "fields": {"name": "Guido"}}, {"pk": 1, "model": "m2m_through_regress.group", "fields": {"name": "Python Core Group"}}]"""
+        v1 = out.getvalue().strip()
+        v2 = EXPECTED
+        if PY3:
+            def transform_dict(d):
+                if not isinstance(d, dict):
+                    result = d
+                else:
+                    for k in d:
+                        d[k] = transform_dict(d[k])
+                    result = list(d.items())
+                return result
+
+            v1 = json.loads(v1)
+            v2 = json.loads(v2)
+            v1 = sorted((transform_dict(d) for d in v1))
+            v2 = sorted((transform_dict(d) for d in v2))
+        self.assertEqual(v1, v2)
+

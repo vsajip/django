@@ -8,18 +8,18 @@ import shutil
 import stat
 import sys
 import tempfile
-import urllib
 
 from optparse import make_option
 from os import path
 
 import django
-from django.template import Template, Context
-from django.utils import archive
-from django.utils._os import rmtree_errorhandler
 from django.core.management.base import BaseCommand, CommandError
 from django.core.management.commands.makemessages import handle_extensions
-
+from django.template import Template, Context
+from django.utils import archive
+#from django.utils.encoding import smart_str
+from django.utils._os import rmtree_errorhandler
+from django.utils.py3 import urlretrieve
 
 _drive_re = re.compile('^([a-z]):', re.I)
 _url_drive_re = re.compile('^([a-z])[:|]', re.I)
@@ -227,8 +227,7 @@ class TemplateCommand(BaseCommand):
         if self.verbosity >= 2:
             self.stdout.write("Downloading %s\n" % display_url)
         try:
-            the_path, info = urllib.urlretrieve(url,
-                                                path.join(tempdir, filename))
+            the_path, info = urlretrieve(url, path.join(tempdir, filename))
         except IOError as e:
             raise CommandError("couldn't download URL %s to %s: %s" %
                                (url, filename, e))

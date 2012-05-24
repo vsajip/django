@@ -2,13 +2,14 @@ from __future__ import absolute_import
 
 import sys
 import time
-
+import unittest
 from django.conf import settings
 from django.db import transaction, connection
 from django.db.utils import ConnectionHandler, DEFAULT_DB_ALIAS, DatabaseError
 from django.test import (TransactionTestCase, skipIfDBFeature,
     skipUnlessDBFeature)
 from django.utils import unittest
+from django.utils.py3 import text_type
 
 from .models import Person
 
@@ -77,7 +78,8 @@ class SelectForUpdateTests(TransactionTestCase):
         # contains the 'SELECT..FOR UPDATE' stanza.
         for_update_sql = tested_connection.ops.for_update_sql(nowait)
         sql = tested_connection.queries[-1]['sql']
-        return bool(sql.find(for_update_sql) > -1)
+        if isinstance(sql, text_type): sql = sql.encode('utf-8')
+        return bool(sql.find(for_update_sql.encode('utf-8')) > -1)
 
     def check_exc(self, exc):
         self.assertTrue(isinstance(exc, DatabaseError))
@@ -203,7 +205,7 @@ class SelectForUpdateTests(TransactionTestCase):
             sanity_count += 1
             time.sleep(1)
         if sanity_count >= 10:
-            raise ValueError, 'Thread did not run and block'
+            raise ValueError('Thread did not run and block')
 
         # Check the person hasn't been updated. Since this isn't
         # using FOR UPDATE, it won't block.

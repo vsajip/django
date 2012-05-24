@@ -1,9 +1,9 @@
 import zipfile
-from io import BytesIO
 
 from django.conf import settings
 from django.http import HttpResponse
 from django.template import loader
+from django.utils.py3 import BytesIO
 
 def compress_kml(kml):
     "Returns compressed KMZ from the given KML string."

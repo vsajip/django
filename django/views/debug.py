@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import datetime
 import os
 import re
@@ -13,10 +15,11 @@ from django.template.defaultfilters import force_escape, pprint
 from django.utils.html import escape
 from django.utils.importlib import import_module
 from django.utils.encoding import smart_unicode, smart_str
+from django.utils.py3 import string_types, text_type
 
 HIDDEN_SETTINGS = re.compile('API|TOKEN|KEY|SECRET|PASS|PROFANITIES_LIST|SIGNATURE')
 
-CLEANSED_SUBSTITUTE = u'********************'
+CLEANSED_SUBSTITUTE = '********************'
 
 def linebreak_iter(template_source):
     yield 0
@@ -108,7 +111,7 @@ class ExceptionReporterFilter(object):
             return request.POST
 
     def get_traceback_frame_variables(self, request, tb_frame):
-        return tb_frame.f_locals.items()
+        return list(tb_frame.f_locals.items())
 
 class SafeExceptionReporterFilter(ExceptionReporterFilter):
     """
@@ -201,7 +204,7 @@ class ExceptionReporter(object):
         self.loader_debug_info = None
 
         # Handle deprecated string exceptions
-        if isinstance(self.exc_type, basestring):
+        if isinstance(self.exc_type, string_types):
             self.exc_value = Exception('Deprecated String Exception: %r' % self.exc_type)
             self.exc_type = type(self.exc_value)
 
@@ -344,11 +347,11 @@ class ExceptionReporter(object):
         for line in source[:2]:
             # File coding may be specified. Match pattern from PEP-263
             # (http://www.python.org/dev/peps/pep-0263/)
-            match = re.search(r'coding[:=]\s*([-\w.]+)', line)
+            match = re.search(br'coding[:=]\s*([-\w.]+)', line)
             if match:
                 encoding = match.group(1)
                 break
-        source = [unicode(sline, encoding, 'replace') for sline in source]
+        source = [text_type(sline, encoding, 'replace') for sline in source]
 
         lower_bound = max(0, lineno - context_lines)
         upper_bound = lineno + context_lines

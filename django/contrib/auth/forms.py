@@ -3,6 +3,7 @@ from django.forms.util import flatatt
 from django.template import loader
 from django.utils.encoding import smart_str
 from django.utils.http import int_to_base36
+from django.utils.py3 import iteritems
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext, ugettext_lazy as _
 
@@ -28,10 +29,10 @@ class ReadOnlyPasswordHashWidget(forms.Widget):
 
         encoded = smart_str(encoded)
 
-        if len(encoded) == 32 and '$' not in encoded:
+        if len(encoded) == 32 and b'$' not in encoded:
             algorithm = 'unsalted_md5'
         else:
-            algorithm = encoded.split('$', 1)[0]
+            algorithm = encoded.split(b'$', 1)[0].decode('utf-8')
 
         try:
             hasher = get_hasher(algorithm)
@@ -39,7 +40,7 @@ class ReadOnlyPasswordHashWidget(forms.Widget):
             summary = "<strong>Invalid password format or unknown hashing algorithm.</strong>"
         else:
             summary = ""
-            for key, value in hasher.safe_summary(encoded).iteritems():
+            for key, value in iteritems(hasher.safe_summary(encoded)):
                 summary += "<strong>%(key)s</strong>: %(value)s " % {"key": ugettext(key), "value": value}
 
         return mark_safe("<div%(attrs)s>%(summary)s</div>" % {"attrs": flatatt(final_attrs), "summary": summary})

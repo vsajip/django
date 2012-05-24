@@ -1,7 +1,7 @@
 from django.contrib.sites.models import Site
 from django.core import urlresolvers, paginator
 from django.core.exceptions import ImproperlyConfigured
-import urllib
+from django.utils.py3 import urlencode, urlopen
 
 PING_URL = "http://www.google.com/webmasters/tools/ping"
 
@@ -32,8 +32,8 @@ def ping_google(sitemap_url=None, ping_url=PING_URL):
     from django.contrib.sites.models import Site
     current_site = Site.objects.get_current()
     url = "http://%s%s" % (current_site.domain, sitemap_url)
-    params = urllib.urlencode({'sitemap':url})
-    urllib.urlopen("%s?%s" % (ping_url, params))
+    params = urlencode({'sitemap':url})
+    urlopen("%s?%s" % (ping_url, params))
 
 class Sitemap(object):
     # This limit is defined by Google. See the index documentation at

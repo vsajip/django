@@ -3,18 +3,16 @@ Base classes for writing management commands (named commands which can
 be executed through ``django-admin.py`` or ``manage.py``).
 
 """
+from optparse import make_option, OptionParser
 import os
 import sys
-
-from io import BytesIO
-from optparse import make_option, OptionParser
 import traceback
 
 import django
 from django.core.exceptions import ImproperlyConfigured
 from django.core.management.color import color_style
-from django.utils.encoding import smart_str
-
+from django.utils.encoding import smart_text
+from django.utils.py3 import PY3, StringIO
 
 class CommandError(Exception):
     """
@@ -65,7 +63,7 @@ class OutputWrapper(object):
             msg = style_func(msg)
         elif self.style_func is not None:
             msg = self.style_func(msg)
-        self._out.write(smart_str(msg))
+        self._out.write(smart_text(msg))
 
 
 class BaseCommand(object):
@@ -255,6 +253,9 @@ class BaseCommand(object):
                 self.validate()
             output = self.handle(*args, **options)
             if output:
+                if PY3 and isinstance(output, bytes):
+                    # Decode to Unicode so that print can render it correctly
+                    output = output.decode('utf-8')
                 if self.output_transaction:
                     # This needs to be imported here, because it relies on
                     # settings.
@@ -283,7 +284,7 @@ class BaseCommand(object):
 
         """
         from django.core.management.validation import get_validation_errors
-        s = BytesIO()
+        s = StringIO()
         num_errors = get_validation_errors(s, app)
         if num_errors:
             s.seek(0)
@@ -325,7 +326,7 @@ class AppCommand(BaseCommand):
             app_output = self.handle_app(app, **options)
             if app_output:
                 output.append(app_output)
-        return '\n'.join(output)
+        return b'\n'.join(output)
 
     def handle_app(self, app, **options):
         """

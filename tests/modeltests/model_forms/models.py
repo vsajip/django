@@ -7,11 +7,14 @@ and the examples are probably a poor fit for the ``ModelForm`` syntax. In other
 words, most of these tests should be rewritten.
 """
 
+from __future__ import unicode_literals
+
 import os
 import tempfile
 
 from django.core.files.storage import FileSystemStorage
 from django.db import models
+from django.utils.py3 import text_type
 
 
 temp_storage_dir = tempfile.mkdtemp(dir=os.environ['DJANGO_TEST_TEMP_DIR'])
@@ -161,7 +164,7 @@ class Price(models.Model):
     quantity = models.PositiveIntegerField()
 
     def __unicode__(self):
-        return u"%s for %s" % (self.quantity, self.price)
+        return "%s for %s" % (self.quantity, self.price)
 
     class Meta:
         unique_together = (('price', 'quantity'),)
@@ -225,7 +228,7 @@ class BigInt(models.Model):
     biggie = models.BigIntegerField()
 
     def __unicode__(self):
-        return unicode(self.biggie)
+        return text_type(self.biggie)
 
 class MarkupField(models.CharField):
     def __init__(self, *args, **kwargs):

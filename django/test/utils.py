@@ -6,7 +6,7 @@ from django.template import Template, loader, TemplateDoesNotExist
 from django.template.loaders import cached
 from django.utils.translation import deactivate
 from django.utils.functional import wraps
-
+from django.utils.py3 import string_types
 
 __all__ = (
     'Approximate', 'ContextList',  'get_runner', 'override_settings',
@@ -35,7 +35,7 @@ class ContextList(list):
     in a list of context objects.
     """
     def __getitem__(self, key):
-        if isinstance(key, basestring):
+        if isinstance(key, string_types):
             for subcontext in self:
                 if key in subcontext:
                     return subcontext[key]

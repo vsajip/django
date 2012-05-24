@@ -4,9 +4,9 @@ import re
 from email.parser import HeaderParser
 from email.errors import HeaderParseError
 
-from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse
 from django.utils.encoding import smart_str
+from django.utils.safestring import mark_safe
 try:
     import docutils.core
     import docutils.nodes

@@ -6,7 +6,8 @@ import sys
 import tempfile
 import warnings
 
-from django import contrib
+from django import contrib, get_version
+from django.utils.py3 import text_type, binary_type
 
 # databrowse is deprecated, but we still want to run its tests
 warnings.filterwarnings('ignore', "The Databrowse contrib app is deprecated",
@@ -142,7 +143,7 @@ def teardown(state):
     # so that it will successfully remove temp trees containing
     # non-ASCII filenames on Windows. (We're assuming the temp dir
     # name itself does not contain non-ASCII characters.)
-    shutil.rmtree(unicode(TEMP_DIR))
+    shutil.rmtree(text_type(TEMP_DIR))
     # Restore the old settings.
     for key, value in state.items():
         setattr(settings, key, value)
@@ -305,6 +306,10 @@ if __name__ == "__main__":
         help='Overrides the default address where the live server (used with '
              'LiveServerTestCase) is expected to run from. The default value '
              'is localhost:8081.'),
+    parser.add_option(
+        '--ident', action='store_true', dest='ident', default=False,
+        help='If specified, the Python version and Django revision '
+             'are printed before the tests are run.')
     options, args = parser.parse_args()
     if options.settings:
         os.environ['DJANGO_SETTINGS_MODULE'] = options.settings
@@ -316,6 +321,35 @@ if __name__ == "__main__":
 
     if options.liveserver is not None:
         os.environ['DJANGO_LIVE_TEST_SERVER_ADDRESS'] = options.liveserver
+
+    if os.path.exists('runtests.json'):
+        from django.utils.log import dictConfig
+        from json import loads
+        with open('runtests.json', 'r') as f:
+            d = loads(f.read())
+            try:
+                fn = d['handlers']['file']['filename']
+                n, e = os.path.splitext(fn)
+                suffix = '-%d.%d' % sys.version_info[:2]
+                d['handlers']['file']['filename'] = n + suffix + e
+            except KeyError:
+                pass
+            dictConfig(d)
+
+    if options.ident:
+        s = sys.version.splitlines()[0]
+        print('Python version: %s' % s)
+        try:
+            dv = get_version()
+            p = subprocess.Popen('hg id -i'.split(), stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE)
+            out, err = p.communicate()
+            if p.returncode == 0:
+                if isinstance(out, binary_type):
+                    out = out.strip().decode('utf-8')
+                print('Django version: %s (%s)' % (dv, out))
+        except subprocess.CalledProcessError:
+            pass
 
     if options.bisect:
         bisect_tests(options.bisect, options, args)

@@ -1,8 +1,8 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
-import re
 from functools import partial
 from inspect import getargspec
+import re
 
 from django.conf import settings
 from django.template.context import (Context, RequestContext,
@@ -18,6 +18,7 @@ from django.utils.safestring import (SafeData, EscapeData, mark_safe,
 from django.utils.formats import localize
 from django.utils.html import escape
 from django.utils.module_loading import module_has_submodule
+from django.utils.py3 import text_type, next, string_types, n
 from django.utils.timezone import template_localtime
 
 
@@ -85,7 +86,7 @@ class VariableDoesNotExist(Exception):
         self.params = params
 
     def __str__(self):
-        return unicode(self).encode('utf-8')
+        return text_type(self).encode('utf-8')
 
     def __unicode__(self):
         return self.msg % tuple([force_unicode(p, errors='replace')
@@ -220,7 +221,7 @@ class Lexer(object):
         else:
             token = Token(TOKEN_TEXT, token_string)
         token.lineno = self.lineno
-        self.lineno += token_string.count('\n')
+        self.lineno += token_string.count(n('\n'))
         return token
 
 class Parser(object):
@@ -486,7 +487,7 @@ constant_string = constant_string.replace("\n", "")
 filter_raw_string = r"""
 ^(?P<constant>%(constant)s)|
 ^(?P<var>[%(var_chars)s]+|%(num)s)|
- (?:\s*%(filter_sep)s\s*
+ (?:%(filter_sep)s
      (?P<filter_name>\w+)
          (?:%(arg_sep)s
              (?:
@@ -824,7 +825,7 @@ class NodeList(list):
             else:
                 bit = node
             bits.append(force_unicode(bit))
-        return mark_safe(u''.join(bits))
+        return mark_safe(''.join(bits))
 
     def get_nodes_by_type(self, nodetype):
         "Return a list of all nodes of the given type"
@@ -953,7 +954,7 @@ def parse_bits(parser, bits, params, varargs, varkw, defaults,
         kwarg = token_kwargs([bit], parser)
         if kwarg:
             # The kwarg was successfully extracted
-            param, value = kwarg.items()[0]
+            param, value = list(kwarg.items())[0]
             if param not in params and varkw is None:
                 # An unexpected keyword argument was supplied
                 raise TemplateSyntaxError(
@@ -994,8 +995,8 @@ def parse_bits(parser, bits, params, varargs, varkw, defaults,
     if unhandled_params:
         # Some positional arguments were not supplied
         raise TemplateSyntaxError(
-            u"'%s' did not receive value(s) for the argument(s): %s" %
-            (name, u", ".join([u"'%s'" % p for p in unhandled_params])))
+            "'%s' did not receive value(s) for the argument(s): %s" %
+            (name, ", ".join(["'%s'" % p for p in unhandled_params])))
     return args, kwargs
 
 def generic_tag_compiler(parser, token, params, varargs, varkw, defaults,
@@ -1181,7 +1182,7 @@ class Library(object):
                         from django.template.loader import get_template, select_template
                         if isinstance(file_name, Template):
                             t = file_name
-                        elif not isinstance(file_name, basestring) and is_iterable(file_name):
+                        elif not isinstance(file_name, string_types) and is_iterable(file_name):
                             t = select_template(file_name)
                         else:
                             t = get_template(file_name)

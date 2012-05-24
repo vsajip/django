@@ -5,7 +5,6 @@ development, and SHOULD NOT be used in a production setting.
 """
 import os
 import posixpath
-import urllib
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -13,6 +12,7 @@ from django.http import Http404
 from django.views import static
 
 from django.contrib.staticfiles import finders
+from django.utils.py3 import unquote
 
 def serve(request, path, document_root=None, insecure=False, **kwargs):
     """
@@ -31,7 +31,7 @@ def serve(request, path, document_root=None, insecure=False, **kwargs):
         raise ImproperlyConfigured("The staticfiles view can only be used in "
                                    "debug mode or if the the --insecure "
                                    "option of 'runserver' is used")
-    normalized_path = posixpath.normpath(urllib.unquote(path)).lstrip('/')
+    normalized_path = posixpath.normpath(unquote(path)).lstrip('/')
     absolute_path = finders.find(normalized_path)
     if not absolute_path:
         if path.endswith('/') or path == '':

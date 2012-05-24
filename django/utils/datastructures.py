@@ -1,6 +1,8 @@
 import copy
 from types import GeneratorType
 
+from django.utils.py3 import iteritems
+
 class MergeDict(object):
     """
     A simple class for creating new "virtual" dictionaries that actually look
@@ -38,7 +40,7 @@ class MergeDict(object):
     def iteritems(self):
         seen = set()
         for dict_ in self.dicts:
-            for item in dict_.iteritems():
+            for item in iteritems(dict_):
                 k, v = item
                 if k in seen:
                     continue
@@ -46,11 +48,11 @@ class MergeDict(object):
                 yield item
 
     def iterkeys(self):
-        for k, v in self.iteritems():
+        for k, v in iteritems(self):
             yield k
 
     def itervalues(self):
-        for k, v in self.iteritems():
+        for k, v in iteritems(self):
             yield v
 
     def items(self):
@@ -115,7 +117,7 @@ class SortedDict(dict):
             data = list(data)
         super(SortedDict, self).__init__(data)
         if isinstance(data, dict):
-            self.keyOrder = data.keys()
+            self.keyOrder = list(data.keys())
         else:
             self.keyOrder = []
             seen = set()
@@ -126,7 +128,7 @@ class SortedDict(dict):
 
     def __deepcopy__(self, memo):
         return self.__class__([(key, copy.deepcopy(value, memo))
-                               for key, value in self.iteritems()])
+                               for key, value in iteritems(self)])
 
     def __copy__(self):
         # The Python's default copy implementation will alter the state
@@ -174,14 +176,14 @@ class SortedDict(dict):
         return iter(self.keyOrder)
 
     def values(self):
-        return map(self.__getitem__, self.keyOrder)
+        return list(map(self.__getitem__, self.keyOrder))
 
     def itervalues(self):
         for key in self.keyOrder:
             yield self[key]
 
     def update(self, dict_):
-        for k, v in dict_.iteritems():
+        for k, v in iteritems(dict_):
             self[k] = v
 
     def setdefault(self, key, default):
@@ -206,7 +208,9 @@ class SortedDict(dict):
     def copy(self):
         """Returns a copy of this object."""
         # This way of initializing the copy means it works for subclasses, too.
-        return self.__class__(self)
+        obj = self.__class__(self)
+        obj.keyOrder = self.keyOrder[:]
+        return obj
 
     def __repr__(self):
         """
@@ -358,11 +362,11 @@ class MultiValueDict(dict):
 
     def lists(self):
         """Returns a list of (key, list) pairs."""
-        return super(MultiValueDict, self).items()
+        return list(super(MultiValueDict, self).items())
 
     def iterlists(self):
         """Yields (key, list) pairs."""
-        return super(MultiValueDict, self).iteritems()
+        return iteritems(super(MultiValueDict, self))
 
     def values(self):
         """Returns a list of the last value on every key list."""
@@ -395,7 +399,7 @@ class MultiValueDict(dict):
                         self.setlistdefault(key).append(value)
                 except TypeError:
                     raise ValueError("MultiValueDict.update() takes either a MultiValueDict or dictionary")
-        for key, value in kwargs.iteritems():
+        for key, value in iteritems(kwargs):
             self.setlistdefault(key).append(value)
 
     def dict(self):

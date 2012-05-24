@@ -1,9 +1,8 @@
+from __future__ import unicode_literals
 import hashlib
 import os
 import posixpath
 import re
-from urllib import unquote
-from urlparse import urlsplit, urlunsplit, urldefrag
 
 from django.conf import settings
 from django.core.cache import (get_cache, InvalidCacheBackendError,
@@ -11,10 +10,11 @@ from django.core.cache import (get_cache, InvalidCacheBackendError,
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage, get_storage_class
-from django.utils.datastructures import SortedDict
 from django.utils.encoding import force_unicode, smart_str
 from django.utils.functional import LazyObject
 from django.utils.importlib import import_module
+from django.utils.datastructures import SortedDict
+from django.utils.py3 import unquote, urlsplit, urlunsplit, urldefrag, PY3
 
 from django.contrib.staticfiles.utils import check_settings, matches_patterns
 
@@ -46,8 +46,8 @@ class StaticFilesStorage(FileSystemStorage):
 class CachedFilesMixin(object):
     patterns = (
         ("*.css", (
-            r"""(url\(['"]{0,1}\s*(.*?)["']{0,1}\))""",
-            r"""(@import\s*["']\s*(.*?)["'])""",
+            br"""(url\(['"]{0,1}\s*(.*?)["']{0,1}\))""",
+            br"""(@import\s*["']\s*(.*?)["'])""",
         )),
     )
 
@@ -91,8 +91,8 @@ class CachedFilesMixin(object):
         root, ext = os.path.splitext(filename)
         file_hash = self.file_hash(clean_name, content)
         if file_hash is not None:
-            file_hash = u".%s" % file_hash
-        hashed_name = os.path.join(path, u"%s%s%s" %
+            file_hash = ".%s" % file_hash
+        hashed_name = os.path.join(path, "%s%s%s" %
                                    (root, file_hash, ext))
         unparsed_name = list(parsed_name)
         unparsed_name[2] = hashed_name
@@ -103,7 +103,7 @@ class CachedFilesMixin(object):
         return urlunsplit(unparsed_name)
 
     def cache_key(self, name):
-        return u'staticfiles:%s' % hashlib.md5(smart_str(name)).hexdigest()
+        return 'staticfiles:%s' % hashlib.md5(smart_str(name)).hexdigest()
 
     def url(self, name, force=False):
         """
@@ -152,6 +152,7 @@ class CachedFilesMixin(object):
             matched, url = matchobj.groups()
             # Completely ignore http(s) prefixed URLs,
             # fragments and data-uri URLs
+            if PY3: url = url.decode('utf-8')
             if url.startswith(('#', 'http:', 'https:', 'data:')):
                 return matched
             name_parts = name.split(os.sep)
@@ -175,9 +176,10 @@ class CachedFilesMixin(object):
             hashed_url = self.url(unquote(joined_result), force=True)
             file_name = hashed_url.split('/')[-1:]
             relative_url = '/'.join(url.split('/')[:-1] + file_name)
-
             # Return the hashed version to the file
-            return 'url("%s")' % unquote(relative_url)
+            result = 'url("%s")' % unquote(relative_url)
+            if PY3: result = result.encode('utf-8')
+            return result
         return converter
 
     def post_process(self, paths, dry_run=False, **options):

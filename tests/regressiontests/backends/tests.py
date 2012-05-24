@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Unit and doctests for specific database backends.
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 import datetime
 import threading
@@ -17,6 +17,7 @@ from django.test import (TestCase, skipUnlessDBFeature, skipIfDBFeature,
     TransactionTestCase)
 from django.test.utils import override_settings
 from django.utils import unittest
+from django.utils.py3 import text_type, xrange
 
 from . import models
 
@@ -50,7 +51,7 @@ class OracleChecks(unittest.TestCase):
         # than 4000 chars and read it properly
         c = connection.cursor()
         c.execute('CREATE TABLE ltext ("TEXT" NCLOB)')
-        long_str = ''.join([unicode(x) for x in xrange(4000)])
+        long_str = ''.join([text_type(x) for x in xrange(4000)])
         c.execute('INSERT INTO ltext VALUES (%s)',[long_str])
         c.execute('SELECT text FROM ltext')
         row = c.fetchone()
@@ -146,8 +147,8 @@ class LastExecutedQueryTest(TestCase):
         list(models.Tag.objects.filter(name="special:\\\"':", object_id=12))
         sql = connection.queries[-1]['sql']
         # only this line is different from the test above
-        self.assertTrue("= 'special:\\\\\\\"\\':' " in sql)
-        self.assertTrue("= 12 " in sql)
+        self.assertTrue(b"= 'special:\\\\\\\"\\':' " in sql)
+        self.assertTrue(b"= 12 " in sql)
 
 class ParameterHandlingTest(TestCase):
     def test_bad_parameter_count(self):
@@ -387,9 +388,9 @@ class BackendTestCase(TestCase):
              qn(f3.column)))
         cursor = connection.cursor()
         cursor.execute(query2)
-        self.assertEqual(cursor.fetchone(), (u'Clark', u'Kent'))
-        self.assertEqual(list(cursor.fetchmany(2)), [(u'Jane', u'Doe'), (u'John', u'Doe')])
-        self.assertEqual(list(cursor.fetchall()), [(u'Mary', u'Agnelline'), (u'Peter', u'Parker')])
+        self.assertEqual(cursor.fetchone(), ('Clark', 'Kent'))
+        self.assertEqual(list(cursor.fetchmany(2)), [('Jane', 'Doe'), ('John', 'Doe')])
+        self.assertEqual(list(cursor.fetchall()), [('Mary', 'Agnelline'), ('Peter', 'Parker')])
 
     def test_database_operations_helper_class(self):
         # Ticket #13630

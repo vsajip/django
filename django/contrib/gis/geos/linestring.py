@@ -4,6 +4,7 @@ from django.contrib.gis.geos.error import GEOSException
 from django.contrib.gis.geos.geometry import GEOSGeometry
 from django.contrib.gis.geos.point import Point
 from django.contrib.gis.geos import prototypes as capi
+from django.utils.py3 import xrange
 
 class LineString(GEOSGeometry):
     _init_func = capi.create_linestring

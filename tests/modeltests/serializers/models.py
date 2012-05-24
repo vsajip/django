@@ -6,10 +6,12 @@
 ``QuerySet`` objects to and from "flat" data (i.e. strings).
 """
 
+from __future__ import unicode_literals
+
 from decimal import Decimal
 
 from django.db import models
-
+from django.utils.py3 import with_metaclass, text_type
 
 class Category(models.Model):
     name = models.CharField(max_length=20)
@@ -49,7 +51,7 @@ class AuthorProfile(models.Model):
     date_of_birth = models.DateField()
 
     def __unicode__(self):
-        return u"Profile of %s" % self.author
+        return "Profile of %s" % self.author
 
 
 class Actor(models.Model):
@@ -92,14 +94,13 @@ class Team(object):
         return "%s" % self.title
 
 
-class TeamField(models.CharField):
-    __metaclass__ = models.SubfieldBase
+class TeamField(with_metaclass(models.SubfieldBase, models.CharField)):
 
     def __init__(self):
         super(TeamField, self).__init__(max_length=100)
 
     def get_db_prep_save(self, value, connection):
-        return unicode(value.title)
+        return text_type(value.title)
 
     def to_python(self, value):
         if isinstance(value, Team):
@@ -116,4 +117,4 @@ class Player(models.Model):
     team = TeamField()
 
     def __unicode__(self):
-        return u'%s (%d) playing for %s' % (self.name, self.rank, self.team.to_string())
+        return '%s (%d) playing for %s' % (self.name, self.rank, self.team.to_string())

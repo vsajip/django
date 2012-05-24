@@ -57,8 +57,8 @@ class GEOSMutationTest(unittest.TestCase):
 
     def test02_PointExceptions(self):
         'Testing Point exceptions'
-        self.assertRaises(TypeError, Point, range(1))
-        self.assertRaises(TypeError, Point, range(4))
+        self.assertRaises(TypeError, Point, list(range(1)))
+        self.assertRaises(TypeError, Point, list(range(4)))
 
     def test03_PointApi(self):
         'Testing Point API'
@@ -112,14 +112,14 @@ class GEOSMutationTest(unittest.TestCase):
 
     def test06_Collection(self):
         'Testing Collection mutations'
-        for mp in (MultiPoint(*map(Point,((3,4),(-1,2),(5,-4),(2,8)))),
+        for mp in (MultiPoint(*list(map(Point,((3,4),(-1,2),(5,-4),(2,8))))),
                     fromstr('MULTIPOINT (3 4,-1 2,5 -4,2 8)')):
             self.assertEqual(mp._get_single_external(2), Point(5,-4), 'Collection _get_single_external')
 
-            mp._set_list(3, map(Point,((5,5),(3,-2),(8,1))))
+            mp._set_list(3, list(map(Point,((5,5),(3,-2),(8,1)))))
             self.assertEqual(mp.coords, ((5.0,5.0),(3.0,-2.0),(8.0,1.0)), 'Collection _set_list')
 
-            lsa = MultiPoint(*map(Point,((5,5),(3,-2),(8,1))))
+            lsa = MultiPoint(*list(map(Point,((5,5),(3,-2),(8,1)))))
             for f in geos_function_tests:
                 self.assertEqual(f(lsa), f(mp), 'MultiPoint ' + f.__name__)
 

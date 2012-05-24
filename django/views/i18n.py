@@ -8,6 +8,7 @@ from django.utils.translation import check_for_language, activate, to_locale, ge
 from django.utils.text import javascript_quote
 from django.utils.encoding import smart_unicode
 from django.utils.formats import get_format_modules, get_format
+from django.utils.py3 import string_types, PY3
 
 def set_language(request):
     """
@@ -52,7 +53,11 @@ def get_formats():
             result[attr] = get_format(attr)
     src = []
     for k, v in result.items():
-        if isinstance(v, (basestring, int)):
+        if PY3:
+            # XXX why is it necessary to javascript_quote the keys, when they are from
+            # FORMAT_SETTINGS, which is all safe?
+            k = k.encode('ascii')
+        if isinstance(v, string_types + (int,)):
             src.append("formats['%s'] = '%s';\n" % (javascript_quote(k), javascript_quote(smart_unicode(v))))
         elif isinstance(v, (tuple, list)):
             v = [javascript_quote(smart_unicode(value)) for value in v]
@@ -184,7 +189,7 @@ def javascript_catalog(request, domain='djangojs', packages=None):
                 activate(request.GET['language'])
     if packages is None:
         packages = ['django.conf']
-    if isinstance(packages, basestring):
+    if isinstance(packages, string_types):
         packages = packages.split('+')
     packages = [p for p in packages if p == 'django.conf' or p in settings.INSTALLED_APPS]
     default_locale = to_locale(settings.LANGUAGE_CODE)
@@ -258,7 +263,7 @@ def javascript_catalog(request, domain='djangojs', packages=None):
     for k, v in t.items():
         if k == '':
             continue
-        if isinstance(k, basestring):
+        if isinstance(k, string_types):
             csrc.append("catalog['%s'] = '%s';\n" % (javascript_quote(k), javascript_quote(v)))
         elif isinstance(k, tuple):
             if k[0] not in pdict:

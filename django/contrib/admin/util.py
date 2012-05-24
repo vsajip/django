@@ -1,19 +1,20 @@
 import datetime
 import decimal
+import sys
 
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models.sql.constants import LOOKUP_SEP
 from django.db.models.deletion import Collector
 from django.db.models.related import RelatedObject
 from django.forms.forms import pretty_name
-from django.utils import formats
+from django.utils import formats, timezone
+from django.utils.encoding import force_unicode, smart_unicode, smart_str
 from django.utils.html import escape
+from django.utils.py3 import string_types, text_type, integer_types
 from django.utils.safestring import mark_safe
 from django.utils.text import capfirst
-from django.utils import timezone
-from django.utils.encoding import force_unicode, smart_unicode, smart_str
 from django.utils.translation import ungettext
-from django.core.urlresolvers import reverse
 
 def lookup_needs_distinct(opts, lookup_path):
     """
@@ -50,7 +51,7 @@ def quote(s):
     quoting is slightly different so that it doesn't get automatically
     unquoted by the Web browser.
     """
-    if not isinstance(s, basestring):
+    if not isinstance(s, string_types):
         return s
     res = list(s)
     for i in range(len(res)):
@@ -122,14 +123,14 @@ def get_deleted_objects(objs, opts, user, admin_site, using):
             if not user.has_perm(p):
                 perms_needed.add(opts.verbose_name)
             # Display a link to the admin page.
-            return mark_safe(u'%s: <a href="%s">%s</a>' %
+            return mark_safe('%s: <a href="%s">%s</a>' %
                              (escape(capfirst(opts.verbose_name)),
                               admin_url,
                               escape(obj)))
         else:
             # Don't display link to edit, because it either has no
             # admin or is edited inline.
-            return u'%s: %s' % (capfirst(opts.verbose_name),
+            return '%s: %s' % (capfirst(opts.verbose_name),
                                 force_unicode(obj))
 
     to_delete = collector.nested(format_callback)
@@ -273,7 +274,7 @@ def label_for_field(name, model, model_admin=None, return_attr=False):
     except models.FieldDoesNotExist:
         if name == "__unicode__":
             label = force_unicode(model._meta.verbose_name)
-            attr = unicode
+            attr = text_type
         elif name == "__str__":
             label = smart_str(model._meta.verbose_name)
             attr = str
@@ -348,7 +349,7 @@ def display_for_value(value, boolean=False):
         return formats.localize(timezone.template_localtime(value))
     elif isinstance(value, (datetime.date, datetime.time)):
         return formats.localize(value)
-    elif isinstance(value, (decimal.Decimal, float, int, long)):
+    elif isinstance(value, (decimal.Decimal, float) + integer_types):
         return formats.number_format(value)
     else:
         return smart_unicode(value)

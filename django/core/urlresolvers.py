@@ -7,16 +7,19 @@ a string) and returns a tuple in this format:
     (view_function, function_args, function_kwargs)
 """
 
+from __future__ import unicode_literals
+
 import re
 from threading import local
 
 from django.http import Http404
 from django.core.exceptions import ImproperlyConfigured, ViewDoesNotExist
 from django.utils.datastructures import MultiValueDict
-from django.utils.encoding import iri_to_uri, force_unicode, smart_str
+from django.utils.encoding import iri_to_uri, force_unicode, smart_text
 from django.utils.functional import memoize, lazy
 from django.utils.importlib import import_module
 from django.utils.module_loading import module_has_submodule
+from django.utils.py3 import string_types, iteritems
 from django.utils.regex_helper import normalize
 from django.utils.translation import get_language
 
@@ -158,7 +161,7 @@ class LocaleRegexProvider(object):
         """
         language_code = get_language()
         if language_code not in self._regex_dict:
-            if isinstance(self._regex, basestring):
+            if isinstance(self._regex, string_types):
                 compiled_regex = re.compile(self._regex, re.UNICODE)
             else:
                 regex = force_unicode(self._regex)
@@ -182,7 +185,7 @@ class RegexURLPattern(LocaleRegexProvider):
         self.name = name
 
     def __repr__(self):
-        return smart_str(u'<%s %s %s>' % (self.__class__.__name__, self.name, self.regex.pattern))
+        return smart_text('<%s %s %s>' % (self.__class__.__name__, self.name, self.regex.pattern))
 
     def add_prefix(self, prefix):
         """
@@ -221,7 +224,7 @@ class RegexURLResolver(LocaleRegexProvider):
         LocaleRegexProvider.__init__(self, regex)
         # urlconf_name is a string representing the module containing URLconfs.
         self.urlconf_name = urlconf_name
-        if not isinstance(urlconf_name, basestring):
+        if not isinstance(urlconf_name, string_types):
             self._urlconf_module = self.urlconf_name
         self.callback = None
         self.default_kwargs = default_kwargs or {}
@@ -232,7 +235,7 @@ class RegexURLResolver(LocaleRegexProvider):
         self._app_dict = {}
 
     def __repr__(self):
-        return smart_str(u'<%s %s (%s:%s) %s>' % (self.__class__.__name__, self.urlconf_name, self.app_name, self.namespace, self.regex.pattern))
+        return smart_text('<%s %s (%s:%s) %s>' % (self.__class__.__name__, self.urlconf_name, self.app_name, self.namespace, self.regex.pattern))
 
     def _populate(self):
         lookups = MultiValueDict()
@@ -306,10 +309,10 @@ class RegexURLResolver(LocaleRegexProvider):
                         tried.append([pattern])
                 else:
                     if sub_match:
-                        sub_match_dict = dict([(smart_str(k), v) for k, v in match.groupdict().items()])
+                        sub_match_dict = dict([(smart_text(k), v) for k, v in match.groupdict().items()])
                         sub_match_dict.update(self.default_kwargs)
-                        for k, v in sub_match.kwargs.iteritems():
-                            sub_match_dict[smart_str(k)] = v
+                        for k, v in iteritems(sub_match.kwargs):
+                            sub_match_dict[smart_text(k)] = v
                         return ResolverMatch(sub_match.func, sub_match.args, sub_match_dict, sub_match.url_name, self.app_name or sub_match.app_name, [self.namespace] + sub_match.namespaces)
                     tried.append([pattern])
             raise Resolver404({'tried': tried, 'path': new_path})
@@ -370,7 +373,7 @@ class RegexURLResolver(LocaleRegexProvider):
                     unicode_args = [force_unicode(val) for val in args]
                     candidate =  (prefix_norm + result) % dict(zip(prefix_args + params, unicode_args))
                 else:
-                    if set(kwargs.keys() + defaults.keys()) != set(params + defaults.keys() + prefix_args):
+                    if set(list(kwargs.keys()) + list(defaults.keys())) != set(params + list(defaults.keys()) + prefix_args):
                         continue
                     matches = True
                     for k, v in defaults.items():
@@ -381,7 +384,7 @@ class RegexURLResolver(LocaleRegexProvider):
                         continue
                     unicode_kwargs = dict([(k, force_unicode(v)) for (k, v) in kwargs.items()])
                     candidate = (prefix_norm + result) % unicode_kwargs
-                if re.search(u'^%s%s' % (_prefix, pattern), candidate, re.UNICODE):
+                if re.search('^%s%s' % (_prefix, pattern), candidate, re.UNICODE):
                     return candidate
         # lookup_view can be URL label, or dotted path, or callable, Any of
         # these can be passed in at the top, but callables are not friendly in
@@ -429,7 +432,7 @@ def reverse(viewname, urlconf=None, args=None, kwargs=None, prefix=None, current
     if prefix is None:
         prefix = get_script_prefix()
 
-    if not isinstance(viewname, basestring):
+    if not isinstance(viewname, string_types):
         view = viewname
     else:
         parts = viewname.split(':')
@@ -499,7 +502,7 @@ def get_script_prefix():
     wishes to construct their own URLs manually (although accessing the request
     instance is normally going to be a lot cleaner).
     """
-    return getattr(_prefixes, "value", u'/')
+    return getattr(_prefixes, "value", '/')
 
 def set_urlconf(urlconf_name):
     """

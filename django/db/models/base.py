@@ -1,7 +1,8 @@
+from __future__ import unicode_literals
+
 import copy
 import sys
 from functools import update_wrapper
-from future_builtins import zip
 
 import django.db.models.manager     # Imported to register signal handler.
 from django.conf import settings
@@ -22,6 +23,7 @@ from django.db.models.loading import register_models, get_model
 from django.utils.translation import ugettext_lazy as _
 from django.utils.functional import curry
 from django.utils.encoding import smart_str, force_unicode
+from django.utils.py3 import izip, with_metaclass, text_type, PY3, n
 from django.utils.text import get_text_list, capfirst
 
 
@@ -31,7 +33,7 @@ class ModelBase(type):
     """
     def __new__(cls, name, bases, attrs):
         super_new = super(ModelBase, cls).__new__
-        parents = [b for b in bases if isinstance(b, ModelBase)]
+        parents = [b for b in bases if isinstance(b, ModelBase) and b.__name__ != '_DjangoBase']
         if not parents:
             # If this isn't a subclass of Model, don't do anything special.
             return super_new(cls, name, bases, attrs)
@@ -57,11 +59,11 @@ class ModelBase(type):
 
         new_class.add_to_class('_meta', Options(meta, **kwargs))
         if not abstract:
-            new_class.add_to_class('DoesNotExist', subclass_exception(b'DoesNotExist',
+            new_class.add_to_class('DoesNotExist', subclass_exception('DoesNotExist',
                     tuple(x.DoesNotExist
                             for x in parents if hasattr(x, '_meta') and not x._meta.abstract)
                                     or (ObjectDoesNotExist,), module))
-            new_class.add_to_class('MultipleObjectsReturned', subclass_exception(b'MultipleObjectsReturned',
+            new_class.add_to_class('MultipleObjectsReturned', subclass_exception('MultipleObjectsReturned',
                     tuple(x.MultipleObjectsReturned
                             for x in parents if hasattr(x, '_meta') and not x._meta.abstract)
                                     or (MultipleObjectsReturned,), module))
@@ -271,8 +273,7 @@ class ModelState(object):
         # This impacts validation only; it has no effect on the actual save.
         self.adding = True
 
-class Model(object):
-    __metaclass__ = ModelBase
+class Model(with_metaclass(ModelBase)):
     _deferred = False
 
     def __init__(self, *args, **kwargs):
@@ -292,15 +293,15 @@ class Model(object):
 
         fields_iter = iter(self._meta.fields)
         if not kwargs:
-            # The ordering of the zip calls matter - zip throws StopIteration
+            # The ordering of the izip calls matter - izip throws StopIteration
             # when an iter throws it. So if the first iter throws it, the second
             # is *not* consumed. We rely on this, so don't change the order
             # without changing the logic.
-            for val, field in zip(args, fields_iter):
+            for val, field in izip(args, fields_iter):
                 setattr(self, field.attname, val)
         else:
             # Slower, kwargs-ready version.
-            for val, field in zip(args, fields_iter):
+            for val, field in izip(args, fields_iter):
                 setattr(self, field.attname, val)
                 kwargs.pop(field.name, None)
                 # Maintain compatibility with existing calls.
@@ -357,27 +358,32 @@ class Model(object):
                 setattr(self, field.attname, val)
 
         if kwargs:
-            for prop in kwargs.keys():
+            for prop in list(kwargs.keys()):
                 try:
                     if isinstance(getattr(self.__class__, prop), property):
                         setattr(self, prop, kwargs.pop(prop))
                 except AttributeError:
                     pass
             if kwargs:
-                raise TypeError("'%s' is an invalid keyword argument for this function" % kwargs.keys()[0])
+                raise TypeError("'%s' is an invalid keyword argument for this function" % list(kwargs.keys())[0])
         super(Model, self).__init__()
         signals.post_init.send(sender=self.__class__, instance=self)
 
     def __repr__(self):
         try:
-            u = unicode(self)
+            v = text_type(self)
         except (UnicodeEncodeError, UnicodeDecodeError):
-            u = '[Bad Unicode data]'
-        return smart_str(u'<%s: %s>' % (self.__class__.__name__, u))
+            v = '[Bad Unicode data]'
+        if not PY3:
+            return smart_str('<%s: %s>' % (self.__class__.__name__, v))
+        else:
+            return '<%s: %s>' % (self.__class__.__name__, v)
 
     def __str__(self):
         if hasattr(self, '__unicode__'):
-            return force_unicode(self).encode('utf-8')
+            if not PY3:
+                return force_unicode(self).encode('utf-8')
+            return force_unicode(self)
         return '%s object' % self.__class__.__name__
 
     def __eq__(self, other):
@@ -738,7 +744,7 @@ class Model(object):
                 lookup_kwargs[str(field_name)] = lookup_value
 
             # some fields were skipped, no reason to do the check
-            if len(unique_check) != len(lookup_kwargs.keys()):
+            if len(unique_check) != len(list(lookup_kwargs.keys())):
                 continue
 
             qs = model_class._default_manager.filter(**lookup_kwargs)
@@ -792,9 +798,9 @@ class Model(object):
 
     def date_error_message(self, lookup_type, field, unique_for):
         opts = self._meta
-        return _(u"%(field_name)s must be unique for %(date_field)s %(lookup)s.") % {
-            'field_name': unicode(capfirst(opts.get_field(field).verbose_name)),
-            'date_field': unicode(capfirst(opts.get_field(unique_for).verbose_name)),
+        return _("%(field_name)s must be unique for %(date_field)s %(lookup)s.") % {
+            'field_name': text_type(capfirst(opts.get_field(field).verbose_name)),
+            'date_field': text_type(capfirst(opts.get_field(unique_for).verbose_name)),
             'lookup': lookup_type,
         }
 
@@ -809,16 +815,16 @@ class Model(object):
             field_label = capfirst(field.verbose_name)
             # Insert the error into the error dict, very sneaky
             return field.error_messages['unique'] %  {
-                'model_name': unicode(model_name),
-                'field_label': unicode(field_label)
+                'model_name': text_type(model_name),
+                'field_label': text_type(field_label)
             }
         # unique_together
         else:
-            field_labels = map(lambda f: capfirst(opts.get_field(f).verbose_name), unique_check)
+            field_labels = [capfirst(opts.get_field(f).verbose_name) for f in unique_check]
             field_labels = get_text_list(field_labels, _('and'))
-            return _(u"%(model_name)s with this %(field_label)s already exists.") %  {
-                'model_name': unicode(model_name),
-                'field_label': unicode(field_labels)
+            return _("%(model_name)s with this %(field_label)s already exists.") %  {
+                'model_name': text_type(model_name),
+                'field_label': text_type(field_labels)
             }
 
     def full_clean(self, exclude=None):
@@ -939,4 +945,4 @@ def model_unpickle(model, attrs, factory):
 model_unpickle.__safe_for_unpickle__ = True
 
 def subclass_exception(name, parents, module):
-    return type(name, parents, {'__module__': module})
+    return type(n(name), parents, {'__module__': module})

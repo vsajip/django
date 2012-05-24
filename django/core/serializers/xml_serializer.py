@@ -2,11 +2,14 @@
 XML serializer.
 """
 
+from __future__ import unicode_literals
+
 from django.conf import settings
 from django.core.serializers import base
 from django.db import models, DEFAULT_DB_ALIAS
-from django.utils.xmlutils import SimplerXMLGenerator
 from django.utils.encoding import smart_unicode
+from django.utils.xmlutils import SimplerXMLGenerator
+
 from xml.dom import pulldom
 
 class Serializer(base.Serializer):
@@ -159,6 +162,8 @@ class Deserializer(base.Deserializer):
                 return self._handle_object(node)
         raise StopIteration
 
+    __next__ = next
+
     def _handle_object(self, node):
         """
         Convert an <object> node to a DeserializedObject.
@@ -289,4 +294,4 @@ def getInnerText(node):
             inner_text.extend(getInnerText(child))
         else:
            pass
-    return u"".join(inner_text)
+    return "".join(inner_text)

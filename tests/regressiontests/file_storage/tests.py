@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 import errno
 import os
@@ -7,7 +7,6 @@ import shutil
 import tempfile
 import time
 from datetime import datetime, timedelta
-from io import BytesIO
 
 try:
     import threading
@@ -22,6 +21,8 @@ from django.core.files.storage import FileSystemStorage, get_storage_class
 from django.core.files.uploadedfile import UploadedFile
 from django.test import SimpleTestCase
 from django.utils import unittest
+from django.utils.py3 import BytesIO
+
 from ..servers.tests import LiveServerBase
 
 # Try to import PIL in either of the two ways it can end up installed.
@@ -75,7 +76,7 @@ class GetStorageClassTests(SimpleTestCase):
         self.assertRaisesRegexp(
             ImproperlyConfigured,
             ('Error importing storage module django.core.files.non_existing_'
-                'storage: "No module named .*non_existing_storage"'),
+                'storage: "No module named \'?.*non_existing_storage\'?"'),
             get_storage_class,
             'django.core.files.non_existing_storage.NonExistingStorage'
         )
@@ -251,9 +252,9 @@ class FileStorageTests(unittest.TestCase):
         os.mkdir(os.path.join(self.temp_dir, 'storage_dir_1'))
 
         dirs, files = self.storage.listdir('')
-        self.assertEqual(set(dirs), set([u'storage_dir_1']))
+        self.assertEqual(set(dirs), set(['storage_dir_1']))
         self.assertEqual(set(files),
-                         set([u'storage_test_1', u'storage_test_2']))
+                         set(['storage_test_1', 'storage_test_2']))
 
         self.storage.delete('storage_test_1')
         self.storage.delete('storage_test_2')
@@ -388,7 +389,7 @@ class UnicodeFileNameTests(unittest.TestCase):
         out the encoding situation between doctest and this file, but the actual
         repr doesn't matter; it just shouldn't return a unicode object.
         """
-        uf = UploadedFile(name=u'¿Cómo?',content_type='text')
+        uf = UploadedFile(name='\xbfC\xf3mo?',content_type='text')
         self.assertEqual(type(uf.__repr__()), str)
 
 # Tests for a race condition on file saving (#4948).
@@ -424,7 +425,7 @@ class FileSaveRaceConditionTest(unittest.TestCase):
 class FileStoragePermissions(unittest.TestCase):
     def setUp(self):
         self.old_perms = settings.FILE_UPLOAD_PERMISSIONS
-        settings.FILE_UPLOAD_PERMISSIONS = 0666
+        settings.FILE_UPLOAD_PERMISSIONS = 0x1b6    # 0666
         self.storage_dir = tempfile.mkdtemp()
         self.storage = FileSystemStorage(self.storage_dir)
 
@@ -434,8 +435,8 @@ class FileStoragePermissions(unittest.TestCase):
 
     def test_file_upload_permissions(self):
         name = self.storage.save("the_file", ContentFile(b"data"))
-        actual_mode = os.stat(self.storage.path(name))[0] & 0777
-        self.assertEqual(actual_mode, 0666)
+        actual_mode = os.stat(self.storage.path(name))[0] & 0x1ff    # 0777
+        self.assertEqual(actual_mode, 0x1b6)    # 0666
 
 
 class FileStoragePathParsing(unittest.TestCase):

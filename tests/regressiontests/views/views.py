@@ -21,6 +21,25 @@ def index_page(request):
     """Dummy index page"""
     return HttpResponse('<html><body>Dummy page</body></html>')
 
+def custom_create(request):
+    """
+    Calls create_object generic view with a custom form class.
+    """
+    class SlugChangingArticleForm(forms.ModelForm):
+        """Custom form class to overwrite the slug."""
+
+        class Meta:
+            model = Article
+
+        def save(self, *args, **kwargs):
+            self.instance.slug = 'some-other-slug'
+            return super(SlugChangingArticleForm, self).save(*args, **kwargs)
+
+    from django.views.generic.create_update import create_object
+    return create_object(request,
+        post_save_redirect='/create_update/view/article/%(slug)s/',
+        form_class=SlugChangingArticleForm)
+
 def raises(request):
     # Make sure that a callable that raises an exception in the stack frame's
     # local vars won't hijack the technical 500 response. See:
@@ -191,7 +210,7 @@ class UnsafeExceptionReporterFilter(SafeExceptionReporterFilter):
         return request.POST
 
     def get_traceback_frame_variables(self, request, tb_frame):
-        return tb_frame.f_locals.items()
+        return list(tb_frame.f_locals.items())
 
 
 @sensitive_variables()

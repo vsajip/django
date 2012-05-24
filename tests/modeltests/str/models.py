@@ -15,6 +15,7 @@ if you prefer. You must be careful to encode the results correctly, though.
 """
 
 from django.db import models
+from django.utils.encoding import smart_str
 
 
 class Article(models.Model):

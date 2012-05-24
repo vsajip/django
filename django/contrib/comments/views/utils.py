@@ -2,7 +2,6 @@
 A few bits of helper functions for comment views.
 """
 
-import urllib
 import textwrap
 from django.http import HttpResponseRedirect
 from django.core import urlresolvers
@@ -10,6 +9,7 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import comments
+from django.utils.py3 import urlencode
 
 def next_redirect(data, default, default_view, **get_kwargs):
     """
@@ -33,7 +33,7 @@ def next_redirect(data, default, default_view, **get_kwargs):
             anchor = ''
 
         joiner = ('?' in next) and '&' or '?'
-        next += joiner + urllib.urlencode(get_kwargs) + anchor
+        next += joiner + urlencode(get_kwargs) + anchor
     return HttpResponseRedirect(next)
 
 def confirmation_view(template, doc="Display a confirmation view."):

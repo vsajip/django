@@ -1,16 +1,12 @@
-from django.db.utils import DatabaseError
-
-try:
-    import thread
-except ImportError:
-    import dummy_thread as thread
 from contextlib import contextmanager
 
 from django.conf import settings
 from django.db import DEFAULT_DB_ALIAS
 from django.db.backends import util
 from django.db.transaction import TransactionManagementError
+from django.db.utils import DatabaseError
 from django.utils.importlib import import_module
+from django.utils.py3 import thread, text_type
 from django.utils.timezone import is_aware
 
 
@@ -41,6 +37,8 @@ class BaseDatabaseWrapper(object):
 
     def __eq__(self, other):
         return self.alias == other.alias
+
+    __hash__ = object.__hash__
 
     def __ne__(self, other):
         return not self == other
@@ -398,6 +396,9 @@ class BaseDatabaseFeatures(object):
     # Does the backend support tablespaces? Default to False because it isn't
     # in the SQL standard.
     supports_tablespaces = False
+
+    # Does the backend reset sequences between tests?
+    supports_sequence_reset = True
 
     # Features that need to be confirmed at runtime
     # Cache whether the confirmation has been performed.
@@ -787,7 +788,7 @@ class BaseDatabaseOperations(object):
         """
         if value is None:
             return None
-        return unicode(value)
+        return text_type(value)
 
     def value_to_db_datetime(self, value):
         """
@@ -796,7 +797,7 @@ class BaseDatabaseOperations(object):
         """
         if value is None:
             return None
-        return unicode(value)
+        return text_type(value)
 
     def value_to_db_time(self, value):
         """
@@ -807,7 +808,7 @@ class BaseDatabaseOperations(object):
             return None
         if is_aware(value):
             raise ValueError("Django does not support timezone-aware times.")
-        return unicode(value)
+        return text_type(value)
 
     def value_to_db_decimal(self, value, max_digits, decimal_places):
         """
@@ -954,7 +955,7 @@ class BaseDatabaseIntrospection(object):
             for model in models.get_models(app):
                 if router.allow_syncdb(self.connection.alias, model):
                     all_models.append(model)
-        tables = map(self.table_name_converter, tables)
+        tables = list(map(self.table_name_converter, tables))
         return set([
             m for m in all_models
             if self.table_name_converter(m._meta.db_table) in tables

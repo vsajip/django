@@ -2,13 +2,12 @@
 Django's standard crypto functions and utilities.
 """
 
-import hmac
-import struct
-import hashlib
 import binascii
+import hashlib
+import hmac
 import operator
+import struct
 import time
-from functools import reduce
 
 # Use the system PRNG if possible
 import random
@@ -22,11 +21,14 @@ except NotImplementedError:
     using_sysrandom = False
 
 from django.conf import settings
+from django.utils.py3 import PY3, text_type, xrange, reduce, long_type
 
+_trans_5c = "".join([chr(x ^ 0x5C) for x in xrange(256)])
+_trans_36 = "".join([chr(x ^ 0x36) for x in xrange(256)])
 
-_trans_5c = b"".join([chr(x ^ 0x5C) for x in xrange(256)])
-_trans_36 = b"".join([chr(x ^ 0x36) for x in xrange(256)])
-
+if PY3:
+    _trans_5c = _trans_5c.encode('latin-1')
+    _trans_36 = _trans_36.encode('latin-1')
 
 def salted_hmac(key_salt, value, secret=None):
     """
@@ -41,12 +43,13 @@ def salted_hmac(key_salt, value, secret=None):
     # We need to generate a derived key from our base key.  We can do this by
     # passing the key_salt and our base key through a pseudo-random function and
     # SHA1 works nicely.
-    key = hashlib.sha1(key_salt + secret).digest()
+    key = hashlib.sha1((key_salt + secret).encode('utf-8')).digest()
 
     # If len(key_salt + secret) > sha_constructor().block_size, the above
     # line is redundant and could be replaced by key = key_salt + secret, since
     # the hmac module does the same thing for keys longer than the block size.
     # However, we need to ensure that we *always* do this.
+    if isinstance(value, text_type): value = value.encode('utf-8')
     return hmac.new(key, msg=value, digestmod=hashlib.sha1)
 
 
@@ -85,8 +88,12 @@ def constant_time_compare(val1, val2):
     if len(val1) != len(val2):
         return False
     result = 0
-    for x, y in zip(val1, val2):
-        result |= ord(x) ^ ord(y)
+    if PY3 and (type(val1) is type(val2) is bytes):
+        for x, y in zip(val1, val2):
+            result |= x ^ y
+    else:
+        for x, y in zip(val1, val2):
+            result |= ord(x) ^ ord(y)
     return result == 0
 
 
@@ -96,7 +103,7 @@ def _bin_to_long(x):
 
     This is a clever optimization for fast xor vector math
     """
-    return long(x.encode('hex'), 16)
+    return long_type(binascii.hexlify(x), 16)
 
 
 def _long_to_bin(x, hex_format_string):
@@ -104,7 +111,7 @@ def _long_to_bin(x, hex_format_string):
     Convert a long integer into a binary string.
     hex_format_string is like "%020x" for padding 10 characters.
     """
-    return binascii.unhexlify(hex_format_string % x)
+    return binascii.unhexlify((hex_format_string % x).encode('ascii'))
 
 
 def _fast_hmac(key, msg, digest):
@@ -114,7 +121,7 @@ def _fast_hmac(key, msg, digest):
     dig1, dig2 = digest(), digest()
     if len(key) > dig1.block_size:
         key = digest(key).digest()
-    key += chr(0) * (dig1.block_size - len(key))
+    key += b'\x00' * (dig1.block_size - len(key))
     dig1.update(key.translate(_trans_36))
     dig1.update(msg)
     dig2.update(key.translate(_trans_5c))
@@ -149,7 +156,7 @@ def pbkdf2(password, salt, iterations, dklen=0, digest=None):
 
     def F(i):
         def U():
-            u = salt + struct.pack(b'>I', i)
+            u = salt + struct.pack('>I', i)
             for j in xrange(int(iterations)):
                 u = _fast_hmac(password, u, digest).digest()
                 yield _bin_to_long(u)

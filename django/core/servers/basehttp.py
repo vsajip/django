@@ -11,9 +11,6 @@ import os
 import socket
 import sys
 import traceback
-import urllib
-import urlparse
-from SocketServer import ThreadingMixIn
 from wsgiref import simple_server
 from wsgiref.util import FileWrapper   # for backwards compatibility
 
@@ -22,6 +19,8 @@ from django.core.exceptions import ImproperlyConfigured
 from django.core.management.color import color_style
 from django.core.wsgi import get_wsgi_application
 from django.utils.importlib import import_module
+from django.utils.py3 import (bytes, ThreadingMixIn, urljoin, url2pathname,
+                              unquote, urljoin, PY3)
 
 __all__ = ['WSGIServer', 'WSGIRequestHandler']
 
@@ -72,9 +71,8 @@ class ServerHandler(simple_server.ServerHandler, object):
 
     def write(self, data):
         """'write()' callable as specified by PEP 333"""
-
-        assert isinstance(data, str), "write() argument must be string"
-
+        assert isinstance(data, bytes), "write() argument must be byte-string"
+        
         if not self.status:
             raise AssertionError("write() before start_response()")
 
@@ -127,7 +125,7 @@ class WSGIRequestHandler(simple_server.WSGIRequestHandler, object):
 
     def __init__(self, *args, **kwargs):
         from django.conf import settings
-        self.admin_static_prefix = urlparse.urljoin(settings.STATIC_URL, 'admin/')
+        self.admin_static_prefix = urljoin(settings.STATIC_URL, 'admin/')
         # We set self.path to avoid crashes in log_message() on unsupported
         # requests (like "OPTIONS").
         self.path = ''
@@ -143,7 +141,7 @@ class WSGIRequestHandler(simple_server.WSGIRequestHandler, object):
         else:
             path,query = self.path,''
 
-        env['PATH_INFO'] = urllib.unquote(path)
+        env['PATH_INFO'] = unquote(path)
         env['QUERY_STRING'] = query
         env['REMOTE_ADDR'] = self.client_address[0]
         env['CONTENT_TYPE'] = self.headers.get('content-type', 'text/plain')
@@ -152,7 +150,13 @@ class WSGIRequestHandler(simple_server.WSGIRequestHandler, object):
         if length:
             env['CONTENT_LENGTH'] = length
 
-        for key, value in self.headers.items():
+        if not PY3:
+            headers = [h.split(':', 1) for h in self.headers.headers]
+        else:
+            # 3.x: .headers is gone; iterating over message itself
+            # yields duplicate headers as necessary
+            headers = self.headers.items()
+        for key, value in headers:
             key = key.replace('-','_').upper()
             value = value.strip()
             if key in env:

@@ -1,21 +1,22 @@
 """HTML utilities suitable for global use."""
 
+from __future__ import unicode_literals
+
 import re
 import string
-import urllib
-import urlparse
 
 from django.utils.safestring import SafeData, mark_safe
-from django.utils.encoding import smart_str, force_unicode
+from django.utils.encoding import smart_unicode, force_unicode
 from django.utils.functional import allow_lazy
 from django.utils.text import normalize_newlines
+from django.utils.py3 import text_type, n, urlsplit, urlunsplit, quote, PY3
 
 # Configuration for urlize() function.
 TRAILING_PUNCTUATION = ['.', ',', ':', ';']
 WRAPPING_PUNCTUATION = [('(', ')'), ('<', '>'), ('&lt;', '&gt;')]
 
 # List of possible strings used for bullets in bulleted lists.
-DOTS = [u'&middot;', u'*', u'\u2022', u'&#149;', u'&bull;', u'&#8226;']
+DOTS = ['&middot;', '*', '\u2022', '&#149;', '&bull;', '&#8226;']
 
 unencoded_ampersands_re = re.compile(r'&(?!(\w+|#\d+);)')
 unquoted_percents_re = re.compile(r'%(?![0-9A-Fa-f]{2})')
@@ -27,27 +28,30 @@ link_target_attribute_re = re.compile(r'(<a [^>]*?)target=[^\s>]+')
 html_gunk_re = re.compile(r'(?:<br clear="all">|<i><\/i>|<b><\/b>|<em><\/em>|<strong><\/strong>|<\/?smallcaps>|<\/?uppercase>)', re.IGNORECASE)
 hard_coded_bullets_re = re.compile(r'((?:<p>(?:%s).*?[a-zA-Z].*?</p>\s*)+)' % '|'.join([re.escape(x) for x in DOTS]), re.DOTALL)
 trailing_empty_content_re = re.compile(r'(?:<p>(?:&nbsp;|\s|<br \/>)*?</p>\s*)+\Z')
-del x # Temporary variable
+try:
+    del x # Temporary variable, gone in 3k
+except NameError:
+    pass
 
 def escape(html):
     """
     Returns the given HTML with ampersands, quotes and angle brackets encoded.
     """
     return mark_safe(force_unicode(html).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;').replace("'", '&#39;'))
-escape = allow_lazy(escape, unicode)
+escape = allow_lazy(escape, text_type)
 
 _base_js_escapes = (
-    ('\\', r'\u005C'),
-    ('\'', r'\u0027'),
-    ('"', r'\u0022'),
-    ('>', r'\u003E'),
-    ('<', r'\u003C'),
-    ('&', r'\u0026'),
-    ('=', r'\u003D'),
-    ('-', r'\u002D'),
-    (';', r'\u003B'),
-    (u'\u2028', r'\u2028'),
-    (u'\u2029', r'\u2029')
+    ('\\', '\\u005C'),
+    ('\'', '\\u0027'),
+    ('"', '\\u0022'),
+    ('>', '\\u003E'),
+    ('<', '\\u003C'),
+    ('&', '\\u0026'),
+    ('=', '\\u003D'),
+    ('-', '\\u002D'),
+    (';', '\\u003B'),
+    ('\u2028', '\\u2028'),
+    ('\u2029', '\\u2029')
 )
 
 # Escape every ASCII character with a value less than 32.
@@ -59,7 +63,7 @@ def escapejs(value):
     for bad, good in _js_escapes:
         value = mark_safe(force_unicode(value).replace(bad, good))
     return value
-escapejs = allow_lazy(escapejs, unicode)
+escapejs = allow_lazy(escapejs, text_type)
 
 def conditional_escape(html):
     """
@@ -75,11 +79,11 @@ def linebreaks(value, autoescape=False):
     value = normalize_newlines(value)
     paras = re.split('\n{2,}', value)
     if autoescape:
-        paras = [u'<p>%s</p>' % escape(p).replace('\n', '<br />') for p in paras]
+        paras = ['<p>%s</p>' % escape(p).replace('\n', '<br />') for p in paras]
     else:
-        paras = [u'<p>%s</p>' % p.replace('\n', '<br />') for p in paras]
-    return u'\n\n'.join(paras)
-linebreaks = allow_lazy(linebreaks, unicode)
+        paras = ['<p>%s</p>' % p.replace('\n', '<br />') for p in paras]
+    return '\n\n'.join(paras)
+linebreaks = allow_lazy(linebreaks, text_type)
 
 def strip_tags(value):
     """Returns the given HTML with all tags stripped."""
@@ -89,34 +93,36 @@ strip_tags = allow_lazy(strip_tags)
 def strip_spaces_between_tags(value):
     """Returns the given HTML with spaces between tags removed."""
     return re.sub(r'>\s+<', '><', force_unicode(value))
-strip_spaces_between_tags = allow_lazy(strip_spaces_between_tags, unicode)
+strip_spaces_between_tags = allow_lazy(strip_spaces_between_tags, text_type)
 
 def strip_entities(value):
     """Returns the given HTML with all entities (&something;) stripped."""
     return re.sub(r'&(?:\w+|#\d+);', '', force_unicode(value))
-strip_entities = allow_lazy(strip_entities, unicode)
+strip_entities = allow_lazy(strip_entities, text_type)
 
 def fix_ampersands(value):
     """Returns the given HTML with all unencoded ampersands encoded correctly."""
     return unencoded_ampersands_re.sub('&amp;', force_unicode(value))
-fix_ampersands = allow_lazy(fix_ampersands, unicode)
+fix_ampersands = allow_lazy(fix_ampersands, text_type)
 
 def smart_urlquote(url):
     "Quotes a URL if it isn't already quoted."
     # Handle IDN before quoting.
-    scheme, netloc, path, query, fragment = urlparse.urlsplit(url)
+    scheme, netloc, path, query, fragment = urlsplit(url)
     try:
         netloc = netloc.encode('idna') # IDN -> ACE
+        # django3: need netloc to be str in PY3
+        if PY3: netloc = netloc.decode('utf-8')
     except UnicodeError: # invalid domain part
         pass
     else:
-        url = urlparse.urlunsplit((scheme, netloc, path, query, fragment))
+        url = urlunsplit((scheme, netloc, path, query, fragment))
 
     # An URL is considered unquoted if it contains no % characters or
     # contains a % not followed by two hexadecimal digits. See #9655.
     if '%' not in url or unquoted_percents_re.search(url):
         # See http://bugs.python.org/issue2637
-        url = urllib.quote(smart_str(url), safe=b'!*\'();:@&=+$,/?#[]~')
+        url = quote(n(smart_unicode(url)), safe=n('!*\'();:@&=+$,/?#[]~'))
 
     return force_unicode(url)
 
@@ -172,6 +178,9 @@ def urlize(text, trim_url_limit=None, nofollow=False, autoescape=False):
                     domain = domain.encode('idna')
                 except UnicodeError:
                     continue
+                # django3: need domain to be str in PY3
+                if PY3:
+                    domain = domain.decode('utf-8')
                 url = 'mailto:%s@%s' % (local, domain)
                 nofollow_attr = ''
 
@@ -192,8 +201,8 @@ def urlize(text, trim_url_limit=None, nofollow=False, autoescape=False):
             words[i] = mark_safe(word)
         elif autoescape:
             words[i] = escape(word)
-    return u''.join(words)
-urlize = allow_lazy(urlize, unicode)
+    return ''.join(words)
+urlize = allow_lazy(urlize, text_type)
 
 def clean_html(text):
     """
@@ -218,13 +227,13 @@ def clean_html(text):
     text = html_gunk_re.sub('', text)
     # Convert hard-coded bullets into HTML unordered lists.
     def replace_p_tags(match):
-        s = match.group().replace(u'</p>', u'</li>')
+        s = match.group().replace('</p>', '</li>')
         for d in DOTS:
-            s = s.replace(u'<p>%s' % d, u'<li>')
-        return u'<ul>\n%s\n</ul>' % s
+            s = s.replace('<p>%s' % d, '<li>')
+        return '<ul>\n%s\n</ul>' % s
     text = hard_coded_bullets_re.sub(replace_p_tags, text)
     # Remove stuff like "<p>&nbsp;&nbsp;</p>", but only if it's at the bottom
     # of the text.
-    text = trailing_empty_content_re.sub(u'', text)
+    text = trailing_empty_content_re.sub('', text)
     return text
-clean_html = allow_lazy(clean_html, unicode)
+clean_html = allow_lazy(clean_html, text_type)

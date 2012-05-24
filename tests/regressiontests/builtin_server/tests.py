@@ -1,7 +1,6 @@
-from StringIO import StringIO
-
 from django.core.servers.basehttp import ServerHandler
 from django.utils.unittest import TestCase
+from django.utils.py3 import PY3, StringIO, BytesIO
 
 #
 # Tests for #9659: wsgi.file_wrapper in the builtin server.
@@ -25,7 +24,7 @@ class FileWrapperHandler(ServerHandler):
 
 def wsgi_app(environ, start_response):
     start_response('200 OK', [('Content-Type', 'text/plain')])
-    return ['Hello World!']
+    return [b'Hello World!']
 
 def wsgi_app_file_wrapper(environ, start_response):
     start_response('200 OK', [('Content-Type', 'text/plain')])
@@ -45,8 +44,9 @@ class WSGIFileWrapperTests(TestCase):
 
     def test_file_wrapper_no_sendfile(self):
         env = {'SERVER_PROTOCOL': 'HTTP/1.0'}
-        err = StringIO()
-        handler = FileWrapperHandler(None, StringIO(), err, env)
+        err = BytesIO()
+        handler = FileWrapperHandler(None, BytesIO(), err, env)
         handler.run(wsgi_app)
         self.assertFalse(handler._used_sendfile)
-        self.assertEqual(handler.stdout.getvalue().splitlines()[-1],'Hello World!')
+        self.assertEqual(handler.stdout.getvalue().splitlines()[-1], b'Hello World!')
+

@@ -23,6 +23,8 @@ import re
 import sys
 import types
 
+from django.utils.py3 import string_types
+
 IDENTIFIER = re.compile('^[a-z_][a-z0-9_]*$', re.I)
 
 def valid_ident(s):
@@ -231,7 +233,7 @@ class BaseConfigurator(object):
                  isinstance(value, tuple):
             value = ConvertingTuple(value)
             value.configurator = self
-        elif isinstance(value, basestring): # str for py3k
+        elif isinstance(value, string_types):
             m = self.CONVERT_PATTERN.match(value)
             if m:
                 d = m.groupdict()
@@ -246,7 +248,7 @@ class BaseConfigurator(object):
     def configure_custom(self, config):
         """Configure an object with a user-supplied factory."""
         c = config.pop('()')
-        if not hasattr(c, '__call__') and hasattr(types, 'ClassType') and type(c) != types.ClassType:
+        if not hasattr(c, '__call__') and (not hasattr(types, 'ClassType') or type(c) != types.ClassType):
             c = self.resolve(c)
         props = config.pop('.', None)
         # Check for valid identifiers
@@ -361,7 +363,7 @@ class DictConfigurator(BaseConfigurator):
                 #which were in the previous configuration but
                 #which are not in the new configuration.
                 root = logging.root
-                existing = root.manager.loggerDict.keys()
+                existing = list(root.manager.loggerDict.keys())
                 #The list needs to be sorted so that we can
                 #avoid disabling child loggers of explicitly
                 #named loggers. With a sorted list it is easier
@@ -467,7 +469,7 @@ class DictConfigurator(BaseConfigurator):
         filters = config.pop('filters', None)
         if '()' in config:
             c = config.pop('()')
-            if not hasattr(c, '__call__') and hasattr(types, 'ClassType') and type(c) != types.ClassType:
+            if not hasattr(c, '__call__') and (not hasattr(types, 'ClassType') or type(c) != types.ClassType):
                 c = self.resolve(c)
             factory = c
         else:

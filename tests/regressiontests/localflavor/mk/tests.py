@@ -1,8 +1,9 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 from django.contrib.localflavor.mk.forms import (
     MKIdentityCardNumberField, MKMunicipalitySelect, UMCNField)
 from django.test import SimpleTestCase
+from django.utils.py3 import text_type
 
 from .forms import MKPersonForm
 
@@ -41,7 +42,7 @@ class MKLocalFlavorTests(SimpleTestCase):
         })
         self.assertFalse(form.is_valid())
         self.assertEqual(
-            form.errors['municipality_req'], [u'This field is required.'])
+            form.errors['municipality_req'], ['This field is required.'])
 
     def test_umcn_invalid(self):
         """
@@ -56,7 +57,7 @@ class MKLocalFlavorTests(SimpleTestCase):
             'id_number':'A1234567',
         })
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors['umcn'], [u'The UMCN is not valid.'])
+        self.assertEqual(form.errors['umcn'], ['The UMCN is not valid.'])
 
         form = MKPersonForm({
             'first_name':'Someone',
@@ -67,7 +68,7 @@ class MKLocalFlavorTests(SimpleTestCase):
             'id_number':'A1234567',
         })
         self.assertEqual(form.errors['umcn'],
-                [u'The first 7 digits of the UMCN must represent a valid past date.'])
+                ['The first 7 digits of the UMCN must represent a valid past date.'])
 
     def test_idnumber_invalid(self):
         """
@@ -85,8 +86,8 @@ class MKLocalFlavorTests(SimpleTestCase):
         })
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors['id_number'],
-            [u'Identity card numbers must contain either 4 to 7 '
-              'digits or an uppercase letter and 7 digits.'])
+            ['Identity card numbers must contain either 4 to 7 '
+               'digits or an uppercase letter and 7 digits.'])
 
     def test_field_blank_option(self):
         """
@@ -179,12 +180,12 @@ class MKLocalFlavorTests(SimpleTestCase):
 <option value="CS">\xc4\x8cu\xc4\x8der-Sandevo</option>
 <option value="ST">\xc5\xa0tip</option>
 <option value="SO">\xc5\xa0uto Orizari</option>
-</select>"""
-        self.assertHTMLEqual(str(self.form['municipality']), municipality_select_html)
+</select>""".decode('utf-8')
+        self.assertHTMLEqual(text_type(self.form['municipality']), municipality_select_html)
 
     def test_MKIdentityCardNumberField(self):
-        error_invalid  = [u'Identity card numbers must contain either 4 to 7 '
-                          'digits or an uppercase letter and 7 digits.']
+        error_invalid  = ['Identity card numbers must contain either 4 to 7 '
+                            'digits or an uppercase letter and 7 digits.']
         valid = {
             'L0018077':'L0018077',
             'A0078315' : 'A0078315',
@@ -198,7 +199,7 @@ class MKLocalFlavorTests(SimpleTestCase):
 
     def test_MKMunicipalitySelect(self):
         f = MKMunicipalitySelect()
-        out=u'''<select name="municipality">
+        out='''<select name="municipality">
 <option value="AD">Aerodrom</option>
 <option value="AR">Ara\u010dinovo</option>
 <option value="BR">Berovo</option>
@@ -287,10 +288,10 @@ class MKLocalFlavorTests(SimpleTestCase):
         self.assertHTMLEqual(f.render('municipality', 'DL' ), out)
 
     def test_UMCNField(self):
-        error_invalid = [u'This field should contain exactly 13 digits.']
-        error_checksum = [u'The UMCN is not valid.']
-        error_date =  [u'The first 7 digits of the UMCN '
-                        'must represent a valid past date.']
+        error_invalid = ['This field should contain exactly 13 digits.']
+        error_checksum = ['The UMCN is not valid.']
+        error_date =  ['The first 7 digits of the UMCN '
+                         'must represent a valid past date.']
         valid = {
             '2402983450006': '2402983450006',
             '2803984430038': '2803984430038',

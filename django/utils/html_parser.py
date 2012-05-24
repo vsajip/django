@@ -1,4 +1,4 @@
-import HTMLParser as _HTMLParser
+from django.utils.py3 import HTMLParser as _HTMLParser
 import re
 
 

@@ -99,7 +99,7 @@ class Command(BaseCommand):
 
         # Now collate the objects to be serialized.
         objects = []
-        for model in sort_dependencies(app_list.items()):
+        for model in sort_dependencies(list(app_list.items())):
             if model in excluded_models:
                 continue
             if not model._meta.proxy and router.allow_syncdb(using, model):

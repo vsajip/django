@@ -51,9 +51,9 @@ def patch_cache_control(response, **kwargs):
 
     def dictvalue(t):
         if t[1] is True:
-            return t[0]
+            return t[0].encode('utf-8')
         else:
-            return t[0] + '=' + smart_str(t[1])
+            return t[0].encode('utf-8') + b'=' + smart_str(t[1])
 
     if response.has_header('Cache-Control'):
         cc = cc_delim_re.split(response['Cache-Control'])
@@ -65,7 +65,7 @@ def patch_cache_control(response, **kwargs):
     # max-age, use the minimum of the two ages. In practice this happens when
     # a decorator and a piece of middleware both operate on a given view.
     if 'max-age' in cc and 'max_age' in kwargs:
-        kwargs['max_age'] = min(cc['max-age'], kwargs['max_age'])
+        kwargs['max_age'] = min(int(cc['max-age']), kwargs['max_age'])
 
     # Allow overriding private caching and vice versa
     if 'private' in cc and 'public' in kwargs:
@@ -75,7 +75,7 @@ def patch_cache_control(response, **kwargs):
 
     for (k, v) in kwargs.items():
         cc[k.replace('_', '-')] = v
-    cc = ', '.join([dictvalue(el) for el in cc.items()])
+    cc = b', '.join([dictvalue(el) for el in cc.items()])
     response['Cache-Control'] = cc
 
 def get_max_age(response):
@@ -170,7 +170,9 @@ def _i18n_cache_key_suffix(request, cache_key):
         # User-defined tzinfo classes may return absolutely anything.
         # Hence this paranoid conversion to create a valid cache key.
         tz_name = force_unicode(get_current_timezone_name(), errors='ignore')
-        cache_key += '.%s' % tz_name.encode('ascii', 'ignore').replace(' ', '_')
+        cache_key += '.%s' % tz_name.encode('ascii',
+                                            'ignore').replace(b' ',
+                                                              b'_').decode('ascii')
     return cache_key
 
 def _generate_cache_key(request, method, headerlist, key_prefix):
@@ -180,14 +182,14 @@ def _generate_cache_key(request, method, headerlist, key_prefix):
         value = request.META.get(header, None)
         if value is not None:
             ctx.update(value)
-    path = hashlib.md5(iri_to_uri(request.get_full_path()))
+    path = hashlib.md5(iri_to_uri(request.get_full_path()).encode('utf-8'))
     cache_key = 'views.decorators.cache.cache_page.%s.%s.%s.%s' % (
         key_prefix, method, path.hexdigest(), ctx.hexdigest())
     return _i18n_cache_key_suffix(request, cache_key)
 
 def _generate_cache_header_key(key_prefix, request):
     """Returns a cache key for the header cache."""
-    path = hashlib.md5(iri_to_uri(request.get_full_path()))
+    path = hashlib.md5(iri_to_uri(request.get_full_path()).encode('utf-8'))
     cache_key = 'views.decorators.cache.cache_header.%s.%s' % (
         key_prefix, path.hexdigest())
     return _i18n_cache_key_suffix(request, cache_key)

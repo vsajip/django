@@ -3,6 +3,8 @@ from MySQLdb import ProgrammingError, OperationalError
 from MySQLdb.constants import FIELD_TYPE
 import re
 
+from django.utils.py3 import iteritems
+
 foreign_key_re = re.compile(r"\sCONSTRAINT `[^`]*` FOREIGN KEY \(`([^`]*)`\) REFERENCES `([^`]*)` \(`([^`]*)`\)")
 
 class DatabaseIntrospection(BaseDatabaseIntrospection):
@@ -79,7 +81,7 @@ class DatabaseIntrospection(BaseDatabaseIntrospection):
         """
         Returns the name of the primary key column for the given table
         """
-        for column in self.get_indexes(cursor, table_name).iteritems():
+        for column in iteritems(self.get_indexes(cursor, table_name)):
             if column[1]['primary_key']:
                 return column[0]
         return None

@@ -8,7 +8,8 @@ from django.core.files.base import File
 from django.core.files.storage import default_storage
 from django.core.files.images import ImageFile
 from django.db.models import signals
-from django.utils.encoding import force_unicode, smart_str
+from django.utils.encoding import force_unicode, smart_text
+from django.utils.py3 import string_types, text_type
 from django.utils.translation import ugettext_lazy as _
 
 class FieldFile(File):
@@ -176,7 +177,7 @@ class FileDescriptor(object):
         # subclasses might also want to subclass the attribute class]. This
         # object understands how to convert a path to a file, and also how to
         # handle None.
-        if isinstance(file, basestring) or file is None:
+        if isinstance(file, string_types) or file is None:
             attr = self.field.attr_class(instance, self.field, file)
             instance.__dict__[self.field.name] = attr
 
@@ -207,7 +208,7 @@ class FileDescriptor(object):
 class FileField(Field):
 
     default_error_messages = {
-        'max_length': _(u'Filename is %(extra)d characters too long.')
+        'max_length': _('Filename is %(extra)d characters too long.')
     }
 
     # The class to wrap instance attributes in. Accessing the file object off
@@ -260,7 +261,7 @@ class FileField(Field):
         # Need to convert File objects provided via a form to unicode for database insertion
         if value is None:
             return None
-        return unicode(value)
+        return text_type(value)
 
     def pre_save(self, model_instance, add):
         "Returns field's value just before saving."
@@ -275,7 +276,8 @@ class FileField(Field):
         setattr(cls, self.name, self.descriptor_class(self))
 
     def get_directory_name(self):
-        return os.path.normpath(force_unicode(datetime.datetime.now().strftime(smart_str(self.upload_to))))
+        # django3: was smart_str, for some reason ...
+        return os.path.normpath(force_unicode(datetime.datetime.now().strftime(smart_text(self.upload_to))))
 
     def get_filename(self, filename):
         return os.path.normpath(self.storage.get_valid_name(os.path.basename(filename)))

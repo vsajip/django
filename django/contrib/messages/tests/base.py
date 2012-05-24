@@ -7,6 +7,7 @@ from django.contrib.messages.storage.base import Message
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.test.utils import override_settings
+from django.utils.py3 import xrange
 from django.utils.translation import ugettext_lazy
 from django.utils.unittest import skipIf
 

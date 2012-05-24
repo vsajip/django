@@ -4,6 +4,7 @@ Unit tests for reverse URL lookups.
 from __future__ import absolute_import
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.exceptions import ImproperlyConfigured, ViewDoesNotExist
 from django.core.urlresolvers import (reverse, resolve, NoReverseMatch,
     Resolver404, ResolverMatch, RegexURLResolver, RegexURLPattern)
@@ -11,7 +12,6 @@ from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect
 from django.shortcuts import redirect
 from django.test import TestCase
 from django.utils import unittest
-from django.contrib.auth.models import User
 
 from . import urlconf_outer, urlconf_inner, middleware, views
 
@@ -405,8 +405,8 @@ class RequestURLconfTests(TestCase):
     def test_urlconf(self):
         response = self.client.get('/test/me/')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, 'outer:/test/me/,'
-                                           'inner:/inner_urlconf/second_test/')
+        self.assertEqual(response.content, b'outer:/test/me/,'
+                                           b'inner:/inner_urlconf/second_test/')
         response = self.client.get('/inner_urlconf/second_test/')
         self.assertEqual(response.status_code, 200)
         response = self.client.get('/second_test/')
@@ -422,7 +422,7 @@ class RequestURLconfTests(TestCase):
         self.assertEqual(response.status_code, 404)
         response = self.client.get('/second_test/')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, 'outer:,inner:/second_test/')
+        self.assertEqual(response.content, b'outer:,inner:/second_test/')
 
     def test_urlconf_overridden_with_null(self):
         settings.MIDDLEWARE_CLASSES += (

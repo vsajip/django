@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 from django.contrib.localflavor.mx.forms import (MXZipCodeField, MXRFCField,
     MXStateSelect, MXCURPField)
 from django.test import SimpleTestCase
+from django.utils.py3 import text_type
 
 from .forms import MXPersonProfileForm
 
@@ -21,7 +22,7 @@ class MXLocalFlavorTests(SimpleTestCase):
     def test_get_display_methods(self):
         """Test that the get_*_display() methods are added to the model instances."""
         place = self.form.save()
-        self.assertEqual(place.get_state_display(), u'Michoacán')
+        self.assertEqual(place.get_state_display(), 'Michoac\xe1n')
 
     def test_errors(self):
         """Test that required MXFields throw appropriate errors."""
@@ -32,10 +33,10 @@ class MXLocalFlavorTests(SimpleTestCase):
             'zip_code': 'xxx',
         })
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors['state'], [u'Select a valid choice. Invalid state is not one of the available choices.'])
-        self.assertEqual(form.errors['rfc'], [u'Enter a valid RFC.'])
-        self.assertEqual(form.errors['curp'], [u'Ensure this value has at least 18 characters (it has 12).', u'Enter a valid CURP.'])
-        self.assertEqual(form.errors['zip_code'], [u'Enter a valid zip code in the format XXXXX.'])
+        self.assertEqual(form.errors['state'], ['Select a valid choice. Invalid state is not one of the available choices.'])
+        self.assertEqual(form.errors['rfc'], ['Enter a valid RFC.'])
+        self.assertEqual(form.errors['curp'], ['Ensure this value has at least 18 characters (it has 12).', 'Enter a valid CURP.'])
+        self.assertEqual(form.errors['zip_code'], ['Enter a valid zip code in the format XXXXX.'])
 
     def test_field_blank_option(self):
         """Test that the empty option is there."""
@@ -56,30 +57,30 @@ class MXLocalFlavorTests(SimpleTestCase):
 <option value="GUA">Guanajuato</option>
 <option value="HID">Hidalgo</option>
 <option value="JAL">Jalisco</option>
-<option value="MEX">Estado de México</option>
-<option value="MIC" selected="selected">Michoacán</option>
+<option value="MEX">Estado de M\xe9xico</option>
+<option value="MIC" selected="selected">Michoac\xe1n</option>
 <option value="MOR">Morelos</option>
 <option value="NAY">Nayarit</option>
-<option value="NLE">Nuevo León</option>
+<option value="NLE">Nuevo Le\xf3n</option>
 <option value="OAX">Oaxaca</option>
 <option value="PUE">Puebla</option>
-<option value="QUE">Querétaro</option>
+<option value="QUE">Quer\xe9taro</option>
 <option value="ROO">Quintana Roo</option>
 <option value="SIN">Sinaloa</option>
-<option value="SLP">San Luis Potosí</option>
+<option value="SLP">San Luis Potos\xed</option>
 <option value="SON">Sonora</option>
 <option value="TAB">Tabasco</option>
 <option value="TAM">Tamaulipas</option>
 <option value="TLA">Tlaxcala</option>
 <option value="VER">Veracruz</option>
-<option value="YUC">Yucatán</option>
+<option value="YUC">Yucat\xe1n</option>
 <option value="ZAC">Zacatecas</option>
 </select>"""
-        self.assertHTMLEqual(str(self.form['state']), state_select_html)
+        self.assertHTMLEqual(text_type(self.form['state']), state_select_html)
 
     def test_MXStateSelect(self):
         f = MXStateSelect()
-        out = u'''<select name="state">
+        out = '''<select name="state">
 <option value="AGU">Aguascalientes</option>
 <option value="BCN">Baja California</option>
 <option value="BCS">Baja California Sur</option>
@@ -94,34 +95,34 @@ class MXLocalFlavorTests(SimpleTestCase):
 <option value="GUA">Guanajuato</option>
 <option value="HID">Hidalgo</option>
 <option value="JAL">Jalisco</option>
-<option value="MEX">Estado de México</option>
-<option value="MIC" selected="selected">Michoacán</option>
+<option value="MEX">Estado de M\xe9xico</option>
+<option value="MIC" selected="selected">Michoac\xe1n</option>
 <option value="MOR">Morelos</option>
 <option value="NAY">Nayarit</option>
-<option value="NLE">Nuevo León</option>
+<option value="NLE">Nuevo Le\xf3n</option>
 <option value="OAX">Oaxaca</option>
 <option value="PUE">Puebla</option>
-<option value="QUE">Querétaro</option>
+<option value="QUE">Quer\xe9taro</option>
 <option value="ROO">Quintana Roo</option>
 <option value="SIN">Sinaloa</option>
-<option value="SLP">San Luis Potosí</option>
+<option value="SLP">San Luis Potos\xed</option>
 <option value="SON">Sonora</option>
 <option value="TAB">Tabasco</option>
 <option value="TAM">Tamaulipas</option>
 <option value="TLA">Tlaxcala</option>
 <option value="VER">Veracruz</option>
-<option value="YUC">Yucatán</option>
+<option value="YUC">Yucat\xe1n</option>
 <option value="ZAC">Zacatecas</option>
 </select>'''
         self.assertHTMLEqual(f.render('state', 'MIC'), out)
 
     def test_MXZipCodeField(self):
-        error_format = [u'Enter a valid zip code in the format XXXXX.']
+        error_format = ['Enter a valid zip code in the format XXXXX.']
         valid = {
-            '58120': u'58120',
-            '58502': u'58502',
-            '59310': u'59310',
-            '99999': u'99999',
+            '58120': '58120',
+            '58502': '58502',
+            '59310': '59310',
+            '99999': '99999',
         }
         invalid = {
             '17000': error_format,
@@ -132,16 +133,16 @@ class MXLocalFlavorTests(SimpleTestCase):
         self.assertFieldOutput(MXZipCodeField, valid, invalid)
 
     def test_MXRFCField(self):
-        error_format = [u'Enter a valid RFC.']
-        error_checksum = [u'Invalid checksum for RFC.']
+        error_format = ['Enter a valid RFC.']
+        error_checksum = ['Invalid checksum for RFC.']
         valid = {
-            'MoFN641205eX5': u'MOFN641205EX5',
-            'ICa060120873': u'ICA060120873',
-            'eUcG751104rT0': u'EUCG751104RT0',
-            'GME08100195A': u'GME08100195A',
-            'AA&060524KX5': u'AA&060524KX5',
-            'CAÑ0708045P7': u'CAÑ0708045P7',
-            'aaa000101aa9': u'AAA000101AA9',
+            'MoFN641205eX5': 'MOFN641205EX5',
+            'ICa060120873': 'ICA060120873',
+            'eUcG751104rT0': 'EUCG751104RT0',
+            'GME08100195A': 'GME08100195A',
+            'AA&060524KX5': 'AA&060524KX5',
+            'CA\xd10708045P7': 'CA\xd10708045P7',
+            'aaa000101aa9': 'AAA000101AA9',
         }
         invalid = {
             'MED0000000XA': error_format,
@@ -161,24 +162,24 @@ class MXLocalFlavorTests(SimpleTestCase):
             'eUcG751104rT7': error_checksum,
             'GME081001955': error_checksum,
             'AA&060524KX9': error_checksum,
-            'CAÑ0708045P2': error_checksum,
+            'CA\xd10708045P2': error_checksum,
         }
         self.assertFieldOutput(MXRFCField, valid, invalid)
 
     def test_MXCURPField(self):
-        error_format = [u'Enter a valid CURP.']
-        error_checksum = [u'Invalid checksum for CURP.']
+        error_format = ['Enter a valid CURP.']
+        error_checksum = ['Invalid checksum for CURP.']
         valid = {
-            'AaMG890608HDFLJL00': u'AAMG890608HDFLJL00',
-            'BAAd890419HMNRRV07': u'BAAD890419HMNRRV07',
-            'VIAA900930MMNClL08': u'VIAA900930MMNCLL08',
-            'HEGR891009HMNRRD09': u'HEGR891009HMNRRD09',
-            'MARR890512HMNRMN09': u'MARR890512HMNRMN09',
-            'MESJ890928HMNZNS00': u'MESJ890928HMNZNS00',
-            'BAAA890317HDFRLL03': u'BAAA890317HDFRLL03',
-            'TOMA880125HMNRRNO2': u'TOMA880125HMNRRNO2',
-            'OOMG890727HMNRSR06': u'OOMG890727HMNRSR06',
-            'AAAA000101HDFCCC09': u'AAAA000101HDFCCC09',
+            'AaMG890608HDFLJL00': 'AAMG890608HDFLJL00',
+            'BAAd890419HMNRRV07': 'BAAD890419HMNRRV07',
+            'VIAA900930MMNClL08': 'VIAA900930MMNCLL08',
+            'HEGR891009HMNRRD09': 'HEGR891009HMNRRD09',
+            'MARR890512HMNRMN09': 'MARR890512HMNRMN09',
+            'MESJ890928HMNZNS00': 'MESJ890928HMNZNS00',
+            'BAAA890317HDFRLL03': 'BAAA890317HDFRLL03',
+            'TOMA880125HMNRRNO2': 'TOMA880125HMNRRNO2',
+            'OOMG890727HMNRSR06': 'OOMG890727HMNRSR06',
+            'AAAA000101HDFCCC09': 'AAAA000101HDFCCC09',
         }
         invalid = {
             'AAAA000000HDFCCC09': error_format,

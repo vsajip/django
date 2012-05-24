@@ -1,16 +1,17 @@
+from __future__ import unicode_literals
+
+from copy import copy
 import difflib
+import errno
 import json
 import os
 import re
 import sys
-from copy import copy
 from functools import wraps
-from urlparse import urlsplit, urlunsplit
 from xml.dom.minidom import parseString, Node
 import select
 import socket
 import threading
-import errno
 
 from django.conf import settings
 from django.contrib.staticfiles.handlers import StaticFilesHandler
@@ -18,9 +19,9 @@ from django.core import mail
 from django.core.exceptions import ValidationError, ImproperlyConfigured
 from django.core.handlers.wsgi import WSGIHandler
 from django.core.management import call_command
-from django.core.signals import request_started
 from django.core.servers.basehttp import (WSGIRequestHandler, WSGIServer,
-    WSGIServerException)
+                                          WSGIServerException)
+from django.core.signals import request_started
 from django.core.urlresolvers import clear_url_caches
 from django.core.validators import EMPTY_VALUES
 from django.db import (transaction, connection, connections, DEFAULT_DB_ALIAS,
@@ -32,10 +33,10 @@ from django.test.client import Client
 from django.test.html import HTMLParseError, parse_html
 from django.test.signals import template_rendered
 from django.test.utils import (get_warnings_state, restore_warnings_state,
-    override_settings)
-from django.test.utils import ContextList
+    override_settings, ContextList)
 from django.utils import unittest as ut2
 from django.utils.encoding import smart_str, force_unicode
+from django.utils.py3 import urlsplit, urlunsplit, text_type, PY3
 from django.utils.unittest.util import safe_repr
 from django.views.static import serve
 
@@ -85,7 +86,7 @@ def assert_and_parse_html(self, html, user_msg, msg):
     try:
         dom = parse_html(html)
     except HTMLParseError as e:
-        standardMsg = u'%s\n%s' % (msg, e.msg)
+        standardMsg = '%s\n%s' % (msg, e.msg)
         self.fail(self._formatMessage(user_msg, standardMsg))
     return dom
 
@@ -292,7 +293,7 @@ class _AssertTemplateUsedContext(object):
         return self.template_name in self.rendered_template_names
 
     def message(self):
-        return u'%s was not rendered.' % self.template_name
+        return '%s was not rendered.' % self.template_name
 
     def __enter__(self):
         template_rendered.connect(self.on_template_render)
@@ -306,9 +307,9 @@ class _AssertTemplateUsedContext(object):
         if not self.test():
             message = self.message()
             if len(self.rendered_templates) == 0:
-                message += u' No template was rendered.'
+                message += ' No template was rendered.'
             else:
-                message += u' Following templates were rendered: %s' % (
+                message += ' Following templates were rendered: %s' % (
                     ', '.join(self.rendered_template_names))
             self.test_case.fail(message)
 
@@ -318,7 +319,7 @@ class _AssertTemplateNotUsedContext(_AssertTemplateUsedContext):
         return self.template_name not in self.rendered_template_names
 
     def message(self):
-        return u'%s was rendered.' % self.template_name
+        return '%s was rendered.' % self.template_name
 
 
 class SimpleTestCase(ut2.TestCase):
@@ -359,7 +360,7 @@ class SimpleTestCase(ut2.TestCase):
                 re.escape(expected_message), callable_obj, *args, **kwargs)
 
     def assertFieldOutput(self, fieldclass, valid, invalid, field_args=None,
-            field_kwargs=None, empty_value=u''):
+            field_kwargs=None, empty_value=''):
         """
         Asserts that a form field behaves correctly with various inputs.
 
@@ -415,25 +416,25 @@ class SimpleTestCase(ut2.TestCase):
         significant. The passed-in arguments must be valid HTML.
         """
         dom1 = assert_and_parse_html(self, html1, msg,
-            u'First argument is not valid HTML:')
+            'First argument is not valid HTML:')
         dom2 = assert_and_parse_html(self, html2, msg,
-            u'Second argument is not valid HTML:')
+            'Second argument is not valid HTML:')
 
         if dom1 != dom2:
             standardMsg = '%s != %s' % (
                 safe_repr(dom1, True), safe_repr(dom2, True))
             diff = ('\n' + '\n'.join(difflib.ndiff(
-                           unicode(dom1).splitlines(),
-                           unicode(dom2).splitlines())))
+                           text_type(dom1).splitlines(),
+                           text_type(dom2).splitlines())))
             standardMsg = self._truncateMessage(standardMsg, diff)
             self.fail(self._formatMessage(msg, standardMsg))
 
     def assertHTMLNotEqual(self, html1, html2, msg=None):
         """Asserts that two HTML snippets are not semantically equivalent."""
         dom1 = assert_and_parse_html(self, html1, msg,
-            u'First argument is not valid HTML:')
+            'First argument is not valid HTML:')
         dom2 = assert_and_parse_html(self, html2, msg,
-            u'Second argument is not valid HTML:')
+            'Second argument is not valid HTML:')
 
         if dom1 == dom2:
             standardMsg = '%s == %s' % (
@@ -620,14 +621,17 @@ class TransactionTestCase(SimpleTestCase):
         self.assertEqual(response.status_code, status_code,
             msg_prefix + "Couldn't retrieve content: Response code was %d"
             " (expected %d)" % (response.status_code, status_code))
-        text = smart_str(text, response._charset)
         content = response.content
-        if html:
+        if not html:
+            btext = smart_str(text, response._charset)
+        else:
+            if PY3 and not isinstance(content, text_type):
+                content = content.decode(response._charset)
             content = assert_and_parse_html(self, content, None,
-                u"Response's content is not valid HTML:")
-            text = assert_and_parse_html(self, text, None,
-                u"Second argument is not valid HTML:")
-        real_count = content.count(text)
+                "Response's content is not valid HTML:")
+            btext = assert_and_parse_html(self, text, None,
+                "Second argument is not valid HTML:")
+        real_count = content.count(btext)
         if count is not None:
             self.assertEqual(real_count, count,
                 msg_prefix + "Found %d instances of '%s' in response"
@@ -656,14 +660,16 @@ class TransactionTestCase(SimpleTestCase):
         self.assertEqual(response.status_code, status_code,
             msg_prefix + "Couldn't retrieve content: Response code was %d"
             " (expected %d)" % (response.status_code, status_code))
-        text = smart_str(text, response._charset)
+        btext = smart_str(text, response._charset)
         content = response.content
         if html:
+            if PY3 and not isinstance(content, text_type):
+                content = content.decode(response._charset)
             content = assert_and_parse_html(self, content, None,
-                u'Response\'s content is not valid HTML:')
+                'Response\'s content is not valid HTML:')
             text = assert_and_parse_html(self, text, None,
-                u'Second argument is not valid HTML:')
-        self.assertEqual(content.count(text), 0,
+                'Second argument is not valid HTML:')
+        self.assertEqual(content.count(btext), 0,
             msg_prefix + "Response should not contain '%s'" % text)
 
     def assertFormError(self, response, form, field, errors, msg_prefix=''):
@@ -723,7 +729,7 @@ class TransactionTestCase(SimpleTestCase):
         the response. Also usable as context manager.
         """
         if response is None and template_name is None:
-            raise TypeError(u'response and/or template_name argument must be provided')
+            raise TypeError('response and/or template_name argument must be provided')
 
         if msg_prefix:
             msg_prefix += ": "
@@ -742,7 +748,7 @@ class TransactionTestCase(SimpleTestCase):
         self.assertTrue(template_name in template_names,
             msg_prefix + "Template '%s' was not a template used to render"
             " the response. Actual template(s) used: %s" %
-                (template_name, u', '.join(template_names)))
+                (template_name, ', '.join(template_names)))
 
     def assertTemplateNotUsed(self, response=None, template_name=None, msg_prefix=''):
         """
@@ -750,7 +756,7 @@ class TransactionTestCase(SimpleTestCase):
         rendering the response. Also usable as context manager.
         """
         if response is None and template_name is None:
-            raise TypeError(u'response and/or template_name argument must be provided')
+            raise TypeError('response and/or template_name argument must be provided')
 
         if msg_prefix:
             msg_prefix += ": "
@@ -771,7 +777,7 @@ class TransactionTestCase(SimpleTestCase):
     def assertQuerysetEqual(self, qs, values, transform=repr, ordered=True):
         if not ordered:
             return self.assertEqual(set(map(transform, qs)), set(values))
-        return self.assertEqual(map(transform, qs), values)
+        return self.assertEqual(list(map(transform, qs)), values)
 
     def assertNumQueries(self, num, func=None, *args, **kwargs):
         using = kwargs.pop("using", DEFAULT_DB_ALIAS)
@@ -891,8 +897,12 @@ class QuietWSGIRequestHandler(WSGIRequestHandler):
     def log_message(*args):
         pass
 
+if sys.version_info[:2] < (3, 3):
+    _EventBase = threading._Event
+else:
+    _EventBase = threading.Event
 
-class _ImprovedEvent(threading._Event):
+class _ImprovedEvent(_EventBase):
     """
     Does the same as `threading.Event` except it overrides the wait() method
     with some code borrowed from Python 2.7 to return the set state of the
@@ -901,14 +911,15 @@ class _ImprovedEvent(threading._Event):
     timeout. This class can be removed when Django supports only Python >= 2.7.
     """
 
-    def wait(self, timeout=None):
-        self._Event__cond.acquire()
-        try:
-            if not self._Event__flag:
-                self._Event__cond.wait(timeout)
-            return self._Event__flag
-        finally:
-            self._Event__cond.release()
+    if sys.version_info[:2] < (2, 7):
+        def wait(self, timeout=None):
+            self._Event__cond.acquire()
+            try:
+                if not self._Event__flag:
+                    self._Event__cond.wait(timeout)
+                return self._Event__flag
+            finally:
+                self._Event__cond.release()
 
 
 class StoppableWSGIServer(WSGIServer):
@@ -1109,7 +1120,7 @@ class LiveServerTestCase(TransactionTestCase):
             host, port_ranges = specified_address.split(':')
             for port_range in port_ranges.split(','):
                 # A port range can be of either form: '8000' or '8000-8010'.
-                extremes = map(int, port_range.split('-'))
+                extremes = list(map(int, port_range.split('-')))
                 assert len(extremes) in [1, 2]
                 if len(extremes) == 1:
                     # Port range of the form '8000'

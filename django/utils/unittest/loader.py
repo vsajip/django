@@ -73,7 +73,7 @@ class TestLoader(unittest.TestLoader):
         testCaseNames = self.getTestCaseNames(testCaseClass)
         if not testCaseNames and hasattr(testCaseClass, 'runTest'):
             testCaseNames = ['runTest']
-        loaded_suite = self.suiteClass(map(testCaseClass, testCaseNames))
+        loaded_suite = self.suiteClass(list(map(testCaseClass, testCaseNames)))
         return loaded_suite
 
     def loadTestsFromModule(self, module, use_load_tests=True):
@@ -89,7 +89,7 @@ class TestLoader(unittest.TestLoader):
         if use_load_tests and load_tests is not None:
             try:
                 return load_tests(self, tests, None)
-            except Exception, e:
+            except Exception as e:
                 return _make_failed_load_tests(module.__name__, e,
                                                self.suiteClass)
         return tests
@@ -155,7 +155,7 @@ class TestLoader(unittest.TestLoader):
                          prefix=self.testMethodPrefix):
             return attrname.startswith(prefix) and \
                 hasattr(getattr(testCaseClass, attrname), '__call__')
-        testFnNames = filter(isTestMethod, dir(testCaseClass))
+        testFnNames = list(filter(isTestMethod, dir(testCaseClass)))
         if self.sortTestMethodsUsing:
             testFnNames.sort(key=_CmpToKey(self.sortTestMethodsUsing))
         return testFnNames
@@ -295,7 +295,7 @@ class TestLoader(unittest.TestLoader):
                 else:
                     try:
                         yield load_tests(self, tests, pattern)
-                    except Exception, e:
+                    except Exception as e:
                         yield _make_failed_load_tests(package.__name__, e,
                                                       self.suiteClass)
 

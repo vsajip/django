@@ -1,6 +1,8 @@
+from __future__ import unicode_literals
+
 from django.core.exceptions import ImproperlyConfigured, ObjectDoesNotExist
 from django.http import Http404
-from django.utils.encoding import smart_str
+from django.utils.encoding import smart_text
 from django.utils.translation import ugettext as _
 from django.views.generic.base import TemplateResponseMixin, ContextMixin, View
 
@@ -41,14 +43,14 @@ class SingleObjectMixin(ContextMixin):
 
         # If none of those are defined, it's an error.
         else:
-            raise AttributeError(u"Generic detail view %s must be called with "
-                                 u"either an object pk or a slug."
+            raise AttributeError("Generic detail view %s must be called with "
+                                 "either an object pk or a slug." 
                                  % self.__class__.__name__)
 
         try:
             obj = queryset.get()
         except ObjectDoesNotExist:
-            raise Http404(_(u"No %(verbose_name)s found matching the query") %
+            raise Http404(_("No %(verbose_name)s found matching the query") %
                           {'verbose_name': queryset.model._meta.verbose_name})
         return obj
 
@@ -61,9 +63,9 @@ class SingleObjectMixin(ContextMixin):
             if self.model:
                 return self.model._default_manager.all()
             else:
-                raise ImproperlyConfigured(u"%(cls)s is missing a queryset. Define "
-                                           u"%(cls)s.model, %(cls)s.queryset, or override "
-                                           u"%(cls)s.get_object()." % {
+                raise ImproperlyConfigured("%(cls)s is missing a queryset. Define "
+                                           "%(cls)s.model, %(cls)s.queryset, or override "
+                                           "%(cls)s.get_object()." % {
                                                 'cls': self.__class__.__name__
                                         })
         return self.queryset._clone()
@@ -81,7 +83,7 @@ class SingleObjectMixin(ContextMixin):
         if self.context_object_name:
             return self.context_object_name
         elif hasattr(obj, '_meta'):
-            return smart_str(obj._meta.object_name.lower())
+            return smart_text(obj._meta.object_name.lower())
         else:
             return None
 
@@ -108,7 +110,7 @@ class SingleObjectTemplateResponseMixin(TemplateResponseMixin):
     def get_template_names(self):
         """
         Return a list of template names to be used for the request. Must return
-        a list. May not be called if get_template is overridden.
+        a list. May not be called if render_to_response is overridden.
         """
         try:
             names = super(SingleObjectTemplateResponseMixin, self).get_template_names()

@@ -14,17 +14,21 @@ class SessionStore(SessionBase):
         return False
 
     def create(self):
-        self._session_key = self.encode({})
+        # django3: added decode
+        self._session_key = self.encode({}).decode('ascii')
 
     def save(self, must_create=False):
-        self._session_key = self.encode(self._session)
+        # django3: added decode
+        self._session_key = self.encode(self._session).decode('ascii')
 
     def delete(self, session_key=None):
-        self._session_key = self.encode({})
+        # django3: added decode
+        self._session_key = self.encode({}).decode('ascii')
 
     def load(self):
         try:
-            return self.decode(self.session_key)
+            # django3: added encode
+            return self.decode(self.session_key.encode('ascii'))
         except:
             self.modified = True
             return {}

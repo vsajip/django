@@ -5,12 +5,14 @@ Exposes one class, ``MultiPartParser``, which feeds chunks of uploaded data to
 file upload handlers for processing.
 """
 
+import base64
 import cgi
 from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
 from django.utils.datastructures import MultiValueDict
 from django.utils.encoding import force_unicode
 from django.utils.text import unescape_entities
+from django.utils.py3 import byte, next, PY3
 from django.core.files.uploadhandler import StopUpload, SkipFile, StopFutureHandlers
 
 __all__ = ('MultiPartParser', 'MultiPartParserError', 'InputStreamExhausted')
@@ -27,6 +29,13 @@ class InputStreamExhausted(Exception):
 RAW = "raw"
 FILE = "file"
 FIELD = "field"
+
+if not PY3:
+    valid_boundary = cgi.valid_boundary
+else:
+    def valid_boundary(b):
+        # the cgi module in 3.1 insists on the boundary being a string
+        return cgi.valid_boundary(b.decode('ascii'))
 
 class MultiPartParser(object):
     """
@@ -59,9 +68,10 @@ class MultiPartParser(object):
             raise MultiPartParserError('Invalid Content-Type: %s' % content_type)
 
         # Parse the header to get the boundary to split the parts.
+        content_type = content_type.encode('ascii')
         ctypes, opts = parse_header(content_type)
         boundary = opts.get('boundary')
-        if not boundary or not cgi.valid_boundary(boundary):
+        if not boundary or not valid_boundary(boundary):
             raise MultiPartParserError('Invalid boundary in multipart: %s' % boundary)
 
 
@@ -154,7 +164,10 @@ class MultiPartParser(object):
                     if transfer_encoding == 'base64':
                         raw_data = field_stream.read()
                         try:
-                            data = str(raw_data).decode('base64')
+                            # django3: avoid str() on 3.x
+                            if not PY3:
+                                raw_data = str(raw_data)
+                            data = base64.b64decode(raw_data)
                         except:
                             data = raw_data
                     else:
@@ -195,7 +208,10 @@ class MultiPartParser(object):
                             if transfer_encoding == 'base64':
                                 # We only special-case base64 transfer encoding
                                 try:
-                                    chunk = str(chunk).decode('base64')
+                                    # django3: avoid str() on 3.x
+                                    if not PY3:
+                                        chunk = str(chunk)
+                                    chunk = base64.b64decode(chunk)
                                 except Exception as e:
                                     # Since this is only a chunk, any error is an unfixable error.
                                     raise MultiPartParserError("Could not decode base64 data: %r" % e)
@@ -318,6 +334,8 @@ class LazyStream(object):
         self.position += len(output)
         return output
 
+    __next__ = next
+
     def close(self):
         """
         Used to invalidate/disable this lazy stream.
@@ -382,6 +400,8 @@ class ChunkIter(object):
         else:
             raise StopIteration()
 
+    __next__ = next
+
     def __iter__(self):
         return self
 
@@ -401,6 +421,8 @@ class InterBoundaryIter(object):
             return LazyStream(BoundaryIter(self._stream, self._boundary))
         except InputStreamExhausted:
             raise StopIteration()
+
+    __next__ = next
 
 class BoundaryIter(object):
     """
@@ -478,6 +500,8 @@ class BoundaryIter(object):
                 stream.unget(chunk[-rollback:])
                 return chunk[:-rollback]
 
+    __next__ = next
+
     def _find_boundary(self, data, eof = False):
         """
         Finds a multipart boundary in data.
@@ -495,9 +519,9 @@ class BoundaryIter(object):
             end = index
             next = index + len(self._boundary)
             # backup over CRLF
-            if data[max(0,end-1)] == b'\n':
+            if data[max(0,end-1)] == byte('\n'):
                 end -= 1
-            if data[max(0,end-1)] == b'\r':
+            if data[max(0,end-1)] == byte('\r'):
                 end -= 1
             return end, next
 
@@ -592,13 +616,20 @@ def parse_header(line):
     """ Parse the header into a key-value. """
     plist = _parse_header_params(b';' + line)
     key = plist.pop(0).lower()
+    if PY3:
+        # Assume all headers are ASCII, and decode into a string
+        # XXX this might be too restrictive
+        key = key.decode('ascii')
     pdict = {}
     for p in plist:
         i = p.find(b'=')
         if i >= 0:
             name = p[:i].strip().lower()
             value = p[i+1:].strip()
-            if len(value) >= 2 and value[0] == value[-1] == b'"':
+            if PY3:
+                # Make sure the parameter names are strings
+                name = name.decode('ascii')
+            if len(value) >= 2 and value[0] == value[-1] == byte('"'):
                 value = value[1:-1]
                 value = value.replace(b'\\\\', b'\\').replace(b'\\"', b'"')
             pdict[name] = value

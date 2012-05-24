@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 import datetime
 import tempfile
 import os
@@ -40,14 +42,14 @@ class Book(models.Model):
     """
     A simple book that has chapters.
     """
-    name = models.CharField(max_length=100, verbose_name=u'¿Name?')
+    name = models.CharField(max_length=100, verbose_name='\xbfName?')
 
     def __unicode__(self):
         return self.name
 
 
 class Promo(models.Model):
-    name = models.CharField(max_length=100, verbose_name=u'¿Name?')
+    name = models.CharField(max_length=100, verbose_name='\xbfName?')
     book = models.ForeignKey(Book)
 
     def __unicode__(self):
@@ -55,7 +57,7 @@ class Promo(models.Model):
 
 
 class Chapter(models.Model):
-    title = models.CharField(max_length=100, verbose_name=u'¿Title?')
+    title = models.CharField(max_length=100, verbose_name='\xbfTitle?')
     content = models.TextField()
     book = models.ForeignKey(Book)
 
@@ -68,19 +70,19 @@ class Chapter(models.Model):
 
 
 class ChapterXtra1(models.Model):
-    chap = models.OneToOneField(Chapter, verbose_name=u'¿Chap?')
-    xtra = models.CharField(max_length=100, verbose_name=u'¿Xtra?')
+    chap = models.OneToOneField(Chapter, verbose_name='\xbfChap?')
+    xtra = models.CharField(max_length=100, verbose_name='\xbfXtra?')
 
     def __unicode__(self):
-        return u'¿Xtra1: %s' % self.xtra
+        return '\xbfXtra1: %s' % self.xtra
 
 
 class ChapterXtra2(models.Model):
-    chap = models.OneToOneField(Chapter, verbose_name=u'¿Chap?')
-    xtra = models.CharField(max_length=100, verbose_name=u'¿Xtra?')
+    chap = models.OneToOneField(Chapter, verbose_name='\xbfChap?')
+    xtra = models.CharField(max_length=100, verbose_name='\xbfXtra?')
 
     def __unicode__(self):
-        return u'¿Xtra2: %s' % self.xtra
+        return '\xbfXtra2: %s' % self.xtra
 
 
 class RowLevelChangePermissionModel(models.Model):
@@ -130,7 +132,7 @@ class Inquisition(models.Model):
     country = models.CharField(max_length=20)
 
     def __unicode__(self):
-        return u"by %s from %s" % (self.leader, self.country)
+        return "by %s from %s" % (self.leader, self.country)
 
 
 class Sketch(models.Model):
@@ -187,7 +189,7 @@ class Account(models.Model):
     """
     username = models.CharField(blank=False,  max_length=80)
     persona = models.ForeignKey(Persona, related_name="accounts")
-    servicename = u'generic service'
+    servicename = 'generic service'
 
     def __unicode__(self):
         return "%s: %s" % (self.servicename, self.username)
@@ -195,12 +197,12 @@ class Account(models.Model):
 
 class FooAccount(Account):
     """A service-specific account of type Foo."""
-    servicename = u'foo'
+    servicename = 'foo'
 
 
 class BarAccount(Account):
     """A service-specific account of type Bar."""
-    servicename = u'bar'
+    servicename = 'bar'
 
 
 class Subscriber(models.Model):
@@ -335,7 +337,7 @@ class Category(models.Model):
         ordering = ('order',)
 
     def __unicode__(self):
-        return u'%s:o%s' % (self.id, self.order)
+        return '%s:o%s' % (self.id, self.order)
 
 
 class Link(models.Model):
@@ -359,11 +361,11 @@ class PrePopulatedSubPost(models.Model):
 
 
 class Post(models.Model):
-    title = models.CharField(max_length=100, help_text="Some help text for the title (with unicode ŠĐĆŽćžšđ)")
-    content = models.TextField(help_text="Some help text for the content (with unicode ŠĐĆŽćžšđ)")
+    title = models.CharField(max_length=100, help_text="Some help text for the title (with unicode \u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111)")
+    content = models.TextField(help_text="Some help text for the content (with unicode \u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111)")
     posted = models.DateField(
             default=datetime.date.today,
-            help_text="Some help text for the date (with unicode ŠĐĆŽćžšđ)"
+            help_text="Some help text for the date (with unicode \u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111)"
     )
     public = models.NullBooleanField()
 
@@ -493,14 +495,14 @@ class Reservation(models.Model):
 
 
 DRIVER_CHOICES = (
-    (u'bill', 'Bill G'),
-    (u'steve', 'Steve J'),
+    ('bill', 'Bill G'),
+    ('steve', 'Steve J'),
 )
 
 RESTAURANT_CHOICES = (
-    (u'indian', u'A Taste of India'),
-    (u'thai', u'Thai Pography'),
-    (u'pizza', u'Pizza Mama'),
+    ('indian', 'A Taste of India'),
+    ('thai', 'Thai Pography'),
+    ('pizza', 'Pizza Mama'),
 )
 
 

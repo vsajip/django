@@ -1,5 +1,3 @@
-from future_builtins import zip
-
 from django.core.exceptions import FieldError
 from django.db import transaction
 from django.db.backends.util import truncate_name
@@ -9,7 +7,7 @@ from django.db.models.sql.datastructures import EmptyResultSet
 from django.db.models.sql.expressions import SQLEvaluator
 from django.db.models.sql.query import get_order_dir, Query
 from django.db.utils import DatabaseError
-
+from django.utils.py3 import izip, itervalues, iteritems, next
 
 class SQLCompiler(object):
     def __init__(self, query, connection, using):
@@ -82,7 +80,7 @@ class SQLCompiler(object):
         where, w_params = self.query.where.as_sql(qn=qn, connection=self.connection)
         having, h_params = self.query.having.as_sql(qn=qn, connection=self.connection)
         params = []
-        for val in self.query.extra_select.itervalues():
+        for val in itervalues(self.query.extra_select):
             params.extend(val[1])
 
         result = ['SELECT']
@@ -177,7 +175,7 @@ class SQLCompiler(object):
         """
         qn = self.quote_name_unless_alias
         qn2 = self.connection.ops.quote_name
-        result = ['(%s) AS %s' % (col[0], qn2(alias)) for alias, col in self.query.extra_select.iteritems()]
+        result = ['(%s) AS %s' % (col[0], qn2(alias)) for alias, col in iteritems(self.query.extra_select)]
         aliases = set(self.query.extra_select.keys())
         if with_aliases:
             col_aliases = aliases.copy()
@@ -549,7 +547,7 @@ class SQLCompiler(object):
             group_by = self.query.group_by or []
 
             extra_selects = []
-            for extra_select, extra_params in self.query.extra_select.itervalues():
+            for extra_select, extra_params in itervalues(self.query.extra_select):
                 extra_selects.append(extra_select)
                 params.extend(extra_params)
             cols = (group_by + self.query.select +
@@ -778,7 +776,7 @@ class SQLCompiler(object):
                     row = self.resolve_columns(row, fields)
 
                 if has_aggregate_select:
-                    aggregate_start = len(self.query.extra_select.keys()) + len(self.query.select)
+                    aggregate_start = len(list(self.query.extra_select.keys())) + len(self.query.select)
                     aggregate_end = aggregate_start + len(self.query.aggregate_select)
                     row = tuple(row[:aggregate_start]) + tuple([
                         self.query.resolve_aggregate(value, aggregate, self.connection)
@@ -879,7 +877,7 @@ class SQLInsertCompiler(SQLCompiler):
             placeholders = [["%s"] * len(fields)]
         else:
             placeholders = [
-                [self.placeholder(field, v) for field, v in zip(fields, val)]
+                [self.placeholder(field, v) for field, v in izip(fields, val)]
                 for val in values
             ]
         if self.return_id and self.connection.features.can_return_id_from_insert:
@@ -896,7 +894,7 @@ class SQLInsertCompiler(SQLCompiler):
         else:
             return [
                 (" ".join(result + ["VALUES (%s)" % ", ".join(p)]), vals)
-                for p, vals in zip(placeholders, params)
+                for p, vals in izip(placeholders, params)
             ]
 
     def execute_sql(self, return_id=False):
@@ -1015,6 +1013,12 @@ class SQLUpdateCompiler(SQLCompiler):
         query.extra = {}
         query.select = []
         query.add_fields([query.model._meta.pk.name])
+        # Recheck the count - it is possible that fiddling with the select
+        # fields above removes tables from the query. Refs #18304.
+        count = query.count_active_tables()
+        if not self.query.related_updates and count == 1:
+            return
+
         must_pre_select = count > 1 and not self.connection.features.update_can_self_select
 
         # Now we adjust the current query: reset the where clause and get rid

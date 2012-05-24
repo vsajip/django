@@ -5,8 +5,9 @@ models for GeoDjango and/or mapping dictionaries for use with the
 
 Author: Travis Pinney, Dane Springmeyer, & Justin Bronn
 """
-from future_builtins import zip
 # Requires GDAL to use.
+from django.utils.py3 import izip, string_types
+
 from django.contrib.gis.gdal import DataSource
 from django.contrib.gis.gdal.field import OFTDate, OFTDateTime, OFTInteger, OFTReal, OFTString, OFTTime
 
@@ -24,7 +25,7 @@ def mapping(data_source, geom_name='geom', layer_key=0, multi_geom=False):
 
      `multi_geom` => Boolean (default: False) - specify as multigeometry.
     """
-    if isinstance(data_source, basestring):
+    if isinstance(data_source, string_types):
         # Instantiating the DataSource from the string.
         data_source = DataSource(data_source)
     elif isinstance(data_source, DataSource):
@@ -165,7 +166,7 @@ def _ogrinspect(data_source, model_name, geom_name='geom', layer_key=0, srid=Non
 
     yield 'class %s(models.Model):' % model_name
 
-    for field_name, width, precision, field_type in zip(ogr_fields, layer.field_widths, layer.field_precisions, layer.field_types):
+    for field_name, width, precision, field_type in izip(ogr_fields, layer.field_widths, layer.field_precisions, layer.field_types):
         # The model field name.
         mfield = field_name.lower()
         if mfield[-1:] == '_': mfield += 'field'

@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from datetime import datetime
 
 from django.core.exceptions import ValidationError
@@ -80,8 +82,8 @@ class FlexibleDatePost(models.Model):
     posted = models.DateField(blank=True, null=True)
 
 class UniqueErrorsModel(models.Model):
-    name = models.CharField(max_length=100, unique=True, error_messages={'unique': u'Custom unique name message.'})
-    no = models.IntegerField(unique=True, error_messages={'unique': u'Custom unique number message.'})
+    name = models.CharField(max_length=100, unique=True, error_messages={'unique': 'Custom unique name message.'})
+    no = models.IntegerField(unique=True, error_messages={'unique': 'Custom unique number message.'})
 
 class GenericIPAddressTestModel(models.Model):
     generic_ip = models.GenericIPAddressField(blank=True, null=True, unique=True)
@@ -99,6 +101,7 @@ try:
     class MultipleAutoFields(models.Model):
         auto1 = models.AutoField(primary_key=True)
         auto2 = models.AutoField(primary_key=True)
-except AssertionError as assertion_error:
-    pass # Fail silently
-assert str(assertion_error) == u"A model can't have more than one AutoField."
+except AssertionError as e:
+    # Fail silently
+    assertion_error = e
+assert str(assertion_error) == "A model can't have more than one AutoField."

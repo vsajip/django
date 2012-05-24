@@ -2,9 +2,7 @@ import copy
 import datetime
 import pickle
 from django.test.utils import override_settings
-from django.utils import timezone
-from django.utils import unittest
-
+from django.utils import timezone, unittest
 
 class TimezoneTests(unittest.TestCase):
 

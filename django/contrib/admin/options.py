@@ -23,6 +23,7 @@ from django.template.response import SimpleTemplateResponse, TemplateResponse
 from django.utils.decorators import method_decorator
 from django.utils.datastructures import SortedDict
 from django.utils.html import escape, escapejs
+from django.utils.py3 import with_metaclass, itervalues
 from django.utils.safestring import mark_safe
 from django.utils.text import capfirst, get_text_list
 from django.utils.translation import ugettext as _
@@ -57,9 +58,8 @@ FORMFIELD_FOR_DBFIELD_DEFAULTS = {
 
 csrf_protect_m = method_decorator(csrf_protect)
 
-class BaseModelAdmin(object):
+class BaseModelAdmin(with_metaclass(forms.MediaDefiningClass)):
     """Functionality common to both ModelAdmin and InlineAdmin."""
-    __metaclass__ = forms.MediaDefiningClass
 
     raw_id_fields = ()
     fields = None
@@ -425,7 +425,7 @@ class ModelAdmin(BaseModelAdmin):
         if self.declared_fieldsets:
             return self.declared_fieldsets
         form = self.get_form(request, obj)
-        fields = form.base_fields.keys() + list(self.get_readonly_fields(request, obj))
+        fields = list(form.base_fields.keys()) + list(self.get_readonly_fields(request, obj))
         return [(None, {'fields': fields})]
 
     def get_form(self, request, obj=None, **kwargs):
@@ -592,7 +592,7 @@ class ModelAdmin(BaseModelAdmin):
             actions.extend([self.get_action(action) for action in class_actions])
 
         # get_action might have returned None, so filter any of those out.
-        actions = filter(None, actions)
+        actions = [_f for _f in actions if _f]
 
         # Convert the actions into a SortedDict keyed by name.
         actions = SortedDict([
@@ -608,7 +608,7 @@ class ModelAdmin(BaseModelAdmin):
         tuple (name, description).
         """
         choices = [] + default_choices
-        for func, name, description in self.get_actions(request).itervalues():
+        for func, name, description in itervalues(self.get_actions(request)):
             choice = (name, description % model_format_dict(self.opts))
             choices.append(choice)
         return choices
@@ -1416,7 +1416,7 @@ class InlineModelAdmin(BaseModelAdmin):
         if self.declared_fieldsets:
             return self.declared_fieldsets
         form = self.get_formset(request, obj).form
-        fields = form.base_fields.keys() + list(self.get_readonly_fields(request, obj))
+        fields = list(form.base_fields.keys()) + list(self.get_readonly_fields(request, obj))
         return [(None, {'fields': fields})]
 
     def queryset(self, request):

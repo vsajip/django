@@ -27,6 +27,7 @@ import sys
 import tarfile
 import zipfile
 
+from .py3 import string_types
 
 class ArchiveException(Exception):
     """
@@ -58,7 +59,7 @@ class Archive(object):
     @staticmethod
     def _archive_cls(file):
         cls = None
-        if isinstance(file, basestring):
+        if isinstance(file, string_types):
             filename = file
         else:
             try:
@@ -145,11 +146,11 @@ class TarArchive(BaseArchive):
             else:
                 try:
                     extracted = self._archive.extractfile(member)
-                except (KeyError, AttributeError):
+                except (KeyError, AttributeError) as e:
                     # Some corrupt tar files seem to produce this
                     # (specifically bad symlinks)
                     print ("In the tar file %s the member %s is invalid: %s" %
-                           (name, member.name, sys.exc_info()[1]))
+                           (name, member.name, e))
                 else:
                     dirname = os.path.dirname(filename)
                     if dirname and not os.path.exists(dirname):

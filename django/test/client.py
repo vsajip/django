@@ -1,11 +1,8 @@
-import urllib
 import sys
 import os
 import re
 import mimetypes
 from copy import copy
-from io import BytesIO
-from urlparse import urlparse, urlsplit
 
 from django.conf import settings
 from django.contrib.auth import authenticate, login
@@ -20,14 +17,15 @@ from django.utils.encoding import smart_str
 from django.utils.http import urlencode
 from django.utils.importlib import import_module
 from django.utils.itercompat import is_iterable
+from django.utils.py3 import (urlparse, urlsplit, string_types, unquote,
+                              reraise, PY3, binary_type, StringIO, BytesIO)
 from django.db import close_connection
 from django.test.utils import ContextList
 
 __all__ = ('Client', 'RequestFactory', 'encode_file', 'encode_multipart')
 
-
-BOUNDARY = 'BoUnDaRyStRiNg'
-MULTIPART_CONTENT = 'multipart/form-data; boundary=%s' % BOUNDARY
+BOUNDARY = b'BoUnDaRyStRiNg'
+MULTIPART_CONTENT = 'multipart/form-data; boundary=%s' % BOUNDARY.decode('ascii')
 CONTENT_TYPE_RE = re.compile('.*; charset=([\w\d-]+);?')
 
 class FakePayload(object):
@@ -115,42 +113,45 @@ def encode_multipart(boundary, data):
     for (key, value) in data.items():
         if is_file(value):
             lines.extend(encode_file(boundary, key, value))
-        elif not isinstance(value, basestring) and is_iterable(value):
+        elif not isinstance(value, string_types) and is_iterable(value):
             for item in value:
                 if is_file(item):
                     lines.extend(encode_file(boundary, key, item))
                 else:
                     lines.extend([
-                        '--' + boundary,
-                        'Content-Disposition: form-data; name="%s"' % to_str(key),
-                        '',
+                        b'--' + boundary,
+                        b'Content-Disposition: form-data; name="' + to_str(key) + b'"',
+                        b'',
                         to_str(item)
                     ])
         else:
             lines.extend([
-                '--' + boundary,
-                'Content-Disposition: form-data; name="%s"' % to_str(key),
-                '',
+                b'--' + boundary,
+                b'Content-Disposition: form-data; name="' + to_str(key) + b'"',
+                b'',
                 to_str(value)
             ])
 
     lines.extend([
-        '--' + boundary + '--',
-        '',
+        b'--' + boundary + b'--',
+        b'',
     ])
-    return '\r\n'.join(lines)
+    return b'\r\n'.join(lines)
 
 def encode_file(boundary, key, file):
     to_str = lambda s: smart_str(s, settings.DEFAULT_CHARSET)
     content_type = mimetypes.guess_type(file.name)[0]
     if content_type is None:
         content_type = 'application/octet-stream'
+    filename = os.path.basename(file.name)
+    if isinstance(filename, binary_type):
+        filename = filename.decode('utf-8')
     return [
-        '--' + boundary,
-        'Content-Disposition: form-data; name="%s"; filename="%s"' \
-            % (to_str(key), to_str(os.path.basename(file.name))),
-        'Content-Type: %s' % content_type,
-        '',
+        b'--' + boundary,
+        ('Content-Disposition: form-data; name="%s"; filename="%s"' \
+            % (key, filename)).encode('utf-8'),
+        ('Content-Type: %s' % content_type).encode('utf-8'),
+        b'',
         file.read()
     ]
 
@@ -172,7 +173,7 @@ class RequestFactory(object):
     def __init__(self, **defaults):
         self.defaults = defaults
         self.cookies = SimpleCookie()
-        self.errors = BytesIO()
+        self.errors = StringIO()
 
     def _base_environ(self, **request):
         """
@@ -193,7 +194,7 @@ class RequestFactory(object):
             'SERVER_PROTOCOL':   'HTTP/1.1',
             'wsgi.version':      (1,0),
             'wsgi.url_scheme':   'http',
-            'wsgi.input':        FakePayload(''),
+            'wsgi.input':        FakePayload(b''),
             'wsgi.errors':       self.errors,
             'wsgi.multiprocess': True,
             'wsgi.multithread':  False,
@@ -222,9 +223,9 @@ class RequestFactory(object):
     def _get_path(self, parsed):
         # If there are parameters, add them
         if parsed[3]:
-            return urllib.unquote(parsed[2] + ";" + parsed[3])
+            return unquote(parsed[2] + ";" + parsed[3])
         else:
-            return urllib.unquote(parsed[2])
+            return unquote(parsed[2])
 
     def get(self, path, data={}, **extra):
         "Construct a GET request"
@@ -392,7 +393,7 @@ class Client(RequestFactory):
             if self.exc_info:
                 exc_info = self.exc_info
                 self.exc_info = None
-                raise exc_info[1], None, exc_info[2]
+                reraise(*exc_info)
 
             # Save the client and request that stimulated the response.
             response.client = self

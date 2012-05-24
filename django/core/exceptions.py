@@ -1,7 +1,8 @@
 """
 Global Django exception and warning classes.
 """
-from functools import reduce
+
+from django.utils.py3 import reduce
 
 class DjangoRuntimeWarning(RuntimeWarning):
     pass

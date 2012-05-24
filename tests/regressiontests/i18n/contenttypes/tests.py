@@ -1,4 +1,5 @@
 # coding: utf-8
+from __future__ import unicode_literals
 
 import os
 
@@ -6,6 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils import translation
+from django.utils.py3 import text_type
 
 
 @override_settings(
@@ -23,11 +25,11 @@ class ContentTypeTests(TestCase):
     def test_verbose_name(self):
         company_type = ContentType.objects.get(app_label='i18n', model='company')
         with translation.override('en'):
-            self.assertEqual(unicode(company_type), u'Company')
+            self.assertEqual(text_type(company_type), 'Company')
         with translation.override('fr'):
-            self.assertEqual(unicode(company_type), u'Société')
+            self.assertEqual(text_type(company_type), 'Soci\xe9t\xe9')
 
     def test_field_override(self):
         company_type = ContentType.objects.get(app_label='i18n', model='company')
         company_type.name = 'Other'
-        self.assertEqual(unicode(company_type), 'Other')
+        self.assertEqual(text_type(company_type), 'Other')
