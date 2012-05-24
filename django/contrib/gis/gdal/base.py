@@ -1,5 +1,5 @@
 from ctypes import c_void_p
-from types import NoneType
+
 from django.contrib.gis.gdal.error import GDALException
 from django.utils.py3 import integer_types
 
@@ -27,7 +27,7 @@ class GDALBase(object):
         # compatible type or None (NULL).
         if isinstance(ptr, integer_types):
             self._ptr = self.ptr_type(ptr)
-        elif isinstance(ptr, (self.ptr_type, NoneType)):
+        elif ptr is None or isinstance(ptr, self.ptr_type):
             self._ptr = ptr
         else:
             raise TypeError('Incompatible pointer type')

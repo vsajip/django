@@ -348,6 +348,15 @@ if __name__ == "__main__":
                 if isinstance(out, binary_type):
                     out = out.strip().decode('utf-8')
                 print('Django version: %s (%s)' % (dv, out))
+            else:
+                p = subprocess.Popen('git rev-parse HEAD'.split(),
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE)
+                out, err = p.communicate()
+            if p.returncode == 0:
+                if isinstance(out, binary_type):
+                    out = out.strip().decode('utf-8')
+                print('Django version: %s (%s)' % (dv, out))
         except subprocess.CalledProcessError:
             pass
 

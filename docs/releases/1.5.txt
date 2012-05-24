@@ -44,6 +44,24 @@ reasons or when trying to avoid overwriting concurrent changes.
 See the :meth:`Model.save() <django.db.models.Model.save()>` documentation for
 more details.
 
+Caching of related model instances
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When traversing relations, the ORM will avoid re-fetching objects that were
+previously loaded. For example, with the tutorial's models::
+
+    >>> first_poll = Poll.objects.all()[0]
+    >>> first_choice = first_poll.choice_set.all()[0]
+    >>> first_choice.poll is first_poll
+    True
+
+In Django 1.5, the third line no longer triggers a new SQL query to fetch
+``first_choice.poll``; it was set when by the second line.
+
+For one-to-one relationships, both sides can be cached. For many-to-one
+relationships, only the single side of the relationship can be cached. This
+is particularly helpful in combination with ``prefetch_related``.
+
 Minor features
 ~~~~~~~~~~~~~~
 
@@ -71,6 +89,18 @@ Backwards incompatible changes in 1.5
     deprecation timeline for a given feature, its removal may appear as a
     backwards incompatible change.
 
+Context in year archive class-based views
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For consistency with the other date-based generic views,
+:class:`~django.views.generic.dates.YearArchiveView` now passes ``year`` in
+the context as a :class:`datetime.date` rather than a string.  If you are
+using ``{{ year }}`` in your templates, you must replace it with ``{{
+year|date:"Y" }}``.
+
+``next_year`` and ``previous_year`` were also added in the context. They are
+calculated according to ``allow_empty`` and ``allow_future``.
+
 Features deprecated in 1.5
 ==========================
 
@@ -86,4 +116,4 @@ our own copy of ``simplejson``. You can safely change any use of
 ~~~~~~~~~~~~~~~~~~~~~~
 
 The :func:`~django.utils.itercompat.product` function has been deprecated. Use
-the built-in `itertools.product` instead.
+the built-in :func:`itertools.product` instead.
