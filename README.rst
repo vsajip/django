@@ -4,6 +4,8 @@
    
    https://gist.github.com/1373553
 
+   The single codebase is in the *django3* branch.
+
 Django is a high-level Python Web framework that encourages rapid development
 and clean, pragmatic design. Thanks for checking it out.
 
