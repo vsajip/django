@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 from django.core.paginator import Paginator, InvalidPage
 from django.core.exceptions import ImproperlyConfigured
 from django.http import Http404
-from django.utils.encoding import smart_text
 from django.utils.translation import ugettext as _
 from django.views.generic.base import TemplateResponseMixin, ContextMixin, View
 
@@ -79,7 +78,7 @@ class MultipleObjectMixin(ContextMixin):
         if self.context_object_name:
             return self.context_object_name
         elif hasattr(object_list, 'model'):
-            return smart_text('%s_list' % object_list.model._meta.object_name.lower())
+            return '%s_list' % object_list.model._meta.object_name.lower()
         else:
             return None
 
