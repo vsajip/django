@@ -82,7 +82,10 @@ class WizardTests(object):
         self.assertEqual(response.context['wizard']['steps'].current, 'form2')
 
         post_data = self.wizard_step_data[1]
+<<<<<<< HEAD
         # django3: added 'rb'
+=======
+>>>>>>> 7a4233b69c3a4f4ff023bb58ed30f9f7307d7cd2
         post_data['form2-file1'] = open(__file__, 'rb')
         response = self.client.post(self.wizard_url, post_data)
         self.assertEqual(response.status_code, 200)
@@ -96,7 +99,10 @@ class WizardTests(object):
         self.assertEqual(response.status_code, 200)
 
         all_data = response.context['form_list']
+<<<<<<< HEAD
         # django3: added 'rb'
+=======
+>>>>>>> 7a4233b69c3a4f4ff023bb58ed30f9f7307d7cd2
         self.assertEqual(all_data[1]['file1'].read(), open(__file__, 'rb').read())
         del all_data[1]['file1']
         self.assertEqual(all_data, [
@@ -114,7 +120,10 @@ class WizardTests(object):
         self.assertEqual(response.status_code, 200)
 
         post_data = self.wizard_step_data[1]
+<<<<<<< HEAD
         # django3: added 'rb'
+=======
+>>>>>>> 7a4233b69c3a4f4ff023bb58ed30f9f7307d7cd2
         post_data['form2-file1'] = open(__file__, 'rb')
         response = self.client.post(self.wizard_url, post_data)
         self.assertEqual(response.status_code, 200)
@@ -126,7 +135,10 @@ class WizardTests(object):
         self.assertEqual(response.status_code, 200)
 
         all_data = response.context['all_cleaned_data']
+<<<<<<< HEAD
         # django3: added 'rb'
+=======
+>>>>>>> 7a4233b69c3a4f4ff023bb58ed30f9f7307d7cd2
         self.assertEqual(all_data['file1'].read(), open(__file__, 'rb').read())
         del all_data['file1']
         self.assertEqual(all_data, {
@@ -144,7 +156,10 @@ class WizardTests(object):
         self.assertEqual(response.status_code, 200)
 
         post_data = self.wizard_step_data[1]
+<<<<<<< HEAD
         # django3: added 'rb'
+=======
+>>>>>>> 7a4233b69c3a4f4ff023bb58ed30f9f7307d7cd2
         post_data['form2-file1'] = open(__file__, 'rb')
         response = self.client.post(self.wizard_url, post_data)
         self.assertEqual(response.status_code, 200)
@@ -172,7 +187,10 @@ class WizardTests(object):
         self.assertEqual(response.context['wizard']['steps'].current, 'form2')
 
         post_data = self.wizard_step_data[1]
+<<<<<<< HEAD
         # django3: added 'rb'
+=======
+>>>>>>> 7a4233b69c3a4f4ff023bb58ed30f9f7307d7cd2
         post_data['form2-file1'] = open(__file__, 'rb')
         response = self.client.post(self.wizard_url, post_data)
         self.assertEqual(response.status_code, 200)

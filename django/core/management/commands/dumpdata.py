@@ -97,6 +97,7 @@ class Command(BaseCommand):
         except KeyError:
             raise CommandError("Unknown serialization format: %s" % format)
 
+<<<<<<< HEAD
         # Now collate the objects to be serialized.
         objects = []
         for model in sort_dependencies(list(app_list.items())):
@@ -107,11 +108,26 @@ class Command(BaseCommand):
                     objects.extend(model._base_manager.using(using).all())
                 else:
                     objects.extend(model._default_manager.using(using).all())
+=======
+        def get_objects():
+            # Collate the objects to be serialized.
+            for model in sort_dependencies(app_list.items()):
+                if model in excluded_models:
+                    continue
+                if not model._meta.proxy and router.allow_syncdb(using, model):
+                    if use_base_manager:
+                        objects = model._base_manager
+                    else:
+                        objects = model._default_manager
+                    for obj in objects.using(using).\
+                            order_by(model._meta.pk.name).iterator():
+                        yield obj
+>>>>>>> 7a4233b69c3a4f4ff023bb58ed30f9f7307d7cd2
 
         try:
-            self.stdout.write(serializers.serialize(format, objects,
-                              indent=indent, use_natural_keys=use_natural_keys),
-                              ending='')
+            self.stdout.ending = None
+            serializers.serialize(format, get_objects(), indent=indent,
+                    use_natural_keys=use_natural_keys, stream=self.stdout)
         except Exception as e:
             if show_traceback:
                 raise
