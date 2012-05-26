@@ -182,14 +182,9 @@ class NamedWizardTests(object):
         response = self.client.get(step2_url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['wizard']['steps'].current, 'form2')
-<<<<<<< HEAD
-        self.assertEqual(response.context['wizard']['form'].files['form2-file1'].read(),
-                         open(__file__, 'rb').read())
-=======
         self.assertEqual(
             response.context['wizard']['form'].files['form2-file1'].read(),
             open(__file__, 'rb').read())
->>>>>>> 7a4233b69c3a4f4ff023bb58ed30f9f7307d7cd2
 
         response = self.client.post(
             reverse(self.wizard_urlname,
