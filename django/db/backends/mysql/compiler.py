@@ -1,5 +1,5 @@
 from django.db.models.sql import compiler
-from django.utils.itercompat import izip_longest
+from django.utils.py3 import izip_longest
 
 class SQLCompiler(compiler.SQLCompiler):
     def resolve_columns(self, row, fields=()):

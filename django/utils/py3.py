@@ -65,12 +65,7 @@ if sys.version_info[0] < 3:
     except ImportError:
         import pickle
     from itertools import izip
-    # Do not import izip_longest from here directly, because in Python 2.5
-    # it isn't defined.  Import from django.utils.itercompat instead.
-    try:
-        from itertools import izip_longest as _izip_longest
-    except ImportError:
-        pass
+    from itertools import izip_longest
     xrange = xrange
     func_code_name = 'func_code'
     xreadlines_name = 'xreadlines'
@@ -163,9 +158,7 @@ else:
     PyStringIO = StringIO
     import pickle
     izip = zip
-    # Do not import izip_longest from here directly, because in Python 2.5
-    # it isn't defined.  Import from django.utils.itercompat instead.
-    from itertools import zip_longest as _izip_longest
+    from itertools import zip_longest as izip_longest
     xrange = range
     func_code_name = '__code__'
     xreadlines_name = '__iter__'
