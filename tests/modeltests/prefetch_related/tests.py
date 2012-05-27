@@ -375,8 +375,12 @@ class MultiTableInheritanceTest(TestCase):
         # Regression for #18090: the prefetching query must include an IN clause.
         # Note that on Oracle the table name is upper case in the generated SQL,
         # thus the .lower() call.
-        self.assertIn('authorwithage', connection.queries[-1]['sql'].lower())
-        self.assertIn(' IN ', connection.queries[-1]['sql'])
+        sql = connection.queries[-1]['sql'].lower()
+        # Some backends have SQL as text, others have it as bytes :-(
+        if isinstance(sql, text_type):
+            sql = sql.encode('utf-8')
+        self.assertIn(b'authorwithage', sql)
+        self.assertIn(b' in ', sql)
 
         self.assertEqual(l, [a.authorwithage for a in Author.objects.all()])
 

@@ -1,7 +1,6 @@
 from django.db.backends.util import truncate_name, typecast_timestamp
 from django.db.models.sql import compiler
 from django.db.models.sql.constants import MULTI
-from django.db.models.sql.query import get_proxied_model
 from django.utils.py3 import izip, izip_longest, iteritems
 
 SQLCompiler = compiler.SQLCompiler
