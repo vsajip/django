@@ -29,7 +29,7 @@ from django.utils import timezone, translation, unittest
 from django.utils.cache import (patch_vary_headers, get_cache_key,
     learn_cache_key, patch_cache_control, patch_response_headers)
 from django.utils.encoding import force_unicode
-from django.utils.py3 import n, StringIO
+from django.utils.py3 import n
 from django.views.decorators.cache import cache_page
 
 from .models import Poll, expensive_calculation
@@ -820,9 +820,14 @@ class DBCacheTests(BaseCacheTests, TransactionTestCase):
         self.perform_cull_test(50, 18)
 
     def test_second_call_doesnt_crash(self):
-        err = StringIO()
-        management.call_command('createcachetable', self._table_name, verbosity=0, interactive=False, stderr=err)
-        self.assertTrue("Cache table 'test cache table' could not be created" in err.getvalue())
+        with self.assertRaisesRegexp(management.CommandError,
+                "Cache table 'test cache table' could not be created"):
+            management.call_command(
+               'createcachetable',
+                self._table_name,
+                verbosity=0,
+                interactive=False
+            )
 
 
 @override_settings(USE_TZ=True)
