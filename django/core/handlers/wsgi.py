@@ -248,6 +248,6 @@ class WSGIHandler(base.BaseHandler):
         status = '%s %s' % (response.status_code, status_text)
         response_headers = [(str(k), str(v)) for k, v in response.items()]
         for c in response.cookies.values():
-            response_headers.append(('Set-Cookie', str(c.output(header=''))))
+            response_headers.append((n('Set-Cookie'), str(c.output(header=n('')))))
         start_response(n(status), response_headers)
         return response

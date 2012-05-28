@@ -176,7 +176,7 @@ class ListMixinTest(unittest.TestCase):
                     del ul[i::k]
                     self.assertEqual(pl[:], ul[:], 'del slice [%d::%d]' % (i,k))
 
-            for k in list(range(-Len - 1,0)) + klist(range(1,Len)):
+            for k in list(range(-Len - 1,0)) + list(range(1,Len)):
                 pl, ul = self.lists_of_len(Len)
                 del pl[::k]
                 del ul[::k]

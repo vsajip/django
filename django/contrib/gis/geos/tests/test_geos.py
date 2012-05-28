@@ -954,6 +954,10 @@ class GEOSTest(unittest.TestCase, TestDataMixin):
 
         # The SRID won't be exported in GEOS 3.0 release candidates.
         no_srid = self.null_srid == -1
+        if PY3:
+            cPickle = pickle
+        else:
+            import cPickle
         for geom in tgeoms:
             s1, s2 = cPickle.dumps(geom), pickle.dumps(geom)
             g1, g2 = cPickle.loads(s1), pickle.loads(s2)
