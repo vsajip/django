@@ -481,6 +481,20 @@ class FieldsTests(SimpleTestCase):
         self.assertRaisesMessage(ValidationError, "'Ensure this value has at most 10 characters (it has 11).'", f.clean, '12345678901')
         self.assertRaisesMessage(ValidationError, "'Enter a valid value.'", f.clean, '12345a')
 
+    def test_regexfield_6(self):
+        """
+        Ensure that it works with unicode characters.
+        Refs #.
+        """
+        f = RegexField('^\w+$')
+        self.assertEqual('\xe9\xe8\xf8\xe7\xce\xce\u4f60\u597d', f.clean('\xe9\xe8\xf8\xe7\xce\xce\u4f60\u597d'))
+
+    def test_change_regex_after_init(self):
+        f = RegexField('^[a-z]+$')
+        f.regex = '^\d+$'
+        self.assertEqual('1234', f.clean('1234'))
+        self.assertRaisesMessage(ValidationError, "'Enter a valid value.'", f.clean, 'abcd')
+
     # EmailField ##################################################################
 
     def test_emailfield_1(self):

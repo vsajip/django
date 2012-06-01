@@ -447,7 +447,7 @@ class RegexField(CharField):
 
     def _set_regex(self, regex):
         if isinstance(regex, string_types):
-            regex = re.compile(regex)
+            regex = re.compile(regex, re.UNICODE)
         self._regex = regex
         if hasattr(self, '_regex_validator') and self._regex_validator in self.validators:
             self.validators.remove(self._regex_validator)

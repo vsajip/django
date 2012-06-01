@@ -149,7 +149,7 @@ class BlockTranslateNode(Node):
         context.pop()
         try:
             result = result % data
-        except KeyError:
+        except (KeyError, ValueError):
             with translation.override(None):
                 result = self.render(context)
         return result
