@@ -7,7 +7,7 @@ from __future__ import absolute_import, unicode_literals
 import datetime
 import re
 
-from .si_postalcodes import SI_POSTALCODES_CHOICES
+from django.contrib.localflavor.si.si_postalcodes import SI_POSTALCODES_CHOICES
 from django.core.validators import EMPTY_VALUES
 from django.forms import ValidationError
 from django.forms.fields import CharField, Select, ChoiceField

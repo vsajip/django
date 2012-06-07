@@ -7,7 +7,7 @@ from django.forms import ValidationError
 from django.forms.fields import RegexField, Select
 from django.utils.translation import ugettext_lazy as _
 
-from .mk_choices import MK_MUNICIPALITIES
+from django.contrib.localflavor.mk.mk_choices import MK_MUNICIPALITIES
 
 
 class MKIdentityCardNumberField(RegexField):
@@ -16,7 +16,7 @@ class MKIdentityCardNumberField(RegexField):
     """
     default_error_messages = {
         'invalid': _('Identity card numbers must contain'
-                       ' either 4 to 7 digits or an uppercase letter and 7 digits.'),
+                     ' either 4 to 7 digits or an uppercase letter and 7 digits.'),
     }
 
     def __init__(self, *args, **kwargs):

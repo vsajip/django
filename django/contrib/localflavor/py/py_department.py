@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import unicode_literals
-
 # http://www.statoids.com/upy.html
+from __future__ import unicode_literals
 
 DEPARTMENT_CHOICES = (
     ('AG', 'Alto Paraguay'),

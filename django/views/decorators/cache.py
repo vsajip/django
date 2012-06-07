@@ -1,5 +1,4 @@
 from functools import wraps
-
 from django.middleware.cache import CacheMiddleware
 from django.utils.decorators import decorator_from_middleware_with_args, available_attrs
 from django.utils.cache import patch_cache_control, add_never_cache_headers

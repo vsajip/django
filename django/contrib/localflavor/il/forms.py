@@ -2,7 +2,6 @@
 Israeli-specific form helpers
 """
 from __future__ import unicode_literals
-
 import re
 
 from django.core.exceptions import ValidationError

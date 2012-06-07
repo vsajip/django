@@ -6,9 +6,9 @@ from __future__ import absolute_import, unicode_literals
 
 import re
 
-from .it_province import PROVINCE_CHOICES
-from .it_region import REGION_CHOICES
-from .util import ssn_check_digit, vat_number_check_digit
+from django.contrib.localflavor.it.it_province import PROVINCE_CHOICES
+from django.contrib.localflavor.it.it_region import REGION_CHOICES
+from django.contrib.localflavor.it.util import ssn_check_digit, vat_number_check_digit
 from django.core.validators import EMPTY_VALUES
 from django.forms import ValidationError
 from django.forms.fields import Field, RegexField, Select

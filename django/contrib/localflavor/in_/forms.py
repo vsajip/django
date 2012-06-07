@@ -6,7 +6,7 @@ from __future__ import absolute_import, unicode_literals
 
 import re
 
-from .in_states import STATES_NORMALIZED, STATE_CHOICES
+from django.contrib.localflavor.in_.in_states import STATES_NORMALIZED, STATE_CHOICES
 from django.core.validators import EMPTY_VALUES
 from django.forms import ValidationError
 from django.forms.fields import Field, RegexField, CharField, Select

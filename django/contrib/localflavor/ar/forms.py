@@ -5,7 +5,7 @@ AR-specific Form helpers.
 
 from __future__ import absolute_import, unicode_literals
 
-from .ar_provinces import PROVINCE_CHOICES
+from django.contrib.localflavor.ar.ar_provinces import PROVINCE_CHOICES
 from django.core.validators import EMPTY_VALUES
 from django.forms import ValidationError
 from django.forms.fields import RegexField, CharField, Select

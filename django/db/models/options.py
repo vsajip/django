@@ -8,7 +8,7 @@ from django.db.models.fields import AutoField, FieldDoesNotExist
 from django.db.models.fields.proxy import OrderWrt
 from django.db.models.loading import get_models, app_cache_ready
 from django.utils.translation import activate, deactivate_all, get_language, string_concat
-from django.utils.encoding import force_unicode, smart_str, smart_text
+from django.utils.encoding import force_unicode, smart_text
 from django.utils.datastructures import SortedDict
 from django.utils.py3 import itervalues, iteritems, string_types, PY3
 

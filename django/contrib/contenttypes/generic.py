@@ -1,7 +1,6 @@
 """
 Classes allowing "generic" relations through ContentType and object-id fields.
 """
-
 from __future__ import unicode_literals
 
 from collections import defaultdict

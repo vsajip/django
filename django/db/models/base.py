@@ -371,13 +371,13 @@ class Model(with_metaclass(ModelBase)):
 
     def __repr__(self):
         try:
-            v = text_type(self)
+            u = text_type(self)
         except (UnicodeEncodeError, UnicodeDecodeError):
-            v = '[Bad Unicode data]'
+            u = '[Bad Unicode data]'
         if not PY3:
-            return smart_str('<%s: %s>' % (self.__class__.__name__, v))
+            return smart_str('<%s: %s>' % (self.__class__.__name__, u))
         else:
-            return '<%s: %s>' % (self.__class__.__name__, v)
+            return '<%s: %s>' % (self.__class__.__name__, u)
 
     def __str__(self):
         if hasattr(self, '__unicode__'):

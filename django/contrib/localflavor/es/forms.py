@@ -7,8 +7,8 @@ from __future__ import absolute_import, unicode_literals
 
 import re
 
-from .es_provinces import PROVINCE_CHOICES
-from .es_regions import REGION_CHOICES
+from django.contrib.localflavor.es.es_provinces import PROVINCE_CHOICES
+from django.contrib.localflavor.es.es_regions import REGION_CHOICES
 from django.core.validators import EMPTY_VALUES
 from django.forms import ValidationError
 from django.forms.fields import RegexField, Select

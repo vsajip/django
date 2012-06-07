@@ -1,5 +1,4 @@
 import os
-import sys
 from threading import local
 
 from django.conf import settings

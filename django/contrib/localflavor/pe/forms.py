@@ -5,7 +5,7 @@ PE-specific Form helpers.
 
 from __future__ import absolute_import, unicode_literals
 
-from .pe_region import REGION_CHOICES
+from django.contrib.localflavor.pe.pe_region import REGION_CHOICES
 from django.core.validators import EMPTY_VALUES
 from django.forms import ValidationError
 from django.forms.fields import RegexField, CharField, Select

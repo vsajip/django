@@ -8,7 +8,6 @@ This exists in this standalone file so that it's only imported into memory
 when explicitly needed.
 
 """
-
 from __future__ import unicode_literals
 
 from django.utils.translation import ugettext_lazy as _

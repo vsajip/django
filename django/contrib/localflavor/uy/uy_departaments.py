@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
-
-from __future__ import unicode_literals
-
 """A list of Urguayan departaments as `choices` in a formfield."""
+from __future__ import unicode_literals
 
 DEPARTAMENT_CHOICES = (
     ('G', 'Artigas'),

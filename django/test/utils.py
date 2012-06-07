@@ -6,7 +6,7 @@ from django.template import Template, loader, TemplateDoesNotExist
 from django.template.loaders import cached
 from django.utils.translation import deactivate
 from django.utils.functional import wraps
-from django.utils.py3 import string_types
+from django.utils.py3 import string_types, upfx
 
 __all__ = (
     'Approximate', 'ContextList',  'get_runner', 'override_settings',
@@ -219,3 +219,5 @@ class override_settings(object):
             setting_changed.send(sender=settings._wrapped.__class__,
                                  setting=key, value=new_value)
 
+def str_prefix(s):
+    return s % {'_': upfx}

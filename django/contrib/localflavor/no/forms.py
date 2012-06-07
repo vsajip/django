@@ -7,7 +7,7 @@ from __future__ import absolute_import, unicode_literals
 import re
 import datetime
 
-from .no_municipalities import MUNICIPALITY_CHOICES
+from django.contrib.localflavor.no.no_municipalities import MUNICIPALITY_CHOICES
 from django.core.validators import EMPTY_VALUES
 from django.forms import ValidationError
 from django.forms.fields import Field, RegexField, Select

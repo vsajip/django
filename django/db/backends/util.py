@@ -1,7 +1,6 @@
 from __future__ import unicode_literals
 
 import datetime
-import sys
 import decimal
 import hashlib
 from time import time
@@ -118,7 +117,6 @@ def typecast_timestamp(s): # does NOT store time zone information
     s = py3_string_conversion(s)
 
     if not ' ' in s: return typecast_date(s)
-    
     d, t = s.split()
     # Extract timezone information, if it exists. Currently we just throw
     # it away, but in the future we may make use of it.

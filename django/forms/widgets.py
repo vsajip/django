@@ -66,7 +66,7 @@ class Media(StrAndUnicode):
                 for medium in media])
 
     def absolute_path(self, path, prefix=None):
-        if path.startswith('http://') or path.startswith('https://') or path.startswith('/'):
+        if path.startswith(('http://', 'https://', '/')):
             return path
         if prefix is None:
             if settings.STATIC_URL is None:

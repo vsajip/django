@@ -4,13 +4,13 @@ Chile specific form helpers.
 
 from __future__ import absolute_import, unicode_literals
 
-from .cl_regions import REGION_CHOICES
 from django.core.validators import EMPTY_VALUES
 from django.forms import ValidationError
 from django.forms.fields import RegexField, Select
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import smart_unicode
 
+from .cl_regions import REGION_CHOICES
 
 class CLRegionSelect(Select):
     """

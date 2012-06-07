@@ -6,8 +6,9 @@ from __future__ import absolute_import, unicode_literals
 
 import re
 
-from .hr_choices import (HR_LICENSE_PLATE_PREFIX_CHOICES, HR_COUNTY_CHOICES,
-                         HR_PHONE_NUMBER_PREFIX_CHOICES)
+from django.contrib.localflavor.hr.hr_choices import (
+    HR_LICENSE_PLATE_PREFIX_CHOICES, HR_COUNTY_CHOICES,
+    HR_PHONE_NUMBER_PREFIX_CHOICES)
 from django.core.validators import EMPTY_VALUES
 from django.forms import ValidationError
 from django.forms.fields import Field, Select, RegexField

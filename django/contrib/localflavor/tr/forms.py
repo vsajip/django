@@ -6,7 +6,7 @@ from __future__ import absolute_import, unicode_literals
 
 import re
 
-from .tr_provinces import PROVINCE_CHOICES
+from django.contrib.localflavor.tr.tr_provinces import PROVINCE_CHOICES
 from django.core.validators import EMPTY_VALUES
 from django.forms import ValidationError
 from django.forms.fields import Field, RegexField, Select, CharField

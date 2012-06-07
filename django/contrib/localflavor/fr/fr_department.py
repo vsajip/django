@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import unicode_literals
-
 # See the "Code officiel géographique" on the INSEE website <www.insee.fr>.
+from __future__ import unicode_literals
 
 DEPARTMENT_CHOICES = (
     # Metropolitan departments

@@ -206,10 +206,6 @@ class OutputChecker(doctest.OutputChecker):
         "foo"
         >>> o._strip_quotes('"foo"')
         "foo"
-        >>> o._strip_quotes("u'foo'")
-        "foo"
-        >>> o._strip_quotes('u"foo"')
-        "foo"
         """
         def is_quoted_string(s):
             s = s.strip()

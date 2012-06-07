@@ -18,7 +18,7 @@ from django.forms.widgets import (TextInput, PasswordInput, HiddenInput,
     NullBooleanSelect, SelectMultiple, DateInput, DateTimeInput, TimeInput,
     SplitDateTimeWidget, SplitHiddenDateTimeWidget, FILE_INPUT_CONTRADICTION)
 from django.utils import formats
-from django.utils.encoding import smart_unicode, smart_str, force_unicode
+from django.utils.encoding import smart_unicode, force_unicode
 from django.utils.ipv6 import clean_ipv6_address
 from django.utils.py3 import (BytesIO, StringIO, text_type, string_types,
                               urlsplit, urlunsplit)
@@ -284,7 +284,6 @@ class DecimalField(Field):
             return None
         if self.localize:
             value = formats.sanitize_separators(value)
-        # django3: was smart_str, for some reason
         value = smart_unicode(value).strip()
         try:
             value = Decimal(value)
@@ -1018,6 +1017,6 @@ class GenericIPAddressField(CharField):
 class SlugField(CharField):
     default_error_messages = {
         'invalid': _("Enter a valid 'slug' consisting of letters, numbers,"
-                       " underscores or hyphens."),
+                     " underscores or hyphens."),
     }
     default_validators = [validators.validate_slug]

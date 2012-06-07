@@ -1,5 +1,4 @@
 """Default tags used by the template system, available to all templates."""
-
 from __future__ import unicode_literals
 
 import sys
@@ -8,7 +7,7 @@ from datetime import datetime
 from itertools import groupby, cycle as itertools_cycle
 
 from django.conf import settings
-from django.template.base import (Node, NodeList, Template, Library,
+from django.template.base import (Node, NodeList, Template, Context, Library,
     TemplateSyntaxError, VariableDoesNotExist, InvalidTemplateLibrary,
     BLOCK_TAG_START, BLOCK_TAG_END, VARIABLE_TAG_START, VARIABLE_TAG_END,
     SINGLE_BRACE_START, SINGLE_BRACE_END, COMMENT_TAG_START, COMMENT_TAG_END,
@@ -428,6 +427,13 @@ class URLNode(Node):
             return ''
         else:
             return url
+
+class VerbatimNode(Node):
+    def __init__(self, content):
+        self.content = content
+
+    def render(self, context):
+        return self.content
 
 class WidthRatioNode(Node):
     def __init__(self, val_expr, max_expr, max_width):
@@ -1275,6 +1281,32 @@ def url(parser, token):
                 args.append(parser.compile_filter(value))
 
     return URLNode(viewname, args, kwargs, asvar)
+
+@register.tag
+def verbatim(parser, token):
+    """
+    Stops the template engine from rendering the contents of this block tag.
+
+    Usage::
+
+        {% verbatim %}
+            {% don't process this %}
+        {% endverbatim %}
+
+    You can also specify an alternate closing tag::
+
+        {% verbatim -- %}
+            ...
+        {% -- %}
+    """
+    bits = token.contents.split(' ', 1)
+    if len(bits) > 1:
+        closing_tag = bits[1]
+    else:
+        closing_tag = 'endverbatim'
+    nodelist = parser.parse((closing_tag,))
+    parser.delete_first_token()
+    return VerbatimNode(nodelist.render(Context()))
 
 @register.tag
 def widthratio(parser, token):

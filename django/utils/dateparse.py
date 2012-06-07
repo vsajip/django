@@ -7,7 +7,6 @@
 
 import datetime
 import re
-
 from django.utils.py3 import iteritems, text_type
 from django.utils.timezone import utc
 from django.utils.tzinfo import FixedOffset

@@ -1,10 +1,10 @@
 """
 Form Widget classes specific to the Django admin site.
 """
-
 from __future__ import unicode_literals
 
 import copy
+
 from django import forms
 from django.contrib.admin.templatetags.admin_static import static
 from django.core.urlresolvers import reverse
@@ -306,11 +306,16 @@ class AdminURLFieldWidget(forms.TextInput):
         super(AdminURLFieldWidget, self).__init__(attrs=final_attrs)
 
 class AdminIntegerFieldWidget(forms.TextInput):
+    class_name = 'vIntegerField'
+
     def __init__(self, attrs=None):
-        final_attrs = {'class': 'vIntegerField'}
+        final_attrs = {'class': self.class_name}
         if attrs is not None:
             final_attrs.update(attrs)
         super(AdminIntegerFieldWidget, self).__init__(attrs=final_attrs)
+
+class AdminBigIntegerFieldWidget(AdminIntegerFieldWidget):
+    class_name = 'vBigIntegerField'
 
 class AdminCommaSeparatedIntegerFieldWidget(forms.TextInput):
     def __init__(self, attrs=None):

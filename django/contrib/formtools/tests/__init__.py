@@ -45,7 +45,7 @@ class PreviewTests(TestCase):
         self.preview = preview.FormPreview(TestForm)
         input_template = '<input type="hidden" name="%s" value="%s" />'
         self.input = input_template % (self.preview.unused_name('stage'), "%d")
-        self.test_data = {'field1':'foo', 'field1_':'asdf'}
+        self.test_data = {'field1': 'foo', 'field1_': 'asdf'}
 
     def test_unused_name(self):
         """
@@ -121,7 +121,7 @@ class PreviewTests(TestCase):
         """
         self.test_data.update({'stage':2})
         hash = self.preview.security_hash(None, TestForm(self.test_data))
-        self.test_data.update({'hash':hash, 'bool1':'False'})
+        self.test_data.update({'hash': hash, 'bool1': 'False'})
         with warnings.catch_warnings(record=True):
             response = self.client.post('/preview/', self.test_data)
             self.assertEqual(response.content, success_string.encode('utf-8'))

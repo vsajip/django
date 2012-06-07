@@ -379,8 +379,6 @@ class QueryDict(MultiValueDict):
         if not encoding:
             encoding = settings.DEFAULT_CHARSET
         self.encoding = encoding
-        #if isinstance(query_string, bytes):
-        #    query_string = query_string.decode('ascii')
         for key, value in parse_qsl((query_string or ''), True): # keep_blank_values=True
             self.appendlist(force_unicode(key, encoding, errors='replace'),
                             force_unicode(value, encoding, errors='replace'))

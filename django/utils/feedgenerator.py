@@ -21,7 +21,6 @@ Sample usage:
 For definitions of the different versions of RSS, see:
 http://diveintomark.org/archives/2004/02/04/incompatible-rss
 """
-
 from __future__ import unicode_literals
 
 import datetime

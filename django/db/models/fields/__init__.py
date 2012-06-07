@@ -5,7 +5,6 @@ import copy
 import datetime
 import decimal
 import math
-import sys
 import warnings
 from itertools import tee
 
@@ -68,7 +67,8 @@ class Field(object):
         'invalid_choice': _('Value %r is not a valid choice.'),
         'null': _('This field cannot be null.'),
         'blank': _('This field cannot be blank.'),
-        'unique': _('%(model_name)s with this %(field_label)s already exists.'),
+        'unique': _('%(model_name)s with this %(field_label)s '
+                    'already exists.'),
     }
 
     # Generic field type description, usually overriden by subclasses

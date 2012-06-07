@@ -1,7 +1,6 @@
 """
 Extra HTML Widget classes
 """
-
 from __future__ import unicode_literals
 
 import datetime

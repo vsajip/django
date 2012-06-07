@@ -3,7 +3,7 @@
 import warnings
 
 from django.core.exceptions import ImproperlyConfigured, DjangoRuntimeWarning
-from django.utils.encoding import smart_str, smart_unicode, smart_text
+from django.utils.encoding import smart_text
 from django.utils.importlib import import_module
 from django.utils.py3 import PY3
 

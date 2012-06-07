@@ -2,8 +2,8 @@
 """
 Polish administrative units as in http://pl.wikipedia.org/wiki/Podzia%C5%82_administracyjny_Polski
 """
-
 from __future__ import unicode_literals
+
 
 ADMINISTRATIVE_UNIT_CHOICES = (
     ('wroclaw', 'Wroc\u0142aw'),

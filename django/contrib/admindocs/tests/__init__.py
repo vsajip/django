@@ -20,13 +20,13 @@ class TestFieldType(unittest.TestCase):
     def test_builtin_fields(self):
         self.assertEqual(
             views.get_readable_field_data_type(builtin_fields.BooleanField()),
-            'Boolean (Either True or False)'
+            _('Boolean (Either True or False)')
         )
 
     def test_custom_fields(self):
         self.assertEqual(
             views.get_readable_field_data_type(fields.CustomField()),
-            'A custom field type'
+            _('A custom field type')
         )
         self.assertEqual(
             views.get_readable_field_data_type(fields.DescriptionLackingField()),

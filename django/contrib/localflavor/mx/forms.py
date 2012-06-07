@@ -3,7 +3,6 @@
 Mexican-specific form helpers.
 """
 from __future__ import unicode_literals
-
 import re
 
 from django.forms import ValidationError

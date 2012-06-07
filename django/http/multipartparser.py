@@ -4,6 +4,7 @@ Multi-part parsing for file uploads.
 Exposes one class, ``MultiPartParser``, which feeds chunks of uploaded data to
 file upload handlers for processing.
 """
+from __future__ import unicode_literals
 
 import base64
 import cgi

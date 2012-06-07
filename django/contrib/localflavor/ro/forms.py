@@ -4,7 +4,7 @@ Romanian specific form helpers.
 """
 from __future__ import absolute_import, unicode_literals
 
-from .ro_counties import COUNTIES_CHOICES
+from django.contrib.localflavor.ro.ro_counties import COUNTIES_CHOICES
 from django.core.validators import EMPTY_VALUES
 from django.forms import ValidationError, Field, RegexField, Select
 from django.utils.py3 import next

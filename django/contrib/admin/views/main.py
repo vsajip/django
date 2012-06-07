@@ -1,5 +1,4 @@
 import operator
-import sys
 
 from django.core.exceptions import SuspiciousOperation, ImproperlyConfigured
 from django.core.paginator import InvalidPage

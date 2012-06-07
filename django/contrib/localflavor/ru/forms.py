@@ -5,7 +5,7 @@ from __future__ import absolute_import, unicode_literals
 
 import re
 
-from .ru_regions import RU_COUNTY_CHOICES, RU_REGIONS_CHOICES
+from django.contrib.localflavor.ru.ru_regions import RU_COUNTY_CHOICES, RU_REGIONS_CHOICES
 from django.forms.fields import RegexField, Select
 from django.utils.translation import ugettext_lazy as _
 

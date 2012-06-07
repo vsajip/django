@@ -196,9 +196,9 @@ class GEOSTest(unittest.TestCase, TestDataMixin):
                 self.assertEqual(srid, poly.shell.srid)
                 self.assertEqual(srid, fromstr(poly.ewkt).srid) # Checking export
 
+    @unittest.skipUnless(gdal.HAS_GDAL and gdal.GEOJSON, "gdal >= 1.5 is required")
     def test_json(self):
         "Testing GeoJSON input/output (via GDAL)."
-        if not gdal or not gdal.GEOJSON: return
         for g in self.geometries.json_geoms:
             geom = GEOSGeometry(g.wkt)
             if not hasattr(g, 'not_equal'):
@@ -382,6 +382,13 @@ class GEOSTest(unittest.TestCase, TestDataMixin):
         bbox = (-180, -90, 180, 90)
         p = Polygon.from_bbox(bbox)
         self.assertEqual(bbox, p.extent)
+
+        # Testing numerical precision
+        x = 3.14159265358979323
+        bbox = (0, 0, 1, x)
+        p = Polygon.from_bbox(bbox)
+        y = p.extent[-1]
+        self.assertEqual(format(x, '.13f'), format(y, '.13f'))
 
     def test_polygons(self):
         "Testing Polygon objects."
@@ -813,9 +820,9 @@ class GEOSTest(unittest.TestCase, TestDataMixin):
         # And, they should be equal.
         self.assertEqual(gc1, gc2)
 
+    @unittest.skipUnless(gdal.HAS_GDAL, "gdal is required")
     def test_gdal(self):
         "Testing `ogr` and `srs` properties."
-        if not gdal.HAS_GDAL: return
         g1 = fromstr('POINT(5 23)')
         self.assertEqual(True, isinstance(g1.ogr, gdal.OGRGeometry))
         self.assertEqual(g1.srs, None)
@@ -835,9 +842,9 @@ class GEOSTest(unittest.TestCase, TestDataMixin):
         self.assertNotEqual(poly._ptr, cpy1._ptr)
         self.assertNotEqual(poly._ptr, cpy2._ptr)
 
+    @unittest.skipUnless(gdal.HAS_GDAL, "gdal is required")
     def test_transform(self):
         "Testing `transform` method."
-        if not gdal.HAS_GDAL: return
         orig = GEOSGeometry('POINT (-104.609 38.255)', 4326)
         trans = GEOSGeometry('POINT (992385.4472045 481455.4944650)', 2774)
 
@@ -942,6 +949,7 @@ class GEOSTest(unittest.TestCase, TestDataMixin):
 
     def test_pickle(self):
         "Testing pickling and unpickling support."
+        # Using both pickle and cPickle -- just 'cause.
 
         # Creating a list of test geometries for pickling,
         # and setting the SRID on some of them.
@@ -965,9 +973,9 @@ class GEOSTest(unittest.TestCase, TestDataMixin):
                 self.assertEqual(geom, tmpg)
                 if not no_srid: self.assertEqual(geom.srid, tmpg.srid)
 
+    @unittest.skipUnless(GEOS_PREPARE, "geos >= 3.1.0 is required")
     def test_prepared(self):
         "Testing PreparedGeometry support."
-        if not GEOS_PREPARE: return
         # Creating a simple multipolygon and getting a prepared version.
         mpoly = GEOSGeometry('MULTIPOLYGON(((0 0,0 5,5 5,5 0,0 0)),((5 5,5 10,10 10,10 5,5 5)))')
         prep = mpoly.prepared
@@ -992,10 +1000,9 @@ class GEOSTest(unittest.TestCase, TestDataMixin):
         for geom, merged in zip(ref_geoms, ref_merged):
             self.assertEqual(merged, geom.merged)
 
+    @unittest.skipUnless(GEOS_PREPARE, "geos >= 3.1.0 is required")
     def test_valid_reason(self):
         "Testing IsValidReason support"
-        # Skipping tests if GEOS < v3.1.
-        if not GEOS_PREPARE: return
 
         g = GEOSGeometry("POINT(0 0)")
         self.assertTrue(g.valid)
