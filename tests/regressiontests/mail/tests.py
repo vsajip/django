@@ -1,4 +1,6 @@
 # coding: utf-8
+from __future__ import unicode_literals
+
 import asyncore
 import email
 import os
@@ -137,7 +139,7 @@ class MailTests(TestCase):
         self.assertEqual(email.message()['To'], '=?utf-8?q?S=C3=BCrname=2C_Firstname?= <to@example.com>, other@example.com')
 
     def test_unicode_headers(self):
-        email = EmailMessage(u"Gżegżółka", "Content", "from@example.com", ["to@example.com"],
+        email = EmailMessage("Gżegżółka", "Content", "from@example.com", ["to@example.com"],
                              headers={"Sender": '"Firstname Sürname" <sender@example.com>',
                                       "Comments": 'My Sürname is non-ASCII'})
         message = email.message()
@@ -158,7 +160,7 @@ class MailTests(TestCase):
         msg.attach_alternative(html_content, "text/html")
         msg.encoding = 'iso-8859-1'
         self.assertEqual(msg.message()['To'], '=?iso-8859-1?q?S=FCrname=2C_Firstname?= <to@example.com>')
-        self.assertEqual(msg.message()['Subject'].encode(), u'=?iso-8859-1?q?Message_from_Firstname_S=FCrname?=')
+        self.assertEqual(msg.message()['Subject'].encode(), '=?iso-8859-1?q?Message_from_Firstname_S=FCrname?=')
 
     def test_encoding(self):
         """
@@ -205,11 +207,11 @@ class MailTests(TestCase):
         content = 'This is the message.'
         msg = EmailMessage(subject, content, from_email, [to], headers=headers)
         # Unicode in file name
-        msg.attach(u"une pièce jointe.pdf", b"%PDF-1.4.%...", mimetype="application/pdf")
+        msg.attach("une pièce jointe.pdf", b"%PDF-1.4.%...", mimetype="application/pdf")
         msg_str = msg.message().as_string()
         message = email.message_from_string(msg_str)
         payload = message.get_payload()
-        self.assertEqual(payload[1].get_filename(), u'une pièce jointe.pdf')
+        self.assertEqual(payload[1].get_filename(), 'une pièce jointe.pdf')
 
     def test_dummy_backend(self):
         """
@@ -310,7 +312,7 @@ class MailTests(TestCase):
         self.assertFalse(b'Content-Transfer-Encoding: quoted-printable' in s)
         self.assertTrue(b'Content-Transfer-Encoding: 8bit' in s)
 
-        msg = EmailMessage('Subject', u'Body with non latin characters: А Б В Г Д Е Ж Ѕ З И І К Л М Н О П.', 'bounce@example.com', ['to@example.com'], headers={'From': 'from@example.com'})
+        msg = EmailMessage('Subject', 'Body with non latin characters: А Б В Г Д Е Ж Ѕ З И І К Л М Н О П.', 'bounce@example.com', ['to@example.com'], headers={'From': 'from@example.com'})
         s = msg.message().as_string()
         self.assertFalse(b'Content-Transfer-Encoding: quoted-printable' in s)
         self.assertTrue(b'Content-Transfer-Encoding: 8bit' in s)
@@ -444,7 +446,7 @@ class BaseEmailBackendTests(object):
         """
         Regression test for #14301
         """
-        self.assertTrue(send_mail('Subject', 'Content', 'from@öäü.com', [u'to@öäü.com']))
+        self.assertTrue(send_mail('Subject', 'Content', 'from@öäü.com', ['to@öäü.com']))
         message = self.get_the_message()
         self.assertEqual(message.get('subject'), 'Subject')
         self.assertEqual(message.get('from'), 'from@xn--4ca9at.com')
@@ -452,7 +454,7 @@ class BaseEmailBackendTests(object):
 
         self.flush_mailbox()
         m = EmailMessage('Subject', 'Content', 'from@öäü.com',
-                     [u'to@öäü.com'], cc=[u'cc@öäü.com'])
+                     ['to@öäü.com'], cc=['cc@öäü.com'])
         m.send()
         message = self.get_the_message()
         self.assertEqual(message.get('subject'), 'Subject')
@@ -500,14 +502,14 @@ class FileBackendTests(BaseEmailBackendTests, TestCase):
     email_backend = 'django.core.mail.backends.filebased.EmailBackend'
 
     def setUp(self):
+        super(FileBackendTests, self).setUp()
         self.tmp_dir = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, self.tmp_dir)
-        self.settings_override = override_settings(EMAIL_FILE_PATH=self.tmp_dir)
-        self.settings_override.enable()
-        super(FileBackendTests, self).setUp()
+        self._settings_override = override_settings(EMAIL_FILE_PATH=self.tmp_dir)
+        self._settings_override.enable()
 
     def tearDown(self):
-        self.settings_override.disable()
+        self._settings_override.disable()
         super(FileBackendTests, self).tearDown()
 
     def flush_mailbox(self):
@@ -644,15 +646,15 @@ class SMTPBackendTests(BaseEmailBackendTests, TestCase):
     @classmethod
     def setUpClass(cls):
         cls.server = FakeSMTPServer(('127.0.0.1', 0), None)
-        cls.settings_override = override_settings(
+        cls._settings_override = override_settings(
             EMAIL_HOST="127.0.0.1",
             EMAIL_PORT=cls.server.socket.getsockname()[1])
-        cls.settings_override.enable()
+        cls._settings_override.enable()
         cls.server.start()
 
     @classmethod
     def tearDownClass(cls):
-        cls.settings_override.disable()
+        cls._settings_override.disable()
         cls.server.stop()
 
     def setUp(self):

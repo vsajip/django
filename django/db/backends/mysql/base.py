@@ -3,6 +3,7 @@ MySQL database backend for Django.
 
 Requires MySQLdb: http://sourceforge.net/projects/mysql-python
 """
+from __future__ import unicode_literals
 
 import datetime
 import re
@@ -61,8 +62,8 @@ def adapt_datetime_with_timezone_support(value, conv):
     # Equivalent to DateTimeField.get_db_prep_value. Used only by raw SQL.
     if settings.USE_TZ:
         if timezone.is_naive(value):
-            warnings.warn(u"SQLite received a naive datetime (%s)"
-                          u" while time zone support is active." % value,
+            warnings.warn("SQLite received a naive datetime (%s)"
+                          " while time zone support is active." % value,
                           RuntimeWarning)
             default_timezone = timezone.get_default_timezone()
             value = timezone.make_aware(value, default_timezone)
@@ -418,11 +419,20 @@ class DatabaseWrapper(BaseDatabaseWrapper):
     @cached_property
     def mysql_version(self):
         if not self.server_version:
+            new_connection = False
             if not self._valid_connection():
+                # Ensure we have a connection with the DB by using a temporary
+                # cursor
+                new_connection = True
                 self.cursor().close()
-            m = server_version_re.match(self.connection.get_server_info())
+            server_info = self.connection.get_server_info()
+            if new_connection:
+                # Make sure we close the connection
+                self.connection.close()
+                self.connection = None
+            m = server_version_re.match(server_info)
             if not m:
-                raise Exception('Unable to determine MySQL version from version string %r' % self.connection.get_server_info())
+                raise Exception('Unable to determine MySQL version from version string %r' % server_info)
             self.server_version = tuple([int(x) for x in m.groups()])
         return self.server_version
 

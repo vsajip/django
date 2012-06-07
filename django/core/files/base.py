@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import os
 from io import BytesIO
 
@@ -12,13 +14,14 @@ class File(FileProxyMixin):
         if name is None:
             name = getattr(file, 'name', None)
         self.name = name
-        self.mode = getattr(file, 'mode', None)
+        if hasattr(file, 'mode'):
+            self.mode = file.mode
 
     def __str__(self):
         return smart_str(self.name or '')
 
     def __unicode__(self):
-        return smart_unicode(self.name or u'')
+        return smart_unicode(self.name or '')
 
     def __repr__(self):
         return "<%s: %s>" % (self.__class__.__name__, self or "None")

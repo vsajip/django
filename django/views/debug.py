@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import datetime
 import os
 import re
@@ -16,7 +18,7 @@ from django.utils.encoding import smart_unicode, smart_str
 
 HIDDEN_SETTINGS = re.compile('API|TOKEN|KEY|SECRET|PASS|PROFANITIES_LIST|SIGNATURE')
 
-CLEANSED_SUBSTITUTE = u'********************'
+CLEANSED_SUBSTITUTE = '********************'
 
 def linebreak_iter(template_source):
     yield 0
@@ -155,9 +157,20 @@ class SafeExceptionReporterFilter(ExceptionReporterFilter):
         Replaces the values of variables marked as sensitive with
         stars (*********).
         """
-        func_name = tb_frame.f_code.co_name
-        func = tb_frame.f_globals.get(func_name)
-        sensitive_variables = getattr(func, 'sensitive_variables', [])
+        # Loop through the frame's callers to see if the sensitive_variables
+        # decorator was used.
+        current_frame = tb_frame.f_back
+        sensitive_variables = None
+        while current_frame is not None:
+            if (current_frame.f_code.co_name == 'sensitive_variables_wrapper'
+                and 'sensitive_variables_wrapper' in current_frame.f_locals):
+                # The sensitive_variables decorator was used, so we take note
+                # of the sensitive variables' names.
+                wrapper = current_frame.f_locals['sensitive_variables_wrapper']
+                sensitive_variables = getattr(wrapper, 'sensitive_variables', None)
+                break
+            current_frame = current_frame.f_back
+
         cleansed = []
         if self.is_active(request) and sensitive_variables:
             if sensitive_variables == '__ALL__':
@@ -344,7 +357,7 @@ class ExceptionReporter(object):
         for line in source[:2]:
             # File coding may be specified. Match pattern from PEP-263
             # (http://www.python.org/dev/peps/pep-0263/)
-            match = re.search(r'coding[:=]\s*([-\w.]+)', line)
+            match = re.search(br'coding[:=]\s*([-\w.]+)', line)
             if match:
                 encoding = match.group(1)
                 break

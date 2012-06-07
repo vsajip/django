@@ -2,12 +2,11 @@
 
 # Unit tests for cache framework
 # Uses whatever cache backend is set in the test settings file.
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 import hashlib
 import os
 import re
-import StringIO
 import tempfile
 import time
 import warnings
@@ -140,10 +139,10 @@ class DummyCacheTests(unittest.TestCase):
     def test_unicode(self):
         "Unicode values are ignored by the dummy cache"
         stuff = {
-            u'ascii': u'ascii_value',
-            u'unicode_ascii': u'Iñtërnâtiônàlizætiøn1',
-            u'Iñtërnâtiônàlizætiøn': u'Iñtërnâtiônàlizætiøn2',
-            u'ascii2': {u'x' : 1 }
+            'ascii': 'ascii_value',
+            'unicode_ascii': 'Iñtërnâtiônàlizætiøn1',
+            'Iñtërnâtiônàlizætiøn': 'Iñtërnâtiônàlizætiøn2',
+            'ascii2': {'x' : 1 }
             }
         for (key, value) in stuff.items():
             self.cache.set(key, value)
@@ -338,10 +337,10 @@ class BaseCacheTests(object):
     def test_unicode(self):
         # Unicode values can be cached
         stuff = {
-            u'ascii': u'ascii_value',
-            u'unicode_ascii': u'Iñtërnâtiônàlizætiøn1',
-            u'Iñtërnâtiônàlizætiøn': u'Iñtërnâtiônàlizætiøn2',
-            u'ascii2': {u'x' : 1 }
+            'ascii': 'ascii_value',
+            'unicode_ascii': 'Iñtërnâtiônàlizætiøn1',
+            'Iñtërnâtiônàlizætiøn': 'Iñtërnâtiônàlizætiøn2',
+            'ascii2': {'x' : 1 }
             }
         # Test `set`
         for (key, value) in stuff.items():
@@ -820,9 +819,14 @@ class DBCacheTests(BaseCacheTests, TransactionTestCase):
         self.perform_cull_test(50, 18)
 
     def test_second_call_doesnt_crash(self):
-        err = StringIO.StringIO()
-        management.call_command('createcachetable', self._table_name, verbosity=0, interactive=False, stderr=err)
-        self.assertTrue(b"Cache table 'test cache table' could not be created" in err.getvalue())
+        with self.assertRaisesRegexp(management.CommandError,
+                "Cache table 'test cache table' could not be created"):
+            management.call_command(
+               'createcachetable',
+                self._table_name,
+                verbosity=0,
+                interactive=False
+            )
 
 
 @override_settings(USE_TZ=True)
@@ -1333,12 +1337,12 @@ class CacheI18nTest(TestCase):
         request = self._get_request()
         response = HttpResponse()
         with timezone.override(CustomTzName()):
-            CustomTzName.name = 'Hora estándar de Argentina'    # UTF-8 string
+            CustomTzName.name = 'Hora estándar de Argentina'.encode('UTF-8') # UTF-8 string
             sanitized_name = 'Hora_estndar_de_Argentina'
             self.assertIn(sanitized_name, learn_cache_key(request, response),
                     "Cache keys should include the time zone name when time zones are active")
 
-            CustomTzName.name = u'Hora estándar de Argentina'    # unicode
+            CustomTzName.name = 'Hora estándar de Argentina'    # unicode
             sanitized_name = 'Hora_estndar_de_Argentina'
             self.assertIn(sanitized_name, learn_cache_key(request, response),
                     "Cache keys should include the time zone name when time zones are active")
