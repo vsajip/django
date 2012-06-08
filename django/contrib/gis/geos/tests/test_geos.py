@@ -1,6 +1,5 @@
 import ctypes
 import random
-import unittest
 
 from django.contrib.gis.geos import (GEOSException, GEOSIndexError, GEOSGeometry,
     GeometryCollection, Point, MultiPoint, Polygon, MultiPolygon, LinearRing,
@@ -9,6 +8,8 @@ from django.contrib.gis.geos.base import gdal, numpy, GEOSBase
 from django.contrib.gis.geos.libgeos import GEOS_PREPARE
 from django.contrib.gis.geometry.test_data import TestDataMixin
 from django.utils.py3 import StringIO, xrange, pickle, string_types, PY3
+
+from django.utils import unittest
 
 
 class GEOSTest(unittest.TestCase, TestDataMixin):

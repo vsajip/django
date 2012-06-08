@@ -4,7 +4,7 @@ from django.templatetags.static import static
 from django.utils import translation
 
 from django.contrib.gis.gdal import OGRException
-from django.contrib.gis.geos import GEOSGeometry, GEOSException
+from django.contrib.gis.geos import GEOSGeometry, GEOSException, fromstr
 from django.utils.py3 import string_types
 
 # Creating a template context that contains Django settings

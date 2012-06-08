@@ -1,7 +1,6 @@
 from __future__ import unicode_literals
 
 from django import forms
-from django.conf import settings
 from django.contrib.admin.util import (flatten_fieldsets, lookup_field,
     display_for_field, label_for_field, help_text_for_field)
 from django.contrib.admin.templatetags.admin_static import static
@@ -15,6 +14,7 @@ from django.utils.html import escape, conditional_escape
 from django.utils.py3 import string_types, text_type, next
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
+from django.conf import settings
 
 
 ACTION_CHECKBOX_NAME = '_selected_action'

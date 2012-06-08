@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+
 import os
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import (UserCreationForm, AuthenticationForm,
@@ -7,8 +8,8 @@ from django.core import mail
 from django.forms.fields import Field, EmailField
 from django.test import TestCase
 from django.test.utils import override_settings
-from django.utils import translation
 from django.utils.encoding import force_unicode
+from django.utils import translation
 from django.utils.translation import ugettext as _
 
 

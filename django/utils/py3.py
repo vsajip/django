@@ -26,8 +26,9 @@ if sys.version_info[0] < 3:
     def next(i):
         return i.next()
     nextname = 'next'
-    def dictvalues(d):
-        return d.values()
+    dictkeys = lambda d: d.keys()
+    dictvalues = lambda d: d.values()
+    dictitems = lambda d: d.items()
     string_types = basestring,
     text_type = unicode
     binary_type = str
@@ -127,8 +128,9 @@ else:
         return s.replace('\\\\', '\\')
     next = builtins.next
     nextname = '__next__'
-    def dictvalues(d):
-        return list(d.values())
+    dictkeys = lambda d: list(d.keys())
+    dictvalues = lambda d: list(d.values())
+    dictitems = lambda d: list(d.items())
     string_types = str,
     text_type = str
     binary_type = bytes

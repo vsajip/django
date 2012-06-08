@@ -13,8 +13,8 @@ import warnings
 
 from django.conf import global_settings
 from django.core.exceptions import ImproperlyConfigured
-from django.utils import importlib
 from django.utils.functional import LazyObject, empty
+from django.utils import importlib
 from django.utils.py3 import string_types
 
 ENVIRONMENT_VARIABLE = "DJANGO_SETTINGS_MODULE"

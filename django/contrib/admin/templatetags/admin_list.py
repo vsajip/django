@@ -9,16 +9,15 @@ from django.contrib.admin.views.main import (ALL_VAR, EMPTY_CHANGELIST_VALUE,
 from django.contrib.admin.templatetags.admin_static import static
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from django.template import Library
-from django.template.context import Context
-from django.template.loader import get_template
 from django.utils import formats
-from django.utils.encoding import smart_unicode, force_unicode
 from django.utils.html import escape, conditional_escape
 from django.utils.safestring import mark_safe
 from django.utils.text import capfirst
 from django.utils.translation import ugettext as _
-
+from django.utils.encoding import smart_unicode, force_unicode
+from django.template import Library
+from django.template.loader import get_template
+from django.template.context import Context
 
 register = Library()
 

@@ -2,20 +2,21 @@ import os
 import re
 
 from django.conf import settings
-from django.contrib.auth import SESSION_KEY, REDIRECT_FIELD_NAME
-from django.contrib.auth.forms import (AuthenticationForm, PasswordChangeForm,
-                SetPasswordForm, PasswordResetForm)
-from django.contrib.auth.models import User
 from django.contrib.sites.models import Site, RequestSite
+from django.contrib.auth.models import User
 from django.core import mail
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.http import QueryDict
-from django.test import TestCase
-from django.test.utils import override_settings
 from django.utils.encoding import force_unicode
 from django.utils.html import escape
+from django.test import TestCase
+from django.test.utils import override_settings
 from django.utils.py3 import quote, PY3
-from django.utils.unittest import skipIf
+
+from django.contrib.auth import SESSION_KEY, REDIRECT_FIELD_NAME
+from django.contrib.auth.forms import (AuthenticationForm, PasswordChangeForm,
+                SetPasswordForm, PasswordResetForm)
+
 
 @override_settings(
     LANGUAGES=(

@@ -3,8 +3,8 @@ from __future__ import unicode_literals
 import base64
 import hashlib
 
-from django.conf import settings
 from django.dispatch import receiver
+from django.conf import settings
 from django.test.signals import setting_changed
 from django.utils import importlib
 from django.utils.datastructures import SortedDict

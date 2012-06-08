@@ -3,7 +3,6 @@ Creates permissions for all installed apps that need permissions.
 """
 from __future__ import unicode_literals
 
-import sys
 import getpass
 import locale
 import unicodedata
