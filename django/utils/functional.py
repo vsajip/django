@@ -1,6 +1,6 @@
 import copy
-from functools import wraps, update_wrapper
 import operator
+from functools import wraps, update_wrapper
 import sys
 
 from django.utils.py3 import bytes, dictvalues, text_type, PY3, n

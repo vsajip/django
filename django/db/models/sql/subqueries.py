@@ -8,8 +8,8 @@ from django.db.models.sql.constants import *
 from django.db.models.sql.datastructures import Date
 from django.db.models.sql.query import Query
 from django.db.models.sql.where import AND, Constraint
-from django.utils.encoding import force_unicode
 from django.utils.functional import Promise
+from django.utils.encoding import force_unicode
 from django.utils.py3 import iteritems
 
 __all__ = ['DeleteQuery', 'UpdateQuery', 'InsertQuery', 'DateQuery',

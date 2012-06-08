@@ -1,7 +1,7 @@
 from django.db.backends.util import truncate_name, typecast_timestamp
 from django.db.models.sql import compiler
 from django.db.models.sql.constants import MULTI
-from django.utils.py3 import izip, izip_longest, iteritems
+from django.utils.py3 import izip, izip_longest, iteritems, dictkeys
 
 SQLCompiler = compiler.SQLCompiler
 
@@ -169,7 +169,7 @@ class GeoSQLCompiler(compiler.SQLCompiler):
         objects.
         """
         values = []
-        aliases = list(self.query.extra_select.keys())
+        aliases = dictkeys(self.query.extra_select)
 
         # Have to set a starting row number offset that is used for
         # determining the correct starting row index -- needed for

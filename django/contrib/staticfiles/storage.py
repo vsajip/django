@@ -10,10 +10,10 @@ from django.core.cache import (get_cache, InvalidCacheBackendError,
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage, get_storage_class
+from django.utils.datastructures import SortedDict
 from django.utils.encoding import force_unicode, smart_str
 from django.utils.functional import LazyObject
 from django.utils.importlib import import_module
-from django.utils.datastructures import SortedDict
 from django.utils.py3 import unquote, urlsplit, urlunsplit, urldefrag, PY3
 
 from django.contrib.staticfiles.utils import check_settings, matches_patterns

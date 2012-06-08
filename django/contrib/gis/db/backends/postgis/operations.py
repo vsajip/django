@@ -10,7 +10,7 @@ from django.contrib.gis.measure import Distance
 from django.core.exceptions import ImproperlyConfigured
 from django.db.backends.postgresql_psycopg2.base import DatabaseOperations
 from django.db.utils import DatabaseError
-from django.utils.py3 import string_types, integer_types
+from django.utils.py3 import string_types, integer_types, dictkeys
 
 #### Classes used in constructing PostGIS spatial SQL ####
 class PostGISOperator(SpatialOperation):
@@ -236,8 +236,8 @@ class PostGISOperations(DatabaseOperations, BaseSpatialOperations):
 
         # Creating a dictionary lookup of all GIS terms for PostGIS.
         gis_terms = ['isnull']
-        gis_terms += list(self.geometry_operators.keys())
-        gis_terms += list(self.geometry_functions.keys())
+        gis_terms += dictkeys(self.geometry_operators)
+        gis_terms += dictkeys(self.geometry_functions)
         self.gis_terms = dict([(term, None) for term in gis_terms])
 
         self.area = prefix + 'Area'

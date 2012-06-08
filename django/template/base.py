@@ -1,8 +1,8 @@
 from __future__ import absolute_import, unicode_literals
 
+import re
 from functools import partial
 from inspect import getargspec
-import re
 
 from django.conf import settings
 from django.template.context import (Context, RequestContext,
@@ -18,8 +18,8 @@ from django.utils.safestring import (SafeData, EscapeData, mark_safe,
 from django.utils.formats import localize
 from django.utils.html import escape
 from django.utils.module_loading import module_has_submodule
-from django.utils.py3 import text_type, next, string_types, n
 from django.utils.timezone import template_localtime
+from django.utils.py3 import text_type, next, string_types, n, dictitems
 
 
 TOKEN_TEXT = 0
@@ -966,7 +966,7 @@ def parse_bits(parser, bits, params, varargs, varkw, defaults,
         kwarg = token_kwargs([bit], parser)
         if kwarg:
             # The kwarg was successfully extracted
-            param, value = list(kwarg.items())[0]
+            param, value = dictitems(kwarg)[0]
             if param not in params and varkw is None:
                 # An unexpected keyword argument was supplied
                 raise TemplateSyntaxError(

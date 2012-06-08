@@ -20,7 +20,7 @@ from django.utils.text import capfirst
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import smart_unicode, force_unicode
-from django.utils.py3 import string_types, binary_type, next_name
+from django.utils.py3 import string_types, binary_type, next_name, dictkeys
 from django.utils.ipv6 import clean_ipv6_address
 
 class NOT_PROVIDED:
@@ -488,7 +488,7 @@ class Field(object):
             # Many of the subclass-specific formfield arguments (min_value,
             # max_value) don't apply for choice fields, so be sure to only pass
             # the values that TypedChoiceField will understand.
-            for k in list(kwargs.keys()):
+            for k in dictkeys(kwargs):
                 if k not in ('coerce', 'empty_value', 'choices', 'required',
                              'widget', 'label', 'initial', 'help_text',
                              'error_messages', 'show_hidden_initial'):

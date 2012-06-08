@@ -8,7 +8,7 @@ circular import difficulties.
 
 from django.db.backends import util
 from django.utils import tree
-
+from django.utils.py3 import dictitems
 
 class InvalidQuery(Exception):
     """
@@ -39,7 +39,7 @@ class Q(tree.Node):
     default = AND
 
     def __init__(self, *args, **kwargs):
-        super(Q, self).__init__(children=list(args) + list(kwargs.items()))
+        super(Q, self).__init__(children=list(args) + dictitems(kwargs))
 
     def _combine(self, other, conn):
         if not isinstance(other, Q):

@@ -11,7 +11,7 @@ from django.utils.py3 import (string_types, urlsplit, urlunsplit, quote,
                               #HTTPHandler, HTTPSHandler,
                               #HTTPDefaultErrorHandler, FTPHandler, urllib2,
                               #HTTPErrorProcessor,
-                              PY3, n)
+                              PY3, n, dictkeys)
 
 # These values, if given to validate(), will trigger the self.required check.
 EMPTY_VALUES = (None, '', [], (), {})
@@ -158,7 +158,7 @@ def ip_address_validators(protocol, unpack_ipv4):
         return ip_address_validator_map[protocol.lower()]
     except KeyError:
         raise ValueError("The protocol '%s' is unknown. Supported: %s"
-                         % (protocol, list(ip_address_validator_map.keys())))
+                         % (protocol, dictkeys(ip_address_validator_map)))
 
 comma_separated_int_list_re = re.compile('^[\d,]+$')
 validate_comma_separated_integer_list = RegexValidator(comma_separated_int_list_re, _('Enter only digits separated by commas.'), 'invalid')

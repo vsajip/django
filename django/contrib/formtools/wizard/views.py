@@ -7,7 +7,7 @@ from django.forms import formsets, ValidationError
 from django.views.generic import TemplateView
 from django.utils.datastructures import SortedDict
 from django.utils.decorators import classonlymethod
-from django.utils.py3 import text_type, itervalues, iteritems
+from django.utils.py3 import text_type, itervalues, iteritems, dictkeys
 
 from django.contrib.formtools.wizard.storage import get_storage
 from django.contrib.formtools.wizard.storage.exceptions import NoFileStorageConfigured
@@ -44,7 +44,7 @@ class StepsHelper(object):
     @property
     def all(self):
         "Returns the names of all steps/forms."
-        return list(self._wizard.get_form_list().keys())
+        return dictkeys(self._wizard.get_form_list())
 
     @property
     def count(self):

@@ -29,6 +29,10 @@ if sys.version_info[0] < 3:
     dictkeys = lambda d: d.keys()
     dictvalues = lambda d: d.values()
     dictitems = lambda d: d.items()
+    lrange = range
+    lzip = zip
+    lmap = map
+    lfilter = filter
     string_types = basestring,
     text_type = unicode
     binary_type = str
@@ -131,6 +135,10 @@ else:
     dictkeys = lambda d: list(d.keys())
     dictvalues = lambda d: list(d.values())
     dictitems = lambda d: list(d.items())
+    lrange = lambda *args: list(range(*args))
+    lzip = lambda *args: list(zip(*args))
+    lmap = lambda *args: list(map(*args))
+    lfilter = lambda *args: list(filter(*args))
     string_types = str,
     text_type = str
     binary_type = bytes

@@ -1,15 +1,14 @@
 from __future__ import unicode_literals
 
 import datetime
-
 from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
 from django.db import models
+from django.core.exceptions import ImproperlyConfigured
 from django.http import Http404
-from django.utils import timezone
 from django.utils.encoding import force_unicode
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext as _
+from django.utils import timezone
 from django.views.generic.base import View
 from django.views.generic.detail import BaseDetailView, SingleObjectTemplateResponseMixin
 from django.views.generic.list import MultipleObjectMixin, MultipleObjectTemplateResponseMixin

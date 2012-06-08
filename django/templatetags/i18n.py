@@ -6,7 +6,7 @@ from django.template import (Node, Variable, TemplateSyntaxError,
 from django.template.base import _render_value_in_context
 from django.template.defaulttags import token_kwargs
 from django.utils import translation
-from django.utils.py3 import string_types
+from django.utils.py3 import string_types, dictitems
 
 register = Library()
 
@@ -424,7 +424,7 @@ def do_block_translate(parser, token):
         options[option] = value
 
     if 'count' in options:
-        countervar, counter = list(options['count'].items())[0]
+        countervar, counter = dictitems(options['count'])[0]
     else:
         countervar, counter = None, None
     if 'context' in options:

@@ -15,7 +15,7 @@ from django.conf import global_settings
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.functional import LazyObject, empty
 from django.utils import importlib
-from django.utils.py3 import string_types
+from django.utils.py3 import string_types, dictkeys
 
 ENVIRONMENT_VARIABLE = "DJANGO_SETTINGS_MODULE"
 
@@ -155,7 +155,7 @@ class UserSettingsHolder(BaseSettings):
         return getattr(self.default_settings, name)
 
     def __dir__(self):
-        return list(self.__dict__.keys()) + dir(self.default_settings)
+        return dictkeys(self.__dict__) + dir(self.default_settings)
 
     # For Python < 2.6:
     __members__ = property(lambda self: self.__dir__())

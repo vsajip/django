@@ -1,17 +1,17 @@
 from __future__ import unicode_literals
 
-from copy import copy
 import difflib
-import errno
 import json
 import os
 import re
 import sys
+from copy import copy
 from functools import wraps
 from xml.dom.minidom import parseString, Node
 import select
 import socket
 import threading
+import errno
 
 from django.conf import settings
 from django.contrib.staticfiles.handlers import StaticFilesHandler
@@ -19,9 +19,9 @@ from django.core import mail
 from django.core.exceptions import ValidationError, ImproperlyConfigured
 from django.core.handlers.wsgi import WSGIHandler
 from django.core.management import call_command
-from django.core.servers.basehttp import (WSGIRequestHandler, WSGIServer,
-                                          WSGIServerException)
 from django.core.signals import request_started
+from django.core.servers.basehttp import (WSGIRequestHandler, WSGIServer,
+    WSGIServerException)
 from django.core.urlresolvers import clear_url_caches
 from django.core.validators import EMPTY_VALUES
 from django.db import (transaction, connection, connections, DEFAULT_DB_ALIAS,
@@ -33,10 +33,11 @@ from django.test.client import Client
 from django.test.html import HTMLParseError, parse_html
 from django.test.signals import template_rendered
 from django.test.utils import (get_warnings_state, restore_warnings_state,
-    override_settings, ContextList)
+    override_settings)
+from django.test.utils import ContextList
 from django.utils import unittest as ut2
 from django.utils.encoding import smart_str, force_unicode
-from django.utils.py3 import urlsplit, urlunsplit, text_type, PY3
+from django.utils.py3 import urlsplit, urlunsplit, text_type, PY3, lmap
 from django.utils.unittest.util import safe_repr
 from django.views.static import serve
 
@@ -773,7 +774,7 @@ class TransactionTestCase(SimpleTestCase):
     def assertQuerysetEqual(self, qs, values, transform=repr, ordered=True):
         if not ordered:
             return self.assertEqual(set(map(transform, qs)), set(values))
-        return self.assertEqual(list(map(transform, qs)), values)
+        return self.assertEqual(lmap(transform, qs), values)
 
     def assertNumQueries(self, num, func=None, *args, **kwargs):
         using = kwargs.pop("using", DEFAULT_DB_ALIAS)
@@ -1116,7 +1117,7 @@ class LiveServerTestCase(TransactionTestCase):
             host, port_ranges = specified_address.split(':')
             for port_range in port_ranges.split(','):
                 # A port range can be of either form: '8000' or '8000-8010'.
-                extremes = list(map(int, port_range.split('-')))
+                extremes = lmap(int, port_range.split('-'))
                 assert len(extremes) in [1, 2]
                 if len(extremes) == 1:
                     # Port range of the form '8000'

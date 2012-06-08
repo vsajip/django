@@ -1,12 +1,12 @@
 """
 Django's standard crypto functions and utilities.
 """
-
-import binascii
-import hashlib
+# Avoid unicode literals here - the translation tables are bytes
 import hmac
-import operator
 import struct
+import hashlib
+import binascii
+import operator
 import time
 
 # Use the system PRNG if possible

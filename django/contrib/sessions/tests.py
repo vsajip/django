@@ -18,7 +18,8 @@ from django.test import TestCase, RequestFactory
 from django.test.utils import override_settings
 from django.utils import timezone
 from django.utils import unittest
-from django.utils.py3 import iterkeys, itervalues, iteritems
+from django.utils.py3 import (iterkeys, itervalues, iteritems,
+                              dictvalues, dictitems)
 
 
 class SessionTestsMixin(object):
@@ -87,10 +88,10 @@ class SessionTestsMixin(object):
         self.assertFalse(self.session.modified)
 
     def test_values(self):
-        self.assertEqual(list(self.session.values()), [])
+        self.assertEqual(dictvalues(self.session), [])
         self.assertTrue(self.session.accessed)
         self.session['some key'] = 1
-        self.assertEqual(list(self.session.values()), [1])
+        self.assertEqual(dictvalues(self.session), [1])
 
     def test_iterkeys(self):
         self.session['x'] = 1
@@ -126,9 +127,9 @@ class SessionTestsMixin(object):
         self.session['x'] = 1
         self.session.modified = False
         self.session.accessed = False
-        self.assertEqual(list(self.session.items()), [('x', 1)])
+        self.assertEqual(dictitems(self.session), [('x', 1)])
         self.session.clear()
-        self.assertEqual(list(self.session.items()), [])
+        self.assertEqual(dictitems(self.session), [])
         self.assertTrue(self.session.accessed)
         self.assertTrue(self.session.modified)
 
@@ -155,10 +156,10 @@ class SessionTestsMixin(object):
         self.session['a'], self.session['b'] = 'c', 'd'
         self.session.save()
         prev_key = self.session.session_key
-        prev_data = list(self.session.items())
+        prev_data = dictitems(self.session)
         self.session.cycle_key()
         self.assertNotEqual(self.session.session_key, prev_key)
-        self.assertEqual(list(self.session.items()), prev_data)
+        self.assertEqual(dictitems(self.session), prev_data)
 
     def test_invalid_key(self):
         # Submitting an invalid session key (either by guessing, or if the db has

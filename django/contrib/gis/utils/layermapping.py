@@ -17,7 +17,7 @@ from django.contrib.gis.gdal.field import (
     OFTDate, OFTDateTime, OFTInteger, OFTReal, OFTString, OFTTime)
 from django.db import models, transaction
 from django.contrib.localflavor.us.models import USStateField
-from django.utils.py3 import string_types, text_type
+from django.utils.py3 import string_types, text_type, lrange
 
 # LayerMapping exceptions.
 class LayerMapError(Exception): pass
@@ -582,7 +582,7 @@ class LayerMapping(object):
             if default_range:
                 raise LayerMapError('The `step` keyword may not be used in conjunction with the `fid_range` keyword.')
             beg, num_feat, num_saved = (0, 0, 0)
-            indices = list(range(step, nfeat, step))
+            indices = lrange(step, nfeat, step)
             n_i = len(indices)
 
             for i, end in enumerate(indices):

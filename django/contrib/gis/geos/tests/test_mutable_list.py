@@ -5,7 +5,7 @@
 # released under the New BSD license.
 from django.contrib.gis.geos.mutable_list import ListMixin
 from django.utils import unittest
-from django.utils.py3 import integer_types
+from django.utils.py3 import integer_types, lrange
 
 class UserListA(ListMixin):
     _mytype = tuple
@@ -40,7 +40,7 @@ class UserListB(UserListA):
 
 def nextRange(length):
     nextRange.start += 100
-    return list(range(nextRange.start, nextRange.start + length))
+    return lrange(nextRange.start, nextRange.start + length)
 
 nextRange.start = 0
 
@@ -54,14 +54,14 @@ class ListMixinTest(unittest.TestCase):
 
     def lists_of_len(self, length=None):
         if length is None: length = self.limit
-        pl = list(range(length))
+        pl = lrange(length)
         return pl, self.listType(pl)
 
     def limits_plus(self, b):
-        return list(range(-self.limit - b, self.limit + b))
+        return lrange(-self.limit - b, self.limit + b)
 
     def step_range(self):
-        return list(range(-1 - self.limit, 0)) + list(range(1, 1 + self.limit))
+        return lrange(-1 - self.limit, 0) + lrange(1, 1 + self.limit)
 
     def test01_getslice(self):
         'Slice retrieval'
@@ -84,7 +84,7 @@ class ListMixinTest(unittest.TestCase):
 
     def test02_setslice(self):
         'Slice assignment'
-        def setfcn(x,i,j,k,L): x[i:j:k] = list(range(L))
+        def setfcn(x,i,j,k,L): x[i:j:k] = lrange(L)
         pl, ul = self.lists_of_len()
         for slen in range(self.limit + 1):
             ssl = nextRange(slen)
@@ -165,7 +165,7 @@ class ListMixinTest(unittest.TestCase):
                         del ul[i:j:k]
                         self.assertEqual(pl[:], ul[:], 'del slice [%d:%d:%d]' % (i,j,k))
 
-                for k in list(range(-Len - 1,0)) + list(range(1,Len)):
+                for k in lrange(-Len - 1,0) + lrange(1,Len):
                     pl, ul = self.lists_of_len(Len)
                     del pl[:i:k]
                     del ul[:i:k]
@@ -176,7 +176,7 @@ class ListMixinTest(unittest.TestCase):
                     del ul[i::k]
                     self.assertEqual(pl[:], ul[:], 'del slice [%d::%d]' % (i,k))
 
-            for k in list(range(-Len - 1,0)) + list(range(1,Len)):
+            for k in lrange(-Len - 1,0) + lrange(1,Len):
                 pl, ul = self.lists_of_len(Len)
                 del pl[::k]
                 del ul[::k]
@@ -337,7 +337,7 @@ class ListMixinTest(unittest.TestCase):
     def test_12_arithmetic(self):
         'Arithmetic'
         pl, ul = self.lists_of_len()
-        al = list(range(10,14))
+        al = lrange(10,14)
         self.assertEqual(list(pl + al), list(ul + al), 'add')
         self.assertEqual(type(ul), type(ul + al), 'type of add result')
         self.assertEqual(list(al + pl), list(al + ul), 'radd')

@@ -19,7 +19,7 @@ To add your own serializers, use the SERIALIZATION_MODULES setting::
 from django.conf import settings
 from django.utils import importlib
 from django.core.serializers.base import SerializerDoesNotExist
-from django.utils.py3 import iteritems
+from django.utils.py3 import iteritems, dictkeys
 
 # Built-in serializers
 BUILTIN_SERIALIZERS = {
@@ -76,7 +76,7 @@ def get_serializer(format):
 def get_serializer_formats():
     if not _serializers:
         _load_serializers()
-    return list(_serializers.keys())
+    return dictkeys(_serializers)
 
 def get_public_serializer_formats():
     if not _serializers:

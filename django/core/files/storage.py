@@ -1,6 +1,5 @@
 import os
 import errno
-import sys
 import itertools
 from datetime import datetime
 

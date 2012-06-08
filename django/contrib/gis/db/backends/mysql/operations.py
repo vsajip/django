@@ -2,6 +2,7 @@ from django.db.backends.mysql.base import DatabaseOperations
 
 from django.contrib.gis.db.backends.adapter import WKTAdapter
 from django.contrib.gis.db.backends.base import BaseSpatialOperations
+from django.utils.py3 import dictkeys
 
 class MySQLOperations(DatabaseOperations, BaseSpatialOperations):
 
@@ -30,7 +31,7 @@ class MySQLOperations(DatabaseOperations, BaseSpatialOperations):
         'within' : 'MBRWithin',
         }
 
-    gis_terms = dict([(term, None) for term in list(geometry_functions.keys()) + ['isnull']])
+    gis_terms = dict([(term, None) for term in dictkeys(geometry_functions) + ['isnull']])
 
     def geo_db_type(self, f):
         return f.geom_type

@@ -6,7 +6,6 @@ a string) and returns a tuple in this format:
 
     (view_function, function_args, function_kwargs)
 """
-
 from __future__ import unicode_literals
 
 import re
@@ -19,7 +18,7 @@ from django.utils.encoding import iri_to_uri, force_unicode, smart_text
 from django.utils.functional import memoize, lazy
 from django.utils.importlib import import_module
 from django.utils.module_loading import module_has_submodule
-from django.utils.py3 import string_types, iteritems
+from django.utils.py3 import string_types, iteritems, dictkeys
 from django.utils.regex_helper import normalize
 from django.utils.translation import get_language
 
@@ -371,7 +370,7 @@ class RegexURLResolver(LocaleRegexProvider):
                     unicode_args = [force_unicode(val) for val in args]
                     candidate =  (prefix_norm + result) % dict(zip(prefix_args + params, unicode_args))
                 else:
-                    if set(list(kwargs.keys()) + list(defaults.keys())) != set(params + list(defaults.keys()) + prefix_args):
+                    if set(dictkeys(kwargs) + dictkeys(defaults)) != set(params + list(defaults.keys()) + prefix_args):
                         continue
                     matches = True
                     for k, v in defaults.items():

@@ -23,7 +23,7 @@ from django.db.models.loading import register_models, get_model
 from django.utils.translation import ugettext_lazy as _
 from django.utils.functional import curry
 from django.utils.encoding import smart_str, force_unicode
-from django.utils.py3 import izip, with_metaclass, text_type, PY3, n
+from django.utils.py3 import izip, with_metaclass, text_type, PY3, n, dictkeys
 from django.utils.text import get_text_list, capfirst
 
 
@@ -358,14 +358,14 @@ class Model(with_metaclass(ModelBase)):
                 setattr(self, field.attname, val)
 
         if kwargs:
-            for prop in list(kwargs.keys()):
+            for prop in dictkeys(kwargs):
                 try:
                     if isinstance(getattr(self.__class__, prop), property):
                         setattr(self, prop, kwargs.pop(prop))
                 except AttributeError:
                     pass
             if kwargs:
-                raise TypeError("'%s' is an invalid keyword argument for this function" % list(kwargs.keys())[0])
+                raise TypeError("'%s' is an invalid keyword argument for this function" % dictkeys(kwargs)[0])
         super(Model, self).__init__()
         signals.post_init.send(sender=self.__class__, instance=self)
 
@@ -738,7 +738,7 @@ class Model(with_metaclass(ModelBase)):
                 lookup_kwargs[str(field_name)] = lookup_value
 
             # some fields were skipped, no reason to do the check
-            if len(unique_check) != len(list(lookup_kwargs.keys())):
+            if len(unique_check) != len(dictkeys(lookup_kwargs)):
                 continue
 
             qs = model_class._default_manager.filter(**lookup_kwargs)

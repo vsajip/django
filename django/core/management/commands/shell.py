@@ -1,7 +1,6 @@
-from optparse import make_option
 import os
-
 from django.core.management.base import NoArgsCommand
+from optparse import make_option
 from django.utils.py3 import execfile_, PY3
 
 class Command(NoArgsCommand):

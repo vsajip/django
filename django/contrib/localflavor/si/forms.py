@@ -11,6 +11,7 @@ from django.contrib.localflavor.si.si_postalcodes import SI_POSTALCODES_CHOICES
 from django.core.validators import EMPTY_VALUES
 from django.forms import ValidationError
 from django.forms.fields import CharField, Select, ChoiceField
+from django.utils.py3 import lrange
 from django.utils.translation import ugettext_lazy as _
 
 
@@ -41,7 +42,7 @@ class SIEMSOField(CharField):
         # Validate EMSO
         s = 0
         int_values = [int(i) for i in value]
-        for a, b in zip(int_values, list(range(7, 1, -1)) * 2):
+        for a, b in zip(int_values, lrange(7, 1, -1) * 2):
             s += a * b
         chk = s % 11
         if chk == 0:

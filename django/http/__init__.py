@@ -10,7 +10,7 @@ import warnings
 from pprint import pformat
 from django.utils.py3 import (urlencode, quote, urljoin, cookies, next,
                               PY3, n, reraise, string_types, parse_qsl,
-                              StringIO, BytesIO)
+                              StringIO, BytesIO, dictvalues)
 
 # Some versions of Python 2.7 and later won't need this encoding bug fix:
 _cookie_encodes_correctly = cookies.SimpleCookie().value_encode(';') == (';', '"\\073"')
@@ -78,10 +78,10 @@ from django.core.exceptions import ImproperlyConfigured
 from django.core.files import uploadhandler
 from django.http.multipartparser import MultiPartParser
 from django.http.utils import *
-from django.utils import timezone
 from django.utils.datastructures import MultiValueDict, ImmutableList
 from django.utils.encoding import smart_str, smart_unicode, iri_to_uri, force_unicode
 from django.utils.http import cookie_date
+from django.utils import timezone
 from django.utils.py3 import bytes, text_type, binary_type
 
 RESERVED_CHARS="!*'();:@&=+$,/?%#[]"
@@ -131,7 +131,6 @@ def build_request_repr(request, path_override=None, GET_override=None,
     except:
         meta = '<could not parse>'
     path = path_override if path_override is not None else request.path
-    #django: was smart_str
     return smart_unicode('<%s\npath:%s,\nGET:%s,\nPOST:%s,\nCOOKIES:%s,\nMETA:%s>' %
                      (request.__class__.__name__,
                       path,
@@ -546,7 +545,6 @@ class HttpResponse(object):
 
     def __str__(self):
         """Full HTTP message, including headers."""
-        # django3: added decode()
         return '\n'.join(['%s: %s' % (key, value)
             for key, value in self._headers.values()]) \
             + '\n\n' + self.content.decode(self._charset)
@@ -604,7 +602,7 @@ class HttpResponse(object):
     __contains__ = has_header
 
     def items(self):
-        return list(self._headers.values())
+        return dictvalues(self._headers)
 
     def get(self, header, alternate=None):
         return self._headers.get(header.lower(), (None, alternate))[1]

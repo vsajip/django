@@ -4,7 +4,7 @@ from operator import attrgetter
 from django.db import connections, transaction, IntegrityError
 from django.db.models import signals, sql
 from django.utils.datastructures import SortedDict
-from django.utils.py3 import iteritems, itervalues
+from django.utils.py3 import iteritems, itervalues, dictkeys
 
 class ProtectedError(IntegrityError):
     def __init__(self, msg, protected_objects):
@@ -206,7 +206,7 @@ class Collector(object):
     def sort(self):
         sorted_models = []
         concrete_models = set()
-        models = list(self.data.keys())
+        models = dictkeys(self.data)
         while len(sorted_models) < len(models):
             found = False
             for model in models:

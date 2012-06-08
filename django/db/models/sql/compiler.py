@@ -7,7 +7,7 @@ from django.db.models.sql.datastructures import EmptyResultSet
 from django.db.models.sql.expressions import SQLEvaluator
 from django.db.models.sql.query import get_order_dir, Query
 from django.db.utils import DatabaseError
-from django.utils.py3 import izip, itervalues, iteritems, next
+from django.utils.py3 import izip, itervalues, iteritems, next, dictkeys
 
 class SQLCompiler(object):
     def __init__(self, query, connection, using):
@@ -780,7 +780,7 @@ class SQLCompiler(object):
                     row = self.resolve_columns(row, fields)
 
                 if has_aggregate_select:
-                    aggregate_start = len(list(self.query.extra_select.keys())) + len(self.query.select)
+                    aggregate_start = len(dictkeys(self.query.extra_select)) + len(self.query.select)
                     aggregate_end = aggregate_start + len(self.query.aggregate_select)
                     row = tuple(row[:aggregate_start]) + tuple([
                         self.query.resolve_aggregate(value, aggregate, self.connection)

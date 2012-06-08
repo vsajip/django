@@ -23,7 +23,7 @@ from django.template.response import SimpleTemplateResponse, TemplateResponse
 from django.utils.decorators import method_decorator
 from django.utils.datastructures import SortedDict
 from django.utils.html import escape, escapejs
-from django.utils.py3 import with_metaclass, itervalues
+from django.utils.py3 import with_metaclass, itervalues, dictkeys
 from django.utils.safestring import mark_safe
 from django.utils.text import capfirst, get_text_list
 from django.utils.translation import ugettext as _
@@ -425,7 +425,7 @@ class ModelAdmin(BaseModelAdmin):
         if self.declared_fieldsets:
             return self.declared_fieldsets
         form = self.get_form(request, obj)
-        fields = list(form.base_fields.keys()) + list(self.get_readonly_fields(request, obj))
+        fields = dictkeys(form.base_fields) + list(self.get_readonly_fields(request, obj))
         return [(None, {'fields': fields})]
 
     def get_form(self, request, obj=None, **kwargs):
@@ -1416,7 +1416,7 @@ class InlineModelAdmin(BaseModelAdmin):
         if self.declared_fieldsets:
             return self.declared_fieldsets
         form = self.get_formset(request, obj).form
-        fields = list(form.base_fields.keys()) + list(self.get_readonly_fields(request, obj))
+        fields = dictkeys(form.base_fields) + list(self.get_readonly_fields(request, obj))
         return [(None, {'fields': fields})]
 
     def queryset(self, request):

@@ -5,11 +5,11 @@ Decorators for views based on HTTP headers.
 from calendar import timegm
 from functools import wraps
 
-from django.http import HttpResponseNotAllowed, HttpResponseNotModified, HttpResponse
-from django.middleware.http import ConditionalGetMiddleware
 from django.utils.decorators import decorator_from_middleware, available_attrs
 from django.utils.http import http_date, parse_http_date_safe, parse_etags, quote_etag
 from django.utils.log import getLogger
+from django.middleware.http import ConditionalGetMiddleware
+from django.http import HttpResponseNotAllowed, HttpResponseNotModified, HttpResponse
 
 conditional_page = decorator_from_middleware(ConditionalGetMiddleware)
 

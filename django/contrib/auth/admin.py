@@ -15,6 +15,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext, ugettext_lazy as _
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
+from django.utils.py3 import dictkeys
 
 csrf_protect_m = method_decorator(csrf_protect)
 
@@ -128,7 +129,7 @@ class UserAdmin(admin.ModelAdmin):
         else:
             form = self.change_password_form(user)
 
-        fieldsets = [(None, {'fields': list(form.base_fields.keys())})]
+        fieldsets = [(None, {'fields': dictkeys(form.base_fields)})]
         adminForm = admin.helpers.AdminForm(form, fieldsets, {})
 
         context = {

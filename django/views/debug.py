@@ -15,7 +15,7 @@ from django.template.defaultfilters import force_escape, pprint
 from django.utils.html import escape
 from django.utils.importlib import import_module
 from django.utils.encoding import smart_unicode, smart_str
-from django.utils.py3 import string_types, text_type
+from django.utils.py3 import string_types, text_type, dictitems
 
 HIDDEN_SETTINGS = re.compile('API|TOKEN|KEY|SECRET|PASS|PROFANITIES_LIST|SIGNATURE')
 
@@ -111,7 +111,7 @@ class ExceptionReporterFilter(object):
             return request.POST
 
     def get_traceback_frame_variables(self, request, tb_frame):
-        return list(tb_frame.f_locals.items())
+        return dictitems(tb_frame.f_locals)
 
 class SafeExceptionReporterFilter(ExceptionReporterFilter):
     """

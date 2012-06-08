@@ -11,7 +11,7 @@ from django.test.utils import override_settings
 from django.utils.encoding import force_unicode
 from django.utils import translation
 from django.utils.translation import ugettext as _
-
+from django.utils.py3 import dictkeys
 
 @override_settings(USE_TZ=False, PASSWORD_HASHERS=('django.contrib.auth.hashers.SHA1PasswordHasher',))
 class UserCreationFormTest(TestCase):
@@ -202,7 +202,7 @@ class PasswordChangeFormTest(TestCase):
     def test_field_order(self):
         # Regression test - check the order of fields:
         user = User.objects.get(username='testclient')
-        self.assertEqual(list(PasswordChangeForm(user, {}).fields.keys()),
+        self.assertEqual(dictkeys(PasswordChangeForm(user, {}).fields),
                          ['old_password', 'new_password1', 'new_password2'])
 
 

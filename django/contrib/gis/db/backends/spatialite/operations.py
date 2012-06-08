@@ -9,7 +9,7 @@ from django.contrib.gis.measure import Distance
 from django.core.exceptions import ImproperlyConfigured
 from django.db.backends.sqlite3.base import DatabaseOperations
 from django.db.utils import DatabaseError
-from django.utils.py3 import string_types, integer_types
+from django.utils.py3 import string_types, integer_types. dictkeys
 
 class SpatiaLiteOperator(SpatialOperation):
     "For SpatiaLite operators (e.g. `&&`, `~`)."
@@ -131,7 +131,7 @@ class SpatiaLiteOperations(DatabaseOperations, BaseSpatialOperations):
 
         # Creating the GIS terms dictionary.
         gis_terms = ['isnull']
-        gis_terms += list(self.geometry_functions.keys())
+        gis_terms += dictkeys(self.geometry_functions)
         self.gis_terms = dict([(term, None) for term in gis_terms])
 
         if version >= (2, 4, 0):

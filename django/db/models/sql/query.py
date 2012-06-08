@@ -9,7 +9,9 @@ all about the internals of models in order to get the information it needs.
 
 import copy
 
-from django.core.exceptions import FieldError
+from django.utils.datastructures import SortedDict
+from django.utils.encoding import force_unicode
+from django.utils.tree import Node
 from django.db import connections, DEFAULT_DB_ALIAS
 from django.db.models import signals
 from django.db.models.expressions import ExpressionNode
@@ -21,10 +23,8 @@ from django.db.models.sql.datastructures import EmptyResultSet, Empty, MultiJoin
 from django.db.models.sql.expressions import SQLEvaluator
 from django.db.models.sql.where import (WhereNode, Constraint, EverythingNode,
     ExtraWhere, AND, OR)
-from django.utils.datastructures import SortedDict
-from django.utils.encoding import force_unicode
-from django.utils.py3 import iteritems, itervalues, next
-from django.utils.tree import Node
+from django.core.exceptions import FieldError
+from django.utils.py3 import iteritems, itervalues, next, dictkeys
 
 __all__ = ['Query', 'RawQuery']
 
@@ -1303,7 +1303,7 @@ class Query(object):
                         field, model, direct, m2m = opts.get_field_by_name(f.name)
                         break
                 else:
-                    names = opts.get_all_field_names() + list(self.aggregate_select.keys())
+                    names = opts.get_all_field_names() + dictkeys(self.aggregate_select)
                     raise FieldError("Cannot resolve keyword %r into field. "
                             "Choices are: %s" % (name, ", ".join(names)))
 
@@ -1656,7 +1656,7 @@ class Query(object):
         except MultiJoin:
             raise FieldError("Invalid field name: '%s'" % name)
         except FieldError:
-            names = opts.get_all_field_names() + list(self.extra.keys()) + self.aggregate_select.keys()
+            names = opts.get_all_field_names() + dictkeys(self.extra) + dictkeys(self.aggregate_select)
             names.sort()
             raise FieldError("Cannot resolve keyword %r into field. "
                     "Choices are: %s" % (name, ", ".join(names)))

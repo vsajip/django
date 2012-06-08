@@ -12,6 +12,7 @@
 """
 from ctypes import Structure, c_double
 from django.contrib.gis.gdal.error import OGRException
+from django.utils.py3 import lmap
 
 # The OGR definition of an Envelope is a C structure containing four doubles.
 #  See the 'ogr_core.h' source file for more information:
@@ -52,7 +53,7 @@ class Envelope(object):
         elif len(args) == 4:
             # Individual parameters passed in.
             #  Thanks to ww for the help
-            self._from_sequence(list(map(float, args)))
+            self._from_sequence(lmap(float, args))
         else:
             raise OGRException('Incorrect number (%d) of arguments.' % len(args))
 

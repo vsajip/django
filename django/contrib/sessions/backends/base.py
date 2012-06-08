@@ -9,7 +9,8 @@ from django.utils.crypto import get_random_string
 from django.utils.crypto import salted_hmac
 from django.utils import timezone
 from django.utils.py3 import (pickle, long_type, text_type,
-                              iterkeys, itervalues, iteritems)
+                              iterkeys, itervalues, iteritems,
+                              dictkeys, dictvalues, dictitems)
 
 class CreateError(Exception):
     """
@@ -102,13 +103,13 @@ class SessionBase(object):
         return key in self._session
 
     def keys(self):
-        return list(self._session.keys())
+        return dictkeys(self._session)
 
     def values(self):
-        return list(self._session.values())
+        return dictvalues(self._session)
 
     def items(self):
-        return list(self._session.items())
+        return dictitems(self._session)
 
     def iterkeys(self):
         return iterkeys(self._session)

@@ -10,7 +10,8 @@ from django.db.models.loading import get_models, app_cache_ready
 from django.utils.translation import activate, deactivate_all, get_language, string_concat
 from django.utils.encoding import force_unicode, smart_text
 from django.utils.datastructures import SortedDict
-from django.utils.py3 import itervalues, iteritems, string_types, PY3
+from django.utils.py3 import (itervalues, iteritems, string_types, PY3,
+                              dictkeys, dictitems)
 
 # Calculate the verbose_name by converting from InitialCaps to "lowercase with spaces".
 get_verbose_name = lambda class_name: re.sub('(((?<=[a-z])[A-Z])|([A-Z](?![A-Z]|$)))', ' \\1', class_name).lower().strip()
@@ -258,7 +259,7 @@ class Options(object):
             self._m2m_cache
         except AttributeError:
             self._fill_m2m_cache()
-        return list(self._m2m_cache.keys())
+        return dictkeys(self._m2m_cache)
     many_to_many = property(_many_to_many)
 
     def get_m2m_with_model(self):
@@ -269,7 +270,7 @@ class Options(object):
             self._m2m_cache
         except AttributeError:
             self._fill_m2m_cache()
-        return list(self._m2m_cache.items())
+        return dictitems(self._m2m_cache)
 
     def _fill_m2m_cache(self):
         cache = SortedDict()
@@ -326,7 +327,7 @@ class Options(object):
             cache = self._name_map
         except AttributeError:
             cache = self.init_name_map()
-        names = list(cache.keys())
+        names = dictkeys(cache)
         names.sort()
         # Internal-only names end with "+" (symmetrical m2m related names being
         # the main example). Trim them.
@@ -417,7 +418,7 @@ class Options(object):
             cache = self._fill_related_many_to_many_cache()
         if local_only:
             return [k for k, v in cache.items() if not v]
-        return list(cache.keys())
+        return dictkeys(cache)
 
     def get_all_related_m2m_objects_with_model(self):
         """
@@ -428,7 +429,7 @@ class Options(object):
             cache = self._related_many_to_many_cache
         except AttributeError:
             cache = self._fill_related_many_to_many_cache()
-        return list(cache.items())
+        return dictitems(cache)
 
     def _fill_related_many_to_many_cache(self):
         cache = SortedDict()

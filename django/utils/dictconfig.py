@@ -23,7 +23,7 @@ import re
 import sys
 import types
 
-from django.utils.py3 import string_types
+from django.utils.py3 import string_types, dictkeys
 
 IDENTIFIER = re.compile('^[a-z_][a-z0-9_]*$', re.I)
 
@@ -363,7 +363,7 @@ class DictConfigurator(BaseConfigurator):
                 #which were in the previous configuration but
                 #which are not in the new configuration.
                 root = logging.root
-                existing = list(root.manager.loggerDict.keys())
+                existing = dictkeys(root.manager.loggerDict)
                 #The list needs to be sorted so that we can
                 #avoid disabling child loggers of explicitly
                 #named loggers. With a sorted list it is easier

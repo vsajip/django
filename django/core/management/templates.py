@@ -13,13 +13,13 @@ from optparse import make_option
 from os import path
 
 import django
-from django.core.management.base import BaseCommand, CommandError
-from django.core.management.commands.makemessages import handle_extensions
 from django.template import Template, Context
 from django.utils import archive
-#from django.utils.encoding import smart_str
 from django.utils._os import rmtree_errorhandler
 from django.utils.py3 import urlretrieve
+from django.core.management.base import BaseCommand, CommandError
+from django.core.management.commands.makemessages import handle_extensions
+
 
 _drive_re = re.compile('^([a-z]):', re.I)
 _url_drive_re = re.compile('^([a-z])[:|]', re.I)

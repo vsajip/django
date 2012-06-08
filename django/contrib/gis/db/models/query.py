@@ -6,7 +6,7 @@ from django.contrib.gis.db.models.fields import get_srid_info, PointField, LineS
 from django.contrib.gis.db.models.sql import AreaField, DistanceField, GeomField, GeoQuery
 from django.contrib.gis.geometry.backend import Geometry
 from django.contrib.gis.measure import Area, Distance
-from django.utils.py3 import string_types, integer_types, iteritems
+from django.utils.py3 import string_types, integer_types, iteritems, dictkeys
 
 class GeoQuerySet(QuerySet):
     "The Geographic QuerySet."
@@ -23,7 +23,7 @@ class GeoQuerySet(QuerySet):
         flat = kwargs.pop('flat', False)
         if kwargs:
             raise TypeError('Unexpected keyword arguments to values_list: %s'
-                    % (list(kwargs.keys()),))
+                    % (dictkeys(kwargs),))
         if flat and len(fields) > 1:
             raise TypeError("'flat' is not valid when values_list is called with more than one field.")
         return self._clone(klass=GeoValuesListQuerySet, setup=True, flat=flat,

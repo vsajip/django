@@ -14,10 +14,10 @@ from django.template.base import (Node, NodeList, Template, Context, Library,
     VARIABLE_ATTRIBUTE_SEPARATOR, get_library, token_kwargs, kwarg_re)
 from django.template.smartif import IfParser, Literal
 from django.template.defaultfilters import date
-from django.utils import timezone
 from django.utils.encoding import smart_str, smart_unicode, smart_text
 from django.utils.safestring import mark_safe
-from django.utils.py3 import next, iteritems
+from django.utils import timezone
+from django.utils.py3 import next, iteritems, dictkeys
 
 register = Library()
 
@@ -1188,7 +1188,7 @@ def templatetag(parser, token):
     if tag not in TemplateTagNode.mapping:
         raise TemplateSyntaxError("Invalid templatetag argument: '%s'."
                                   " Must be one of: %s" %
-                                  (tag, list(TemplateTagNode.mapping.keys())))
+                                  (tag, dictkeys(TemplateTagNode.mapping)))
     return TemplateTagNode(tag)
 
 @register.tag

@@ -11,7 +11,7 @@ from django.utils import datetime_safe
 from django.utils.dates import MONTHS
 from django.utils.safestring import mark_safe
 from django.utils.formats import get_format
-from django.utils.py3 import string_types
+from django.utils.py3 import string_types, lrange, dictitems
 from django.conf import settings
 
 __all__ = ('SelectDateWidget',)
@@ -58,7 +58,7 @@ class SelectDateWidget(Widget):
             self.years = years
         else:
             this_year = datetime.date.today().year
-            self.years = list(range(this_year, this_year+10))
+            self.years = lrange(this_year, this_year+10)
 
     def render(self, name, value, attrs=None):
         try:
@@ -79,7 +79,7 @@ class SelectDateWidget(Widget):
                         year_val, month_val, day_val = [int(v) for v in match.groups()]
         choices = [(i, i) for i in self.years]
         year_html = self.create_select(name, self.year_field, value, year_val, choices)
-        choices = list(MONTHS.items())
+        choices = dictitems(MONTHS)
         month_html = self.create_select(name, self.month_field, value, month_val, choices)
         choices = [(i, i) for i in range(1, 32)]
         day_html = self.create_select(name, self.day_field, value, day_val,  choices)

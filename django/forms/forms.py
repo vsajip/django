@@ -13,7 +13,7 @@ from django.forms.widgets import Media, media_property, TextInput, Textarea
 from django.utils.datastructures import SortedDict
 from django.utils.html import conditional_escape
 from django.utils.encoding import StrAndUnicode, smart_unicode, force_unicode
-from django.utils.py3 import text_type, with_metaclass
+from django.utils.py3 import text_type, with_metaclass, dictitems
 from django.utils.safestring import mark_safe
 
 
@@ -38,7 +38,7 @@ def get_declared_fields(bases, attrs, with_base_fields=True):
     used. The distinction is useful in ModelForm subclassing.
     Also integrates any additional media definitions
     """
-    fields = [(field_name, attrs.pop(field_name)) for field_name, obj in list(attrs.items()) if isinstance(obj, Field)]
+    fields = [(field_name, attrs.pop(field_name)) for field_name, obj in dictitems(attrs) if isinstance(obj, Field)]
     fields.sort(key=lambda x: x[1].creation_counter)
 
     # If this class is subclassing another Form, add that Form's fields.
@@ -47,11 +47,11 @@ def get_declared_fields(bases, attrs, with_base_fields=True):
     if with_base_fields:
         for base in bases[::-1]:
             if hasattr(base, 'base_fields'):
-                fields = list(base.base_fields.items()) + fields
+                fields = dictitems(base.base_fields) + fields
     else:
         for base in bases[::-1]:
             if hasattr(base, 'declared_fields'):
-                fields = list(base.declared_fields.items()) + fields
+                fields = dictitems(base.declared_fields) + fields
 
     return SortedDict(fields)
 

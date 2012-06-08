@@ -16,7 +16,7 @@ from django.contrib.gis.db.backends.oracle.adapter import OracleSpatialAdapter
 from django.contrib.gis.db.backends.util import SpatialFunction
 from django.contrib.gis.geometry.backend import Geometry
 from django.contrib.gis.measure import Distance
-from django.utils.py3 import integer_types, string_types
+from django.utils.py3 import integer_types, string_types, dictkeys
 
 class SDOOperation(SpatialFunction):
     "Base class for SDO* Oracle operations."
@@ -128,7 +128,7 @@ class OracleOperations(DatabaseOperations, BaseSpatialOperations):
     geometry_functions.update(distance_functions)
 
     gis_terms = ['isnull']
-    gis_terms += list(geometry_functions.keys())
+    gis_terms += dictkeys(geometry_functions)
     gis_terms = dict([(term, None) for term in gis_terms])
 
     truncate_params = {'relate' : None}

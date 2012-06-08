@@ -8,7 +8,7 @@ import warnings
 from django.core.management.base import BaseCommand, CommandError, handle_default_options
 from django.core.management.color import color_style
 from django.utils.importlib import import_module
-from django.utils.py3 import iteritems
+from django.utils.py3 import iteritems, dictkeys
 
 # For backwards compatibility: get_version() used to be in this module.
 from django import get_version
@@ -295,7 +295,7 @@ class ManagementUtility(object):
         except IndexError:
             curr = ''
 
-        subcommands = list(get_commands().keys()) + ['help']
+        subcommands = dictkeys(get_commands()) + ['help']
         options = [('--help', None)]
 
         # subcommand

@@ -6,7 +6,7 @@ from django.db.backends import util
 from django.db.transaction import TransactionManagementError
 from django.db.utils import DatabaseError
 from django.utils.importlib import import_module
-from django.utils.py3 import thread, text_type
+from django.utils.py3 import thread, text_type, lmap
 from django.utils.timezone import is_aware
 
 
@@ -955,7 +955,7 @@ class BaseDatabaseIntrospection(object):
             for model in models.get_models(app):
                 if router.allow_syncdb(self.connection.alias, model):
                     all_models.append(model)
-        tables = list(map(self.table_name_converter, tables))
+        tables = lmap(self.table_name_converter, tables)
         return set([
             m for m in all_models
             if self.table_name_converter(m._meta.db_table) in tables

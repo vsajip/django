@@ -104,8 +104,9 @@ import sys, traceback, inspect, linecache, os, re
 import unittest, difflib, pdb, tempfile
 import warnings
 
-from django.utils.py3 import (StringIO, PyStringIO, string_types, func_globals_name,
-                              im_func_name, func_code_name, exec_, execfile_, PY3)
+from django.utils.py3 import (StringIO, PyStringIO, string_types,
+                              func_globals_name, im_func_name, func_code_name,
+                              exec_, execfile_, PY3, lrange)
 
 if sys.platform.startswith('java'):
     # On Jython, isclass() reports some modules as classes. Patch it.
@@ -2722,7 +2723,7 @@ __test__ = {"_TestClass": _TestClass,
             "whitespace normalization": r"""
                 If the whitespace normalization flag is used, then
                 differences in whitespace are ignored.
-                    >>> print(list(range(30))) #doctest: +NORMALIZE_WHITESPACE
+                    >>> print(lrange(30)) #doctest: +NORMALIZE_WHITESPACE
                     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
                      15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
                      27, 28, 29]

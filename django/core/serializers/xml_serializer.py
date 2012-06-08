@@ -7,9 +7,8 @@ from __future__ import unicode_literals
 from django.conf import settings
 from django.core.serializers import base
 from django.db import models, DEFAULT_DB_ALIAS
-from django.utils.encoding import smart_unicode
 from django.utils.xmlutils import SimplerXMLGenerator
-
+from django.utils.encoding import smart_unicode
 from xml.dom import pulldom
 
 class Serializer(base.Serializer):

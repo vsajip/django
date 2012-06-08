@@ -2,7 +2,6 @@ from __future__ import unicode_literals
 
 import sys
 import os
-from itertools import product
 import gzip
 import zipfile
 from optparse import make_option
@@ -16,6 +15,7 @@ from django.db import (connections, router, transaction, DEFAULT_DB_ALIAS,
       IntegrityError, DatabaseError)
 from django.db.models import get_apps
 from django.utils.encoding import force_unicode
+from itertools import product
 from django.utils.py3 import reraise
 
 try:

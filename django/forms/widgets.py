@@ -14,7 +14,7 @@ from django.utils.datastructures import MultiValueDict, MergeDict
 from django.utils.html import escape, conditional_escape
 from django.utils.translation import ugettext, ugettext_lazy
 from django.utils.encoding import StrAndUnicode, force_unicode
-from django.utils.py3 import urljoin, with_metaclass, string_types
+from django.utils.py3 import urljoin, with_metaclass, string_types, dictkeys
 from django.utils.safestring import mark_safe
 from django.utils import datetime_safe, formats
 
@@ -58,7 +58,7 @@ class Media(StrAndUnicode):
     def render_css(self):
         # To keep rendering order consistent, we can't just iterate over items().
         # We need to sort the keys, and iterate over the sorted list.
-        media = list(self._css.keys())
+        media = dictkeys(self._css)
         media.sort()
         return chain(*[
             ['<link href="%s" type="text/css" media="%s" rel="stylesheet" />' % (self.absolute_path(path), medium)

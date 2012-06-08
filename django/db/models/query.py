@@ -14,7 +14,8 @@ from django.db.models.query_utils import (Q, select_related_descend,
 from django.db.models.deletion import Collector
 from django.db.models import sql
 from django.utils.functional import partition
-from django.utils.py3 import next, integer_types, iteritems, n, reraise
+from django.utils.py3 import (next, integer_types, iteritems, n, reraise,
+                              dictkeys)
 
 # Used to control how many objects are worked with at once in some cases (e.g.
 # when deleting objects).
@@ -247,8 +248,8 @@ class QuerySet(object):
             requested = None
         max_depth = self.query.max_depth
 
-        extra_select = list(self.query.extra_select.keys())
-        aggregate_select = list(self.query.aggregate_select.keys())
+        extra_select = dictkeys(self.query.extra_select)
+        aggregate_select = dictkeys(self.query.aggregate_select)
 
         only_load = self.query.get_loaded_field_names()
         if not fill_cache:
@@ -592,7 +593,7 @@ class QuerySet(object):
         flat = kwargs.pop('flat', False)
         if kwargs:
             raise TypeError('Unexpected keyword arguments to values_list: %s'
-                    % (list(kwargs.keys()),))
+                    % (dictkeys(kwargs),))
         if flat and len(fields) > 1:
             raise TypeError("'flat' is not valid when values_list is called with more than one field.")
         return self._clone(klass=ValuesListQuerySet, setup=True, flat=flat,
@@ -692,7 +693,7 @@ class QuerySet(object):
         depth = kwargs.pop('depth', 0)
         if kwargs:
             raise TypeError('Unexpected keyword arguments to select_related: %s'
-                    % (list(kwargs.keys()),))
+                    % (dictkeys(kwargs),))
         obj = self._clone()
         if fields:
             if depth:
@@ -750,7 +751,7 @@ class QuerySet(object):
 
         obj = self._clone()
 
-        obj._setup_aggregate_query(list(kwargs.keys()))
+        obj._setup_aggregate_query(dictkeys(kwargs))
 
         # Add the aggregates to the query
         for (alias, aggregate_expr) in kwargs.items():
@@ -951,9 +952,9 @@ class ValuesQuerySet(QuerySet):
 
     def iterator(self):
         # Purge any extra columns that haven't been explicitly asked for
-        extra_names = list(self.query.extra_select.keys())
+        extra_names = dictkeys(self.query.extra_select)
         field_names = self.field_names
-        aggregate_names = list(self.query.aggregate_select.keys())
+        aggregate_names = dictkeys(self.query.aggregate_select)
 
         names = extra_names + field_names + aggregate_names
 
@@ -1082,9 +1083,9 @@ class ValuesListQuerySet(ValuesQuerySet):
             # When extra(select=...) or an annotation is involved, the extra
             # cols are always at the start of the row, and we need to reorder
             # the fields to match the order in self._fields.
-            extra_names = list(self.query.extra_select.keys())
+            extra_names = dictkeys(self.query.extra_select)
             field_names = self.field_names
-            aggregate_names = list(self.query.aggregate_select.keys())
+            aggregate_names = dictkeys(self.query.aggregate_select)
 
             names = extra_names + field_names + aggregate_names
 

@@ -16,7 +16,7 @@ from django.utils.encoding import force_unicode, iri_to_uri
 from django.utils.html import (conditional_escape, escapejs, fix_ampersands,
     escape, urlize as urlize_impl, linebreaks, strip_tags)
 from django.utils.http import urlquote
-from django.utils.py3 import text_type
+from django.utils.py3 import text_type, lmap
 from django.utils.text import Truncator, wrap, phone2numeric
 from django.utils.safestring import mark_safe, SafeData, mark_for_escaping
 from django.utils.timesince import timesince, timeuntil
@@ -521,7 +521,7 @@ def join(value, arg, autoescape=None):
     """
     Joins a list with a string, like Python's ``str.join(list)``.
     """
-    value = list(map(force_unicode, value))
+    value = lmap(force_unicode, value)
     if autoescape:
         value = [conditional_escape(v) for v in value]
     try:

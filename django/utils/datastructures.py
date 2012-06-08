@@ -1,7 +1,7 @@
 import copy
 from types import GeneratorType
 
-from django.utils.py3 import iteritems
+from django.utils.py3 import iteritems, dictkeys, dictitems, lmap
 
 class MergeDict(object):
     """
@@ -117,7 +117,7 @@ class SortedDict(dict):
             data = list(data)
         super(SortedDict, self).__init__(data)
         if isinstance(data, dict):
-            self.keyOrder = list(data.keys())
+            self.keyOrder = dictkeys(data)
         else:
             self.keyOrder = []
             seen = set()
@@ -176,7 +176,7 @@ class SortedDict(dict):
         return iter(self.keyOrder)
 
     def values(self):
-        return list(map(self.__getitem__, self.keyOrder))
+        return lmap(self.__getitem__, self.keyOrder)
 
     def itervalues(self):
         for key in self.keyOrder:
@@ -362,7 +362,7 @@ class MultiValueDict(dict):
 
     def lists(self):
         """Returns a list of (key, list) pairs."""
-        return list(super(MultiValueDict, self).items())
+        return dictitems(super(MultiValueDict, self))
 
     def iterlists(self):
         """Yields (key, list) pairs."""

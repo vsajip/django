@@ -12,6 +12,7 @@ from django.core.validators import EMPTY_VALUES
 from django.forms import ValidationError
 from django.forms.fields import Field, RegexField, CharField, Select
 from django.utils.encoding import smart_unicode
+from django.utils.py3 import lrange
 from django.utils.translation import ugettext_lazy as _
 
 
@@ -154,10 +155,10 @@ class BRCNPJField(Field):
             raise ValidationError(self.error_messages['max_digits'])
         orig_dv = value[-2:]
 
-        new_1dv = sum([i * int(value[idx]) for idx, i in enumerate(list(range(5, 1, -1)) + list(range(9, 1, -1)))])
+        new_1dv = sum([i * int(value[idx]) for idx, i in enumerate(lrange(5, 1, -1) + lrange(9, 1, -1))])
         new_1dv = DV_maker(new_1dv % 11)
         value = value[:-2] + str(new_1dv) + value[-1]
-        new_2dv = sum([i * int(value[idx]) for idx, i in enumerate(list(range(6, 1, -1)) + list(range(9, 1, -1)))])
+        new_2dv = sum([i * int(value[idx]) for idx, i in enumerate(lrange(6, 1, -1) + lrange(9, 1, -1))])
         new_2dv = DV_maker(new_2dv % 11)
         value = value[:-1] + str(new_2dv)
         if value[-2:] != orig_dv:

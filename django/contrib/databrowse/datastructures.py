@@ -2,7 +2,6 @@
 These classes are light wrappers around Django's database API that provide
 convenience functionality and permalink functions for the databrowse app.
 """
-
 from __future__ import unicode_literals
 
 from django.db import models
@@ -11,6 +10,7 @@ from django.utils.text import capfirst
 from django.utils.encoding import smart_unicode, smart_str, iri_to_uri
 from django.utils.safestring import mark_safe
 from django.db.models.query import QuerySet
+from django.utils.py3 import dictkeys, dictvalues, lzip
 
 EMPTY_VALUE = '(None)'
 DISPLAY_SIZE = 100
@@ -19,7 +19,7 @@ class EasyModel(object):
     def __init__(self, site, model):
         self.site = site
         self.model = model
-        self.model_list = list(site.registry.keys())
+        self.model_list = dictkeys(site.registry)
         self.verbose_name = model._meta.verbose_name
         self.verbose_name_plural = model._meta.verbose_name_plural
 
@@ -180,7 +180,7 @@ class EasyInstanceField(object):
             if urls is not None:
                 #plugin_urls.append(urls)
                 values = self.values()
-                return list(zip(self.values(), urls))
+                return lzip(self.values(), urls)
         if self.field.rel:
             m = EasyModel(self.model.site, self.field.rel.to)
             if self.field.rel.to in self.model.model_list:
@@ -198,10 +198,10 @@ class EasyInstanceField(object):
                 url = mark_safe('%s%s/%s/fields/%s/%s/' % (self.model.site.root_url, self.model.model._meta.app_label, self.model.model._meta.module_name, self.field.name, iri_to_uri(self.raw_value)))
                 lst.append((value, url))
         elif isinstance(self.field, models.URLField):
-            val = list(self.values())[0]
+            val = dictvalues(self)[0]
             lst = [(val, iri_to_uri(val))]
         else:
-            lst = [list((self.values())[0], None)]
+            lst = [dictvalues((self)[0], None)]
         return lst
 
 class EasyQuerySet(QuerySet):
