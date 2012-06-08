@@ -18,4 +18,4 @@ class Command(AppCommand):
     output_transaction = True
 
     def handle_app(self, app, **options):
-        return '\n'.join(sql_delete(app, self.style, connections[options.get('database')])).encode('utf-8')
+        return '\n'.join(sql_delete(app, self.style, connections[options.get('database')]))

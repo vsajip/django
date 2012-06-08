@@ -12,7 +12,7 @@ import django
 from django.core.exceptions import ImproperlyConfigured
 from django.core.management.color import color_style
 from django.utils.encoding import smart_text
-from django.utils.py3 import PY3, StringIO
+from django.utils.py3 import PY3, StringIO, text_type
 
 class CommandError(Exception):
     """
@@ -316,7 +316,7 @@ class AppCommand(BaseCommand):
             app_output = self.handle_app(app, **options)
             if app_output:
                 output.append(app_output)
-        return b'\n'.join(output)
+        return '\n'.join(output)
 
     def handle_app(self, app, **options):
         """
