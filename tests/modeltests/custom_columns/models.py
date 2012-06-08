@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 """
 17. Custom column/table names
 
@@ -15,6 +14,8 @@ from the default generated name, use the ``db_table`` parameter on the
 ``ManyToManyField``. This has no effect on the API for querying the database.
 
 """
+
+from __future__ import unicode_literals
 
 from django.db import models
 

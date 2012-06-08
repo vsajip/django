@@ -1,5 +1,4 @@
 from __future__ import unicode_literals
-
 import re
 
 from django.template import (Node, Variable, TemplateSyntaxError,
@@ -78,7 +77,8 @@ class TranslateNode(Node):
         self.message_context = message_context
         self.filter_expression = filter_expression
         if isinstance(self.filter_expression.var, string_types):
-            self.filter_expression.var = Variable("'%s'" % self.filter_expression.var)
+            self.filter_expression.var = Variable("'%s'" %
+                                                  self.filter_expression.var)
 
     def render(self, context):
         self.filter_expression.var.translate = not self.noop

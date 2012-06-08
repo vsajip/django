@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+
+from warnings import catch_warnings
+
 from django.forms import *
 from django.test import TestCase
 from django.utils.translation import ugettext_lazy, override
@@ -61,7 +64,9 @@ class FormsRegressionsTestCase(TestCase):
         )
         f = ChoiceField(choices=UNITS)
         self.assertEqual(f.clean('\u0448\u0442.'), '\u0448\u0442.')
-        self.assertEqual(f.clean(b'\xd1\x88\xd1\x82.'), '\u0448\u0442.')
+        with catch_warnings(record=True):
+            # Ignore UnicodeWarning
+            self.assertEqual(f.clean(b'\xd1\x88\xd1\x82.'), '\u0448\u0442.')
 
         # Translated error messages used to be buggy.
         with override('ru'):

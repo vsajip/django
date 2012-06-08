@@ -392,8 +392,7 @@ class URLNode(Node):
     def render(self, context):
         from django.core.urlresolvers import reverse, NoReverseMatch
         args = [arg.resolve(context) for arg in self.args]
-        # django3: was smart_str, for some reason
-        kwargs = dict([(smart_text(k, 'ascii'), v.resolve(context))
+        kwargs = dict([(smart_unicode(k, 'ascii'), v.resolve(context))
                        for k, v in self.kwargs.items()])
 
         view_name = self.view_name.resolve(context)

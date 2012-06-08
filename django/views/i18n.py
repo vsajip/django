@@ -54,8 +54,6 @@ def get_formats():
     src = []
     for k, v in result.items():
         if PY3:
-            # XXX why is it necessary to javascript_quote the keys, when they are from
-            # FORMAT_SETTINGS, which is all safe?
             k = k.encode('ascii')
         if isinstance(v, string_types + (int,)):
             src.append("formats['%s'] = '%s';\n" % (javascript_quote(k), javascript_quote(smart_unicode(v))))

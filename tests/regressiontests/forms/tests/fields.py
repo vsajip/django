@@ -474,8 +474,7 @@ class FieldsTests(SimpleTestCase):
     def test_regexfield_5(self):
         f = RegexField('^\d+$', min_length=5, max_length=10)
         self.assertRaisesMessage(ValidationError, "'Ensure this value has at least 5 characters (it has 3).'", f.clean, '123')
-        self.assertRaisesMessage(ValidationError, "'Ensure this value has at least 5 characters (it has 3).'", f.clean, 'abc')
-        self.assertRaisesMessage(ValidationError, "'Enter a valid value.'", f.clean, 'abc')
+        self.assertRaisesRegexp(ValidationError, "'Ensure this value has at least 5 characters \(it has 3\)\.', u?'Enter a valid value\.'", f.clean, 'abc')
         self.assertEqual('12345', f.clean('12345'))
         self.assertEqual('1234567890', f.clean('1234567890'))
         self.assertRaisesMessage(ValidationError, "'Ensure this value has at most 10 characters (it has 11).'", f.clean, '12345678901')
@@ -987,53 +986,31 @@ class FieldsTests(SimpleTestCase):
             self.assertEqual(exp[1], got[1])
             self.assertTrue(got[0].endswith(exp[0]))
 
-    def clean_pyc(self, path):
-        pass
-
     def test_filepathfield_folders(self):
-        skip_svn = r'[^(\.svn)]'
-
-        path = forms.__file__
-        path = os.path.dirname(path) + '/'
-        f = FilePathField(path=path, allow_folders=True, allow_files=False, match=skip_svn)
+        path = os.path.dirname(__file__) + '/filepath_test_files/'
+        f = FilePathField(path=path, allow_folders=True, allow_files=False)
         f.choices.sort()
         expected = [
-            ('/django/forms/extras', 'extras'),
+            ('/tests/regressiontests/forms/tests/filepath_test_files/directory', 'directory'),
         ]
         for exp, got in zip(expected, fix_os_paths(f.choices)):
             self.assertEqual(exp[1], got[1])
-            self.assert_(got[0].endswith(exp[0]))
+            self.assertTrue(got[0].endswith(exp[0]))
 
-        # Remove compiled files to leave a level playing field for 2.x and 3.x
-        # (.pyc files are handled differently, post-PEP 3147)
-        # Probably best to construct a temp dir just for the purpose of this
-        # test ...
-        PYCACHE = '__pycache__'
-        for root, dirs, files in os.walk(path):
-            if PYCACHE in dirs:
-                p = os.path.join(root, PYCACHE)
-                shutil.rmtree(p)
-                dirs.remove(PYCACHE)
-            for f in files:
-                if f.endswith(('.pyc', '.pyo')):
-                    p = os.path.join(root, f)
-                    os.unlink(p)
-                    
-        f = FilePathField(path=path, allow_folders=True, allow_files=True, match=skip_svn)
+        f = FilePathField(path=path, allow_folders=True, allow_files=True)
         f.choices.sort()
         expected = [
-            ('/django/forms/__init__.py', '__init__.py'),
-            ('/django/forms/extras', 'extras'),
-            ('/django/forms/fields.py', 'fields.py'),
-            ('/django/forms/forms.py', 'forms.py'),
-            ('/django/forms/formsets.py', 'formsets.py'),
-            ('/django/forms/models.py', 'models.py'),
-            ('/django/forms/util.py', 'util.py'),
-            ('/django/forms/widgets.py', 'widgets.py'),
+            ('/tests/regressiontests/forms/tests/filepath_test_files/.dot-file', '.dot-file'),
+            ('/tests/regressiontests/forms/tests/filepath_test_files/directory', 'directory'),
+            ('/tests/regressiontests/forms/tests/filepath_test_files/fake-image.jpg', 'fake-image.jpg'),
+            ('/tests/regressiontests/forms/tests/filepath_test_files/real-text-file.txt', 'real-text-file.txt'),
         ]
-        for exp, got in zip(expected, fix_os_paths(f.choices)):
+
+        actual = fix_os_paths(f.choices)
+        self.assertEqual(len(expected), len(actual))
+        for exp, got in zip(expected, actual):
             self.assertEqual(exp[1], got[1])
-            self.assertEqual(exp[1], got[1])
+            self.assertTrue(got[0].endswith(exp[0]))
 
 
     # SplitDateTimeField ##########################################################
@@ -1046,7 +1023,7 @@ class FieldsTests(SimpleTestCase):
         self.assertRaisesMessage(ValidationError, "'This field is required.'", f.clean, None)
         self.assertRaisesMessage(ValidationError, "'This field is required.'", f.clean, '')
         self.assertRaisesMessage(ValidationError, "'Enter a list of values.'", f.clean, 'hello')
-        self.assertRaisesMessage(ValidationError, "'Enter a valid time.'", f.clean, ['hello', 'there'])
+        self.assertRaisesRegexp(ValidationError, "'Enter a valid date\.', u?'Enter a valid time\.'", f.clean, ['hello', 'there'])
         self.assertRaisesMessage(ValidationError, "'Enter a valid time.'", f.clean, ['2006-01-10', 'there'])
         self.assertRaisesMessage(ValidationError, "'Enter a valid date.'", f.clean, ['hello', '07:30'])
 
@@ -1059,7 +1036,7 @@ class FieldsTests(SimpleTestCase):
         self.assertEqual(None, f.clean(['']))
         self.assertEqual(None, f.clean(['', '']))
         self.assertRaisesMessage(ValidationError, "'Enter a list of values.'", f.clean, 'hello')
-        self.assertRaisesMessage(ValidationError, "'Enter a valid date.'", f.clean, ['hello', 'there'])
+        self.assertRaisesRegexp(ValidationError, "'Enter a valid date\.', u?'Enter a valid time\.'", f.clean, ['hello', 'there'])
         self.assertRaisesMessage(ValidationError, "'Enter a valid time.'", f.clean, ['2006-01-10', 'there'])
         self.assertRaisesMessage(ValidationError, "'Enter a valid date.'", f.clean, ['hello', '07:30'])
         self.assertRaisesMessage(ValidationError, "'Enter a valid time.'", f.clean, ['2006-01-10', ''])

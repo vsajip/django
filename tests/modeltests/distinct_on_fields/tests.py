@@ -2,7 +2,7 @@ from __future__ import absolute_import, unicode_literals
 
 from django.db.models import Max
 from django.test import TestCase, skipUnlessDBFeature
-from django.utils.py3 import py3_prefix
+from django.test.utils import str_prefix
 
 from .models import Tag, Celebrity, Fan, Staff, StaffTag
 
@@ -79,8 +79,8 @@ class DistinctOnTests(TestCase):
             (
                 (Staff.objects.distinct('id').order_by('id', 'coworkers__name').
                                values_list('id', 'coworkers__name')),
-                [py3_prefix("(1, %(_)s'p2')"), py3_prefix("(2, %(_)s'p1')"),
-                 py3_prefix("(3, %(_)s'p1')"), "(4, None)"]
+                [str_prefix("(1, %(_)s'p2')"), str_prefix("(2, %(_)s'p1')"),
+                 str_prefix("(3, %(_)s'p1')"), "(4, None)"]
             ),
         )
         for qset, expected in qsets:
