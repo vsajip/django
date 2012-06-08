@@ -44,20 +44,14 @@ def check_password(password, encoded, setter=None, preferred='default'):
         return False
 
     preferred = get_hasher(preferred)
-    raw_password = password
     password = smart_str(password)
     encoded = smart_str(encoded)
-
-    if len(encoded) == 32 and b'$' not in encoded:
-        hasher = get_hasher('unsalted_md5')
-    else:
-        algorithm = encoded.split(b'$', 1)[0].decode('utf-8')
-        hasher = get_hasher(algorithm)
+    hasher = identify_hasher(encoded)
 
     must_update = hasher.algorithm != preferred.algorithm
     is_correct = hasher.verify(password, encoded)
     if setter and is_correct and must_update:
-        setter(raw_password)
+        setter(password)
     return is_correct
 
 
@@ -127,6 +121,21 @@ def get_hasher(algorithm='default'):
                              "Did you specify it in the PASSWORD_HASHERS "
                              "setting?" % algorithm)
         return HASHERS[algorithm]
+
+
+def identify_hasher(encoded):
+    """
+    Returns an instance of a loaded password hasher.
+
+    Identifies hasher algorithm by examining encoded hash, and calls
+    get_hasher() to return hasher. Raises ValueError if
+    algorithm cannot be identified, or if hasher is not loaded.
+    """
+    if len(encoded) == 32 and b'$' not in encoded:
+        algorithm = 'unsalted_md5'
+    else:
+        algorithm = encoded.split(b'$', 1)[0].decode('utf-8')
+    return get_hasher(algorithm)
 
 
 def mask_hash(hash, show=6, char=b"*"):

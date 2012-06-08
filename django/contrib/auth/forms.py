@@ -9,7 +9,7 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-from django.contrib.auth.hashers import UNUSABLE_PASSWORD, is_password_usable, get_hasher
+from django.contrib.auth.hashers import UNUSABLE_PASSWORD, is_password_usable, identify_hasher
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import get_current_site
 
@@ -26,16 +26,9 @@ class ReadOnlyPasswordHashWidget(forms.Widget):
             return "None"
 
         final_attrs = self.build_attrs(attrs)
-
         encoded = smart_str(encoded)
-
-        if len(encoded) == 32 and b'$' not in encoded:
-            algorithm = 'unsalted_md5'
-        else:
-            algorithm = encoded.split(b'$', 1)[0].decode('utf-8')
-
         try:
-            hasher = get_hasher(algorithm)
+            hasher = identify_hasher(encoded)
         except ValueError:
             summary = "<strong>Invalid password format or unknown hashing algorithm.</strong>"
         else:
