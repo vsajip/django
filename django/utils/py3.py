@@ -72,9 +72,6 @@ if sys.version_info[0] < 3:
     from itertools import izip
     from itertools import izip_longest
     xrange = xrange
-    func_code_name = 'func_code'
-    xreadlines_name = 'xreadlines'
-    func_name_name = 'func_name'
     execfile_ = execfile
     from SocketServer import ThreadingMixIn
     try:
@@ -95,9 +92,6 @@ if sys.version_info[0] < 3:
     exec_("""def reraise(tp, value, tb=None):
     raise tp, value, tb
 """)
-    im_self_name = 'im_self'
-    im_func_name = 'im_func'
-    func_globals_name = 'func_globals'
     import Cookie as cookies
     from os import getcwdu
     maxsize = sys.maxint
@@ -170,9 +164,6 @@ else:
     izip = zip
     from itertools import zip_longest as izip_longest
     xrange = range
-    func_code_name = '__code__'
-    xreadlines_name = '__iter__'
-    func_name_name = '__name__'
     def execfile_(file, globals=globals(), locals=locals()):
         f = open(file, "r")
         try:
@@ -188,9 +179,6 @@ else:
         if value.__traceback__ is not tb:
             raise value.with_traceback(tb)
         raise value
-    im_self_name = '__self__'
-    im_func_name = '__func__'
-    func_globals_name = '__globals__'
     import http.cookies as cookies
     from os import getcwd as getcwdu
     maxsize = sys.maxsize

@@ -8,7 +8,6 @@ from django.template import loader, TemplateDoesNotExist, RequestContext
 from django.utils import feedgenerator, tzinfo
 from django.utils.encoding import force_unicode, iri_to_uri, smart_unicode
 from django.utils.html import escape
-from django.utils.py3 import func_code_name
 from django.utils.timezone import is_naive
 
 def add_domain(domain, url, secure=False):
@@ -66,10 +65,10 @@ class Feed(object):
             # function and catching the TypeError, because something inside
             # the function may raise the TypeError. This technique is more
             # accurate.
-            if hasattr(attr, func_code_name):
-                argcount = getattr(attr, func_code_name).co_argcount
+            if hasattr(attr, '__code__'):
+                argcount = attr.__code__.co_argcount
             else:
-                argcount = getattr(attr.__call__, func_code_name).co_argcount
+                argcount = attr.__call__.__code__.co_argcount
             if argcount == 2: # one argument is 'self'
                 return attr(obj)
             else:

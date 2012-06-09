@@ -11,7 +11,7 @@ from django.forms import *
 from django.forms.widgets import RadioFieldRenderer
 from django.test import TestCase
 from django.utils import formats
-from django.utils.py3 import text_type, PY3
+from django.utils.py3 import text_type
 from django.utils.safestring import mark_safe
 from django.utils.translation import activate, deactivate
 

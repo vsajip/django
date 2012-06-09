@@ -3,9 +3,9 @@ Base classes for writing management commands (named commands which can
 be executed through ``django-admin.py`` or ``manage.py``).
 
 """
-from optparse import make_option, OptionParser
 import os
 import sys
+from optparse import make_option, OptionParser
 import traceback
 
 import django

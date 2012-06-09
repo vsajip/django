@@ -8,7 +8,7 @@ from django.utils.encoding import smart_text
 from django.utils.functional import lazy
 from django.utils.safestring import mark_safe
 from django.utils.translation import get_language, to_locale, check_for_language
-from django.utils.py3 import text_type, integer_types, string_types, PY3
+from django.utils.py3 import text_type, integer_types, string_types
 
 # format_cache is a mapping from (format_type, lang) to the format string.
 # By using the cache, it is possible to avoid running get_format_modules

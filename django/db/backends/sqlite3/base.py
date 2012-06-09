@@ -19,7 +19,7 @@ from django.db.backends.sqlite3.client import DatabaseClient
 from django.db.backends.sqlite3.creation import DatabaseCreation
 from django.db.backends.sqlite3.introspection import DatabaseIntrospection
 from django.utils.dateparse import parse_date, parse_datetime, parse_time
-from django.utils.py3 import reraise, text_type, PY3, n
+from django.utils.py3 import reraise, text_type, n
 from django.utils.safestring import SafeString
 from django.utils import timezone
 

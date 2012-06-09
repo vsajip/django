@@ -8,7 +8,7 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.uploadedfile import TemporaryUploadedFile, InMemoryUploadedFile
 from django.utils import importlib
-from django.utils.py3 import BytesIO, PY3
+from django.utils.py3 import BytesIO
 
 __all__ = ['UploadFileException','StopUpload', 'SkipFile', 'FileUploadHandler',
            'TemporaryFileUploadHandler', 'MemoryFileUploadHandler',

@@ -3,7 +3,6 @@ Classes representing uploaded files.
 """
 
 import os
-import sys
 
 from django.conf import settings
 from django.core.files.base import File

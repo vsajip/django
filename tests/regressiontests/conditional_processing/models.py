@@ -4,7 +4,6 @@ from datetime import datetime
 from django.test import TestCase
 from django.utils import unittest
 from django.utils.http import parse_etags, quote_etag, parse_http_date
-from django.utils.py3 import PY3
 
 
 FULL_RESPONSE = 'Test conditional get response'

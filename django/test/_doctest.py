@@ -105,7 +105,6 @@ import unittest, difflib, pdb, tempfile
 import warnings
 
 from django.utils.py3 import (StringIO, PyStringIO, string_types,
-                              func_globals_name, im_func_name, func_code_name,
                               exec_, execfile_, PY3, lrange)
 
 if sys.platform.startswith('java'):
@@ -873,7 +872,7 @@ class DocTestFinder:
         if module is None:
             return True
         elif inspect.isfunction(object):
-            return module.__dict__ is getattr(object, func_globals_name)
+            return module.__dict__ is object.__globals__
         elif inspect.isclass(object):
             return module.__name__ == object.__module__
         elif inspect.getmodule(object) is not None:
@@ -938,7 +937,7 @@ class DocTestFinder:
                 if isinstance(val, staticmethod):
                     val = getattr(obj, valname)
                 if isinstance(val, classmethod):
-                    val = getattr(getattr(obj, valname), im_func_name)
+                    val = getattr(obj, valname).__func__
 
                 # Recurse to methods, properties, and nested classes.
                 if ((inspect.isfunction(val) or inspect.isclass(val) or
@@ -1010,8 +1009,8 @@ class DocTestFinder:
                     break
 
         # Find the line number for functions & methods.
-        if inspect.ismethod(obj): obj = getattr(obj, im_func_name)
-        if inspect.isfunction(obj): obj = getattr(obj, func_code_name)
+        if inspect.ismethod(obj): obj = obj.__func__
+        if inspect.isfunction(obj): obj = obj.__code__
         if inspect.istraceback(obj): obj = obj.tb_frame
         if inspect.isframe(obj): obj = obj.f_code
         if inspect.iscode(obj):

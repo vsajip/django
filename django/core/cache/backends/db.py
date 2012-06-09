@@ -7,7 +7,7 @@ from django.conf import settings
 from django.core.cache.backends.base import BaseCache
 from django.db import connections, router, transaction, DatabaseError
 from django.utils import timezone
-from django.utils.py3 import pickle, PY3
+from django.utils.py3 import pickle
 
 
 class Options(object):
@@ -68,7 +68,6 @@ class DatabaseCache(BaseDatabaseCache):
             transaction.commit_unless_managed(using=db)
             return default
         value = connections[db].ops.process_clob(row[1])
-        # django3: added encode
         return pickle.loads(base64.decodestring(value.encode('ascii')))
 
     def set(self, key, value, timeout=None, version=None):
@@ -100,7 +99,6 @@ class DatabaseCache(BaseDatabaseCache):
         if num > self._max_entries:
             self._cull(db, cursor, now)
         pickled = pickle.dumps(value, pickle.HIGHEST_PROTOCOL)
-        # django3: added decode
         encoded = base64.encodestring(pickled).strip().decode('ascii')
         cursor.execute("SELECT cache_key, expires FROM %s "
                        "WHERE cache_key = %%s" % table, [key])

@@ -1,13 +1,11 @@
 """
 Tools for sending email.
 """
-
 from __future__ import unicode_literals
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.importlib import import_module
-from django.utils.py3 import n
 
 # Imported for backwards compatibility, and for the sake
 # of a cleaner namespace. These symbols used to be in

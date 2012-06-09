@@ -30,7 +30,7 @@ from django.utils.cache import get_max_age
 from django.utils.encoding import iri_to_uri
 from django.utils.html import escape
 from django.utils.http import urlencode
-from django.utils.py3 import urljoin, PY3, text_type
+from django.utils.py3 import urljoin, text_type
 
 # local test models
 from .models import (Article, BarAccount, CustomArticle, EmptyModel, FooAccount,

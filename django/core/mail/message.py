@@ -14,7 +14,7 @@ from email.utils import formatdate, getaddresses, formataddr, parseaddr
 
 from django.conf import settings
 from django.core.mail.utils import DNS_NAME
-from django.utils.encoding import smart_str, smart_unicode, force_unicode
+from django.utils.encoding import smart_str, force_unicode
 from django.utils.py3 import StringIO, string_types, PY3
 
 # Don't BASE64-encode UTF-8 messages so that we avoid unwanted attention from

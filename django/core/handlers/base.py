@@ -7,7 +7,7 @@ from django.core import signals
 from django.utils.encoding import force_unicode
 from django.utils.importlib import import_module
 from django.utils.log import getLogger
-from django.utils.py3 import func_name_name, reraise
+from django.utils.py3 import reraise
 
 logger = getLogger('django.request')
 
@@ -126,7 +126,7 @@ class BaseHandler(object):
                 # Complain if the view returned None (a common error).
                 if response is None:
                     try:
-                        view_name = getattr(callback, func_name_name) # If it's a function
+                        view_name = callback.__name__ # If it's a function
                     except AttributeError:
                         view_name = callback.__class__.__name__ + '.__call__' # If it's a class
                     raise ValueError("The view %s.%s didn't return an HttpResponse object." % (callback.__module__, view_name))

@@ -35,7 +35,7 @@ from decimal import Decimal
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.forms import *
 from django.test import SimpleTestCase
-from django.utils.py3 import string_types, pickle, PY3
+from django.utils.py3 import string_types, pickle
 
 def fix_os_paths(x):
     if isinstance(x, string_types):

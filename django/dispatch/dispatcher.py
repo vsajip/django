@@ -3,13 +3,13 @@ import sys
 import threading
 
 from django.dispatch import saferef
-from django.utils.py3 import im_func_name, im_self_name, xrange
+from django.utils.py3 import xrange
 
 WEAKREF_TYPES = (weakref.ReferenceType, saferef.BoundMethodWeakref)
 
 def _make_id(target):
-    if hasattr(target, im_func_name):
-        return (id(getattr(target, im_self_name)), id(getattr(target, im_func_name)))
+    if hasattr(target, '__func__'):
+        return (id(target.__self__), id(target.__func__))
     return id(target)
 
 class Signal(object):
