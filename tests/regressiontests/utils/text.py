@@ -24,10 +24,10 @@ class TestUtilsText(SimpleTestCase):
         # Ensure that we normalize our unicode data first
         nfc = text.Truncator('o\xfco\xfco\xfco\xfc')
         nfd = text.Truncator('ou\u0308ou\u0308ou\u0308ou\u0308')
-        self.assertEqual('o\xfco\xfco\xfco\xfc', nfc.chars(8))
-        self.assertEqual('o\xfco\xfco\xfco\xfc', nfd.chars(8))
-        self.assertEqual('o\xfc...', nfc.chars(5))
-        self.assertEqual('o\xfc...', nfd.chars(5))
+        self.assertEqual('oüoüoüoü', nfc.chars(8))
+        self.assertEqual('oüoüoüoü', nfd.chars(8))
+        self.assertEqual('oü...', nfc.chars(5))
+        self.assertEqual('oü...', nfd.chars(5))
 
         # Ensure the final length is calculated correctly when there are
         # combining characters with no precomposed form, and that combining

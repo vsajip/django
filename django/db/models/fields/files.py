@@ -276,7 +276,6 @@ class FileField(Field):
         setattr(cls, self.name, self.descriptor_class(self))
 
     def get_directory_name(self):
-        # django3: was smart_str, for some reason ...
         return os.path.normpath(force_unicode(datetime.datetime.now().strftime(smart_text(self.upload_to))))
 
     def get_filename(self, filename):

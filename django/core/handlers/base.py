@@ -152,10 +152,18 @@ class BaseHandler(object):
                         callback, param_dict = resolver.resolve404()
                         response = callback(request, **param_dict)
                     except:
-                        try:
-                            response = self.handle_uncaught_exception(request, resolver, sys.exc_info())
-                        finally:
-                            signals.got_request_exception.send(sender=self.__class__, request=request)
+                        # If an exception now occurs in
+                        # handle_uncaught_exception - e.g. if template 500.html
+                        # doesn't exist - that exception will overwrite
+                        # sys.exc_info() in 3.x, but not in 2.x. This will
+                        # cause the wrong exception to be registered on 3.x,
+                        # and test_bad_404_template will fail on 3.x.
+                        # Hence the signal needs to be sent before, rather than
+                        # after, the handle_uncaught_exception call.
+                        signals.got_request_exception.send(sender=self.__class__,
+                            request=request)
+                        response = self.handle_uncaught_exception(request,
+                            resolver, sys.exc_info())
             except exceptions.PermissionDenied:
                 logger.warning(
                     'Forbidden (Permission denied): %s', request.path,

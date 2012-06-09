@@ -21,7 +21,7 @@ class TextTests(TestCase):
         self.assertEqual(get_text_list(['a']), 'a')
         self.assertEqual(get_text_list([]), '')
         with override('ar'):
-            self.assertEqual(get_text_list(['a', 'b', 'c']), "a\u060c b \u0623\u0648 c")
+            self.assertEqual(get_text_list(['a', 'b', 'c']), "a، b أو c")
 
     def test_smart_split(self):
 
@@ -61,7 +61,6 @@ class TextTests(TestCase):
             ["cut:','|cut:' '"])
 
     def test_urlquote(self):
-
         self.assertEqual(urlquote('Paris & Orl\xe9ans'),
             'Paris%20%26%20Orl%C3%A9ans')
         self.assertEqual(urlquote('Paris & Orl\xe9ans', safe="&"),

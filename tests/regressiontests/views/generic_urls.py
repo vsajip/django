@@ -32,16 +32,16 @@ urlpatterns = patterns('',
     (r'^accounts/logout/$', 'django.contrib.auth.views.logout'),
 
     # Special URLs for particular regression cases.
-    url('^\u4e2d\u6587/$', 'regressiontests.views.views.redirect'),
-    url('^\u4e2d\u6587/target/$', 'regressiontests.views.views.index_page'),
+    url('^中文/$', 'regressiontests.views.views.redirect'),
+    url('^中文/target/$', 'regressiontests.views.views.index_page'),
 )
 
 # redirects, both temporary and permanent, with non-ASCII targets
 urlpatterns += patterns('',
     ('^nonascii_redirect/$', RedirectView.as_view(
-        url='/\u4e2d\u6587/target/', permanent=False)),
+        url='/中文/target/', permanent=False)),
     ('^permanent_nonascii_redirect/$', RedirectView.as_view(
-        url='/\u4e2d\u6587/target/', permanent=True)),
+        url='/中文/target/', permanent=True)),
 )
 
 urlpatterns += patterns('regressiontests.views.views',

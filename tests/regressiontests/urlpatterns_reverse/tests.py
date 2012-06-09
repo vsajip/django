@@ -4,7 +4,6 @@ Unit tests for reverse URL lookups.
 from __future__ import absolute_import
 
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.core.exceptions import ImproperlyConfigured, ViewDoesNotExist
 from django.core.urlresolvers import (reverse, resolve, NoReverseMatch,
     Resolver404, ResolverMatch, RegexURLResolver, RegexURLPattern)
@@ -12,6 +11,7 @@ from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect
 from django.shortcuts import redirect
 from django.test import TestCase
 from django.utils import unittest
+from django.contrib.auth.models import User
 
 from . import urlconf_outer, urlconf_inner, middleware, views
 

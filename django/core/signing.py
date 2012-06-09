@@ -130,7 +130,6 @@ def dumps(obj, key=None, salt='django.core.signing', serializer=JSONSerializer, 
     base64d = b64_encode(data)
     if is_compressed:
         base64d = '.' + base64d
-    # django3: added decode()
     return TimestampSigner(key, salt=salt).sign(base64d.decode('utf-8'))
 
 
@@ -190,7 +189,6 @@ class TimestampSigner(Signer):
             value = '%s%s%s' % (value, self.sep, self.timestamp())
         else:
             value = smart_str('%s%s%s' % (value, self.sep, self.timestamp()))
-        # django3: added decode()
         return '%s%s%s' % (value, self.sep, self.signature(value).decode('utf-8'))
 
     def unsign(self, value, max_age=None):

@@ -3,7 +3,6 @@ A Python "serializer". Doesn't do much serializing per se -- just converts to
 and from basic Python data types (lists, dicts, strings, etc.). Useful as a basis for
 other serializers.
 """
-
 from __future__ import unicode_literals
 
 from django.conf import settings

@@ -3,7 +3,6 @@ from django.template import (Context, RequestContext,
                              loader, TemplateDoesNotExist)
 from django.views.decorators.csrf import requires_csrf_token
 
-
 # This can be called when CsrfViewMiddleware.process_view has not run,
 # therefore need @requires_csrf_token in case the template needs
 # {% csrf_token %}.
@@ -31,7 +30,6 @@ def server_error(request, template_name='500.html'):
     """
     t = loader.get_template(template_name) # You need to create a 500.html template.
     return http.HttpResponseServerError(t.render(Context({})))
-
 
 # This can be called when CsrfViewMiddleware.process_view has not run,
 # therefore need @requires_csrf_token in case the template needs

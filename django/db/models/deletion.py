@@ -6,6 +6,7 @@ from django.db.models import signals, sql
 from django.utils.datastructures import SortedDict
 from django.utils.py3 import iteritems, itervalues, dictkeys
 
+
 class ProtectedError(IntegrityError):
     def __init__(self, msg, protected_objects):
         self.protected_objects = protected_objects

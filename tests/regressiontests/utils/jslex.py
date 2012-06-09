@@ -25,7 +25,7 @@ class JsTokensTest(TestCase):
         (''' 'hello' "hello" ''', ["string 'hello'", 'string "hello"']),
         (r""" 'don\'t' "don\"t" '"' "'" '\'' "\"" """,
          [r"""string 'don\'t'""", r'''string "don\"t"''', r"""string '"'""", r'''string "'"''', r"""string '\''""", r'''string "\""''']),
-        ('"\u0183u\u0131x\u01dd\u2142 \u0287d\u0131\u0279\u0254s\u0250\u028c\u0250\u017f\\""', ['string "\u0183u\u0131x\u01dd\u2142 \u0287d\u0131\u0279\u0254s\u0250\u028c\u0250\u017f\\""']),
+        (r'"ƃuıxǝ⅂ ʇdıɹɔsɐʌɐſ\""', [r'string "ƃuıxǝ⅂ ʇdıɹɔsɐʌɐſ\""']),
         # comments
         ("a//b", ["id a", "linecomment //b"]),
         ("/****/a/=2//hello", ["comment /****/", "id a", "punct /=", "dnum 2", "linecomment //hello"]),

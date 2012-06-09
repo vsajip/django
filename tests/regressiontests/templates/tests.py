@@ -13,7 +13,6 @@ import time
 import os
 import sys
 import traceback
-import warnings
 
 from django import template
 from django.template import base as template_base, RequestContext, Template, Context
@@ -25,7 +24,7 @@ from django.test.utils import (setup_test_template_loader,
     restore_template_loaders, override_settings)
 from django.utils import unittest
 from django.utils.formats import date_format
-from django.utils.py3 import urljoin, iteritems, PY3
+from django.utils.py3 import urljoin, iteritems, dictitems, PY3
 from django.utils.translation import activate, deactivate, ugettext as _
 from django.utils.safestring import mark_safe
 from django.utils.tzinfo import LocalTimezone
@@ -148,7 +147,7 @@ class SilentAttrClass(object):
 class UTF8Class:
     "Class whose __str__ returns non-ASCII data"
     def __str__(self):
-        result = '\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111'
+        result = 'ŠĐĆŽćžšđ'
         if not PY3: result = result.encode('utf-8')
         return result
 
@@ -197,13 +196,13 @@ class Templates(unittest.TestCase):
 
         # UTF-8 bytestrings are permitted.
         test_template_sources(b'\xc3\x85ngstr\xc3\xb6m', template_dirs,
-                              ['/dir1/\xc5ngstr\xf6m'.encode('utf-8'), '/dir2/\xc5ngstr\xf6m'.encode('utf-8')])
+                              ['/dir1/Ångström'.encode('utf-8'), '/dir2/Ångström'.encode('utf-8')])
         # Unicode strings are permitted.
-        test_template_sources('\xc5ngstr\xf6m', template_dirs,
-                              ['/dir1/\xc5ngstr\xf6m'.encode('utf-8'), '/dir2/\xc5ngstr\xf6m'.encode('utf-8')])
-        test_template_sources('\xc5ngstr\xf6m', ['/Stra\xdfe'], ['/Stra\xdfe/\xc5ngstr\xf6m'.encode('utf-8')])
+        test_template_sources('Ångström', template_dirs,
+                              ['/dir1/Ångström'.encode('utf-8'), '/dir2/Ångström'.encode('utf-8')])
+        test_template_sources('Ångström', [b'/Stra\xc3\x9fe'], ['/Straße/Ångström'.encode('utf-8')])
         test_template_sources(b'\xc3\x85ngstr\xc3\xb6m', ['/Stra\xdfe'.encode('utf-8')],
-                              ['/Stra\xdfe/\xc5ngstr\xf6m'.encode('utf-8')])
+                              ['/Straße/Ångström'.encode('utf-8')])
         # Invalid UTF-8 encoding in bytestrings is not. Should raise a
         # semi-useful error message.
         test_template_sources(b'\xc3\xc3', template_dirs, UnicodeDecodeError)
@@ -408,7 +407,7 @@ class Templates(unittest.TestCase):
         )
 
         failures = []
-        tests = list(template_tests.items())
+        tests = dictitems(template_tests)
         tests.sort()
 
         # Turn TEMPLATE_DEBUG off, because tests assume that.
@@ -1250,11 +1249,11 @@ class Templates(unittest.TestCase):
             'i18n02': ('{% load i18n %}{% trans "xxxyyyxxx" %}', {}, "xxxyyyxxx"),
 
             # simple translation of a variable
-            'i18n03': ('{% load i18n %}{% blocktrans %}{{ anton }}{% endblocktrans %}', {'anton': b'\xc3\x85'}, "\xc5"),
+            'i18n03': ('{% load i18n %}{% blocktrans %}{{ anton }}{% endblocktrans %}', {'anton': b'\xc3\x85'}, "Å"),
 
             # simple translation of a variable and filter
-            'i18n04': ('{% load i18n %}{% blocktrans with berta=anton|lower %}{{ berta }}{% endblocktrans %}', {'anton': b'\xc3\x85'}, '\xe5'),
-            'legacyi18n04': ('{% load i18n %}{% blocktrans with anton|lower as berta %}{{ berta }}{% endblocktrans %}', {'anton': b'\xc3\x85'}, '\xe5'),
+            'i18n04': ('{% load i18n %}{% blocktrans with berta=anton|lower %}{{ berta }}{% endblocktrans %}', {'anton': b'\xc3\x85'}, 'å'),
+            'legacyi18n04': ('{% load i18n %}{% blocktrans with anton|lower as berta %}{{ berta }}{% endblocktrans %}', {'anton': b'\xc3\x85'}, 'å'),
 
             # simple translation of a string with interpolation
             'i18n05': ('{% load i18n %}{% blocktrans %}xxx{{ anton }}xxx{% endblocktrans %}', {'anton': 'yyy'}, "xxxyyyxxx"),
@@ -1290,14 +1289,14 @@ class Templates(unittest.TestCase):
 
             # Escaping inside blocktrans and trans works as if it was directly in the
             # template.
-            'i18n17': ('{% load i18n %}{% blocktrans with berta=anton|escape %}{{ berta }}{% endblocktrans %}', {'anton': '\u03b1 & \u03b2'}, '\u03b1 &amp; \u03b2'),
-            'i18n18': ('{% load i18n %}{% blocktrans with berta=anton|force_escape %}{{ berta }}{% endblocktrans %}', {'anton': '\u03b1 & \u03b2'}, '\u03b1 &amp; \u03b2'),
+            'i18n17': ('{% load i18n %}{% blocktrans with berta=anton|escape %}{{ berta }}{% endblocktrans %}', {'anton': 'α & β'}, 'α &amp; β'),
+            'i18n18': ('{% load i18n %}{% blocktrans with berta=anton|force_escape %}{{ berta }}{% endblocktrans %}', {'anton': 'α & β'}, 'α &amp; β'),
             'i18n19': ('{% load i18n %}{% blocktrans %}{{ andrew }}{% endblocktrans %}', {'andrew': 'a & b'}, 'a &amp; b'),
             'i18n20': ('{% load i18n %}{% trans andrew %}', {'andrew': 'a & b'}, 'a &amp; b'),
             'i18n21': ('{% load i18n %}{% blocktrans %}{{ andrew }}{% endblocktrans %}', {'andrew': mark_safe('a & b')}, 'a & b'),
             'i18n22': ('{% load i18n %}{% trans andrew %}', {'andrew': mark_safe('a & b')}, 'a & b'),
-            'legacyi18n17': ('{% load i18n %}{% blocktrans with anton|escape as berta %}{{ berta }}{% endblocktrans %}', {'anton': '\u03b1 & \u03b2'}, '\u03b1 &amp; \u03b2'),
-            'legacyi18n18': ('{% load i18n %}{% blocktrans with anton|force_escape as berta %}{{ berta }}{% endblocktrans %}', {'anton': '\u03b1 & \u03b2'}, '\u03b1 &amp; \u03b2'),
+            'legacyi18n17': ('{% load i18n %}{% blocktrans with anton|escape as berta %}{{ berta }}{% endblocktrans %}', {'anton': 'α & β'}, 'α &amp; β'),
+            'legacyi18n18': ('{% load i18n %}{% blocktrans with anton|force_escape as berta %}{{ berta }}{% endblocktrans %}', {'anton': 'α & β'}, 'α &amp; β'),
 
             # Use filters with the {% trans %} tag, #5972
             'i18n23': ('{% load i18n %}{% trans "Page not found"|capfirst|slice:"6:" %}', {'LANGUAGE_CODE': 'de'}, 'nicht gefunden'),
@@ -1313,8 +1312,8 @@ class Templates(unittest.TestCase):
             'legacyi18n27': ('{% load i18n %}{% blocktrans count number as counter %}{{ counter }} result{% plural %}{{ counter }} results{% endblocktrans %}', {'number': 1, 'LANGUAGE_CODE': 'ru'}, '1 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442'),
 
             # simple translation of multiple variables
-            'i18n28': ('{% load i18n %}{% blocktrans with a=anton b=berta %}{{ a }} + {{ b }}{% endblocktrans %}', {'anton': '\u03b1', 'berta': '\u03b2'}, '\u03b1 + \u03b2'),
-            'legacyi18n28': ('{% load i18n %}{% blocktrans with anton as a and berta as b %}{{ a }} + {{ b }}{% endblocktrans %}', {'anton': '\u03b1', 'berta': '\u03b2'}, '\u03b1 + \u03b2'),
+            'i18n28': ('{% load i18n %}{% blocktrans with a=anton b=berta %}{{ a }} + {{ b }}{% endblocktrans %}', {'anton': 'α', 'berta': 'β'}, 'α + β'),
+            'legacyi18n28': ('{% load i18n %}{% blocktrans with anton as a and berta as b %}{{ a }} + {{ b }}{% endblocktrans %}', {'anton': 'α', 'berta': 'β'}, 'α + β'),
 
             # retrieving language information
             'i18n28_2': ('{% load i18n %}{% get_language_info for "de" as l %}{{ l.code }}: {{ l.name }}/{{ l.name_local }} bidi={{ l.bidi }}', {}, 'de: German/Deutsch bidi=False'),
@@ -1509,11 +1508,11 @@ class Templates(unittest.TestCase):
             'url02c': ("{% url 'regressiontests.templates.views.client_action' client.id 'update' %}", {'client': {'id': 1}}, '/url_tag/client/1/update/'),
             'url03': ('{% url "regressiontests.templates.views.index" %}', {}, '/url_tag/'),
             'url04': ('{% url "named.client" client.id %}', {'client': {'id': 1}}, '/url_tag/named-client/1/'),
-            'url05': ('{% url "\u043c\u0435\u0442\u043a\u0430_\u043e\u043f\u0435\u0440\u0430\u0442\u043e\u0440\u0430" v %}', {'v': '\u03a9'}, '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
-            'url06': ('{% url "\u043c\u0435\u0442\u043a\u0430_\u043e\u043f\u0435\u0440\u0430\u0442\u043e\u0440\u0430_2" tag=v %}', {'v': '\u03a9'}, '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
-            'url07': ('{% url "regressiontests.templates.views.client2" tag=v %}', {'v': '\u03a9'}, '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
-            'url08': ('{% url "\u043c\u0435\u0442\u043a\u0430_\u043e\u043f\u0435\u0440\u0430\u0442\u043e\u0440\u0430" v %}', {'v': '\u03a9'}, '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
-            'url09': ('{% url "\u043c\u0435\u0442\u043a\u0430_\u043e\u043f\u0435\u0440\u0430\u0442\u043e\u0440\u0430_2" tag=v %}', {'v': '\u03a9'}, '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
+            'url05': ('{% url "метка_оператора" v %}', {'v': 'Ω'}, '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
+            'url06': ('{% url "метка_оператора_2" tag=v %}', {'v': 'Ω'}, '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
+            'url07': ('{% url "regressiontests.templates.views.client2" tag=v %}', {'v': 'Ω'}, '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
+            'url08': ('{% url "метка_оператора" v %}', {'v': 'Ω'}, '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
+            'url09': ('{% url "метка_оператора_2" tag=v %}', {'v': 'Ω'}, '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
             'url10': ('{% url "regressiontests.templates.views.client_action" id=client.id action="two words" %}', {'client': {'id': 1}}, '/url_tag/client/1/two%20words/'),
             'url11': ('{% url "regressiontests.templates.views.client_action" id=client.id action="==" %}', {'client': {'id': 1}}, '/url_tag/client/1/==/'),
             'url12': ('{% url "regressiontests.templates.views.client_action" id=client.id action="," %}', {'client': {'id': 1}}, '/url_tag/client/1/,/'),

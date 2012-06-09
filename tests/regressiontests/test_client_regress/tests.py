@@ -2,6 +2,8 @@
 """
 Regression tests for the Test Client, especially the customized assertions.
 """
+from __future__ import unicode_literals
+
 import os
 
 from django.conf import settings
@@ -12,10 +14,9 @@ from django.template import (TemplateDoesNotExist, TemplateSyntaxError,
 import django.template.context
 from django.test import Client, TestCase
 from django.test.client import encode_file, RequestFactory
-from django.test.utils import ContextList, override_settings
+from django.test.utils import ContextList, override_settings, str_prefix
 from django.template.response import SimpleTemplateResponse
 from django.http import HttpResponse
-
 
 @override_settings(
     TEMPLATE_DIRS=(os.path.join(os.path.dirname(__file__), 'templates'),)
@@ -117,14 +118,14 @@ class AssertContainsTests(TestCase):
         "Unicode characters can be found in template context"
         #Regression test for #10183
         r = self.client.get('/test_client_regress/check_unicode/')
-        self.assertContains(r, u'さかき')
+        self.assertContains(r, 'さかき')
         self.assertContains(r, b'\xe5\xb3\xa0'.decode('utf-8'))
 
     def test_unicode_not_contains(self):
         "Unicode characters can be searched for, and not found in template context"
         #Regression test for #10183
         r = self.client.get('/test_client_regress/check_unicode/')
-        self.assertNotContains(r, u'はたけ')
+        self.assertNotContains(r, 'はたけ')
         self.assertNotContains(r, b'\xe3\x81\xaf\xe3\x81\x9f\xe3\x81\x91'.decode('utf-8'))
 
     def test_assert_contains_renders_template_response(self):
@@ -488,11 +489,11 @@ class AssertFormErrorTests(TestCase):
         try:
             self.assertFormError(response, 'form', 'email', 'Some error.')
         except AssertionError as e:
-            self.assertIn("The field 'email' on form 'form' in context 0 does not contain the error 'Some error.' (actual errors: [u'Enter a valid e-mail address.'])", str(e))
+            self.assertIn(str_prefix("The field 'email' on form 'form' in context 0 does not contain the error 'Some error.' (actual errors: [%(_)s'Enter a valid e-mail address.'])"), str(e))
         try:
             self.assertFormError(response, 'form', 'email', 'Some error.', msg_prefix='abc')
         except AssertionError as e:
-            self.assertIn("abc: The field 'email' on form 'form' in context 0 does not contain the error 'Some error.' (actual errors: [u'Enter a valid e-mail address.'])", str(e))
+            self.assertIn(str_prefix("abc: The field 'email' on form 'form' in context 0 does not contain the error 'Some error.' (actual errors: [%(_)s'Enter a valid e-mail address.'])"), str(e))
 
     def test_unknown_nonfield_error(self):
         """
@@ -609,7 +610,6 @@ class ExceptionTests(TestCase):
             self.fail("Staff should be able to visit this page")
 
 
-@override_settings(TEMPLATE_DIRS=())
 class TemplateExceptionTests(TestCase):
     def setUp(self):
         # Reset the loaders so they don't try to render cached templates.
@@ -618,6 +618,7 @@ class TemplateExceptionTests(TestCase):
                 if hasattr(template_loader, 'reset'):
                     template_loader.reset()
 
+    @override_settings(TEMPLATE_DIRS=(),)
     def test_no_404_template(self):
         "Missing templates are correctly reported by test client"
         try:
@@ -626,9 +627,11 @@ class TemplateExceptionTests(TestCase):
         except TemplateDoesNotExist:
             pass
 
+    @override_settings(
+        TEMPLATE_DIRS=(os.path.join(os.path.dirname(__file__), 'bad_templates'),)
+    )
     def test_bad_404_template(self):
         "Errors found when rendering 404 error templates are re-raised"
-        settings.TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), 'bad_templates'),)
         try:
             response = self.client.get("/no_such_view/")
             self.fail("Should get error about syntax error in template")
@@ -782,7 +785,7 @@ class RequestMethodStringDataTests(TestCase):
     def test_post(self):
         "Request a view with string data via request method POST"
         # Regression test for #11371
-        data = u'{"test": "json"}'
+        data = '{"test": "json"}'
         response = self.client.post('/test_client_regress/request_methods/', data=data, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, b'request method: POST')
@@ -790,7 +793,7 @@ class RequestMethodStringDataTests(TestCase):
     def test_put(self):
         "Request a view with string data via request method PUT"
         # Regression test for #11371
-        data = u'{"test": "json"}'
+        data = '{"test": "json"}'
         response = self.client.put('/test_client_regress/request_methods/', data=data, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, b'request method: PUT')
@@ -851,7 +854,7 @@ class UnicodePayloadTests(TestCase):
     def test_simple_unicode_payload(self):
         "A simple ASCII-only unicode JSON document can be POSTed"
         # Regression test for #10571
-        json = u'{"english": "mountain pass"}'
+        json = b'{"english": "mountain pass"}'
         response = self.client.post("/test_client_regress/parse_unicode_json/", json,
                                     content_type="application/json")
         self.assertEqual(response.content, json)
@@ -859,7 +862,7 @@ class UnicodePayloadTests(TestCase):
     def test_unicode_payload_utf8(self):
         "A non-ASCII unicode data encoded as UTF-8 can be POSTed"
         # Regression test for #10571
-        json = u'{"dog": "собака"}'
+        json = '{"dog": "собака"}'
         response = self.client.post("/test_client_regress/parse_unicode_json/", json,
                                     content_type="application/json; charset=utf-8")
         self.assertEqual(response.content, json.encode('utf-8'))
@@ -867,7 +870,7 @@ class UnicodePayloadTests(TestCase):
     def test_unicode_payload_utf16(self):
         "A non-ASCII unicode data encoded as UTF-16 can be POSTed"
         # Regression test for #10571
-        json = u'{"dog": "собака"}'
+        json = '{"dog": "собака"}'
         response = self.client.post("/test_client_regress/parse_unicode_json/", json,
                                     content_type="application/json; charset=utf-16")
         self.assertEqual(response.content, json.encode('utf-16'))
@@ -875,7 +878,7 @@ class UnicodePayloadTests(TestCase):
     def test_unicode_payload_non_utf(self):
         "A non-ASCII unicode data as a non-UTF based encoding can be POSTed"
         #Regression test for #10571
-        json = u'{"dog": "собака"}'
+        json = '{"dog": "собака"}'
         response = self.client.post("/test_client_regress/parse_unicode_json/", json,
                                     content_type="application/json; charset=koi8-r")
         self.assertEqual(response.content, json.encode('koi8-r'))
@@ -888,23 +891,23 @@ class DummyFile(object):
 
 class UploadedFileEncodingTest(TestCase):
     def test_file_encoding(self):
-        encoded_file = encode_file('TEST_BOUNDARY', 'TEST_KEY', DummyFile('test_name.bin'))
+        encoded_file = encode_file(b'TEST_BOUNDARY', 'TEST_KEY', DummyFile('test_name.bin'))
         self.assertEqual(b'--TEST_BOUNDARY', encoded_file[0])
         self.assertEqual(b'Content-Disposition: form-data; name="TEST_KEY"; filename="test_name.bin"', encoded_file[1])
-        self.assertEqual(b'TEST_FILE_CONTENT', encoded_file[-1])
+        self.assertEqual('TEST_FILE_CONTENT', encoded_file[-1])
 
     def test_guesses_content_type_on_file_encoding(self):
         self.assertEqual(b'Content-Type: application/octet-stream',
-                         encode_file('IGNORE', 'IGNORE', DummyFile("file.bin"))[2])
+                         encode_file(b'IGNORE', 'IGNORE', DummyFile("file.bin"))[2])
         self.assertEqual(b'Content-Type: text/plain',
-                         encode_file('IGNORE', 'IGNORE', DummyFile("file.txt"))[2])
-        self.assertIn(encode_file('IGNORE', 'IGNORE', DummyFile("file.zip"))[2], (
+                         encode_file(b'IGNORE', 'IGNORE', DummyFile("file.txt"))[2])
+        self.assertIn(encode_file(b'IGNORE', 'IGNORE', DummyFile("file.zip"))[2], (
                         b'Content-Type: application/x-compress',
                         b'Content-Type: application/x-zip',
                         b'Content-Type: application/x-zip-compressed',
                         b'Content-Type: application/zip',))
         self.assertEqual(b'Content-Type: application/octet-stream',
-                         encode_file('IGNORE', 'IGNORE', DummyFile("file.unknown"))[2])
+                         encode_file(b'IGNORE', 'IGNORE', DummyFile("file.unknown"))[2])
 
 class RequestHeadersTest(TestCase):
     def test_client_headers(self):
