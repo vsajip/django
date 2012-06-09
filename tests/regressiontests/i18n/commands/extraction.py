@@ -3,7 +3,6 @@
 import os
 import re
 import shutil
-import sys
 
 from django.core import management
 from django.test import TestCase

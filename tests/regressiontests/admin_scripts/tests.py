@@ -14,9 +14,9 @@ import sys
 from django import conf, bin, get_version
 from django.conf import settings
 from django.db import connection
-from django.test import LiveServerTestCase
 from django.test.simple import DjangoTestSuiteRunner
 from django.utils import unittest
+from django.test import LiveServerTestCase
 from django.utils.py3 import PY3
 
 test_dir = os.path.dirname(os.path.dirname(__file__))

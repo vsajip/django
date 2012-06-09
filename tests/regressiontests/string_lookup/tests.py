@@ -2,7 +2,6 @@
 from __future__ import absolute_import, unicode_literals
 
 from django.test import TestCase
-
 from .models import Foo, Whiz, Bar, Article, Base, Child
 
 
@@ -50,7 +49,7 @@ class StringLookupTests(TestCase):
         A properly configured UTF-8 database can handle this.
         """
 
-        fx = Foo(name='Bjorn', friend='Fran\xe7ois')
+        fx = Foo(name='Bjorn', friend='François')
         fx.save()
         self.assertEqual(Foo.objects.get(friend__contains='\xe7'), fx)
 

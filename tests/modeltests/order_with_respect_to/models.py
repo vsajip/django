@@ -3,6 +3,7 @@ Tests for the order_with_respect_to Meta attribute.
 """
 
 from django.db import models
+
 from django.utils.py3 import text_type
 
 class Question(models.Model):

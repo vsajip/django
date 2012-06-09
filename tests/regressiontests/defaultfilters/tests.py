@@ -7,7 +7,7 @@ import decimal
 from django.template.defaultfilters import *
 from django.test import TestCase
 from django.utils import unittest, translation
-from django.utils.py3 import text_type
+from django.utils.py3 import text_type, PY3
 from django.utils.safestring import SafeData
 
 
@@ -38,7 +38,7 @@ class DefaultFiltersTests(TestCase):
         self.assertEqual(floatformat(13.1031, 'bar'), '13.1031')
         self.assertEqual(floatformat(18.125, 2), '18.13')
         self.assertEqual(floatformat('foo', 'bar'), '')
-        self.assertEqual(floatformat('\xbfC\xf3mo esta usted?'), '')
+        self.assertEqual(floatformat('¿Cómo esta usted?'), '')
         self.assertEqual(floatformat(None), '')
 
         # Check that we're not converting to scientific notation.
@@ -82,9 +82,11 @@ class DefaultFiltersTests(TestCase):
     # This fails because of Python's float handling. Floats with many zeroes
     # after the decimal point should be passed in as another type such as
     # unicode or Decimal.
-    @unittest.expectedFailure
     def test_floatformat_fail(self):
         self.assertEqual(floatformat(1.00000000000000015, 16), '1.0000000000000002')
+
+    if not PY3:
+        test_floatformat_fail = unittest.expectedFailure(test_floatformat_fail)
 
     def test_addslashes(self):
         self.assertEqual(addslashes('"double quotes" and \'single quotes\''),
@@ -118,7 +120,7 @@ class DefaultFiltersTests(TestCase):
                           '1. line 1\n2. line 2')
         self.assertEqual(linenumbers('\n'.join(['x'] * 10)),
                           '01. x\n02. x\n03. x\n04. x\n05. x\n06. x\n07. '
-                            'x\n08. x\n09. x\n10. x')
+                          'x\n08. x\n09. x\n10. x')
 
     def test_lower(self):
         self.assertEqual(lower('TEST'), 'test')
@@ -164,7 +166,7 @@ class DefaultFiltersTests(TestCase):
         self.assertEqual(truncatewords_html(
             '<p>one <a href="#">two - three <br>four</a> five</p>', 0), '')
         self.assertEqual(truncatewords_html('<p>one <a href="#">two - '
-                                              'three <br>four</a> five</p>', 2),
+            'three <br>four</a> five</p>', 2),
             '<p>one <a href="#">two ...</a></p>')
         self.assertEqual(truncatewords_html(
             '<p>one <a href="#">two - three <br>four</a> five</p>', 4),
@@ -251,9 +253,9 @@ class DefaultFiltersTests(TestCase):
         self.assertEqual(urlize('http://en.wikipedia.org/wiki/Caf%C3%A9'),
             '<a href="http://en.wikipedia.org/wiki/Caf%C3%A9" rel="nofollow">'
             'http://en.wikipedia.org/wiki/Caf%C3%A9</a>')
-        self.assertEqual(urlize('http://en.wikipedia.org/wiki/Caf\xe9'),
+        self.assertEqual(urlize('http://en.wikipedia.org/wiki/Café'),
             '<a href="http://en.wikipedia.org/wiki/Caf%C3%A9" rel="nofollow">'
-            'http://en.wikipedia.org/wiki/Caf\xe9</a>')
+            'http://en.wikipedia.org/wiki/Café</a>')
 
         # Check urlize keeps balanced parentheses - see #11911
         self.assertEqual(urlize('http://en.wikipedia.org/wiki/Django_(web_framework)'),
@@ -306,12 +308,12 @@ class DefaultFiltersTests(TestCase):
         self.assertEqual(wordwrap('this is a long paragraph of text that '
             'really needs to be wrapped I\'m afraid', 14),
             "this is a long\nparagraph of\ntext that\nreally needs\nto be "\
-              "wrapped\nI'm afraid")
+            "wrapped\nI'm afraid")
 
         self.assertEqual(wordwrap('this is a short paragraph of text.\n  '
             'But this line should be indented', 14),
             'this is a\nshort\nparagraph of\ntext.\n  But this\nline '
-              'should be\nindented')
+            'should be\nindented')
 
         self.assertEqual(wordwrap('this is a short paragraph of text.\n  '
             'But this line should be indented',15), 'this is a short\n'
@@ -342,7 +344,7 @@ class DefaultFiltersTests(TestCase):
         self.assertEqual(
             force_escape('<some html & special characters > here \u0110\xc5\u20ac\xa3'),
             '&lt;some html &amp; special characters &gt; here'
-              ' \u0110\xc5\u20ac\xa3')
+            ' \u0110\xc5\u20ac\xa3')
 
     def test_linebreaks(self):
         self.assertEqual(linebreaks_filter('line 1'), '<p>line 1</p>')
@@ -437,20 +439,20 @@ class DefaultFiltersTests(TestCase):
         self.assertEqual(
             unordered_list(['item 1', ['item 1.1', 'item1.2'], 'item 2']),
             '\t<li>item 1\n\t<ul>\n\t\t<li>item 1.1</li>\n\t\t<li>item1.2'
-              '</li>\n\t</ul>\n\t</li>\n\t<li>item 2</li>')
+            '</li>\n\t</ul>\n\t</li>\n\t<li>item 2</li>')
 
         self.assertEqual(
             unordered_list(['item 1', ['item 1.1', ['item 1.1.1',
                                                       ['item 1.1.1.1']]]]),
             '\t<li>item 1\n\t<ul>\n\t\t<li>item 1.1\n\t\t<ul>\n\t\t\t<li>'
-              'item 1.1.1\n\t\t\t<ul>\n\t\t\t\t<li>item 1.1.1.1</li>\n\t\t\t'
-              '</ul>\n\t\t\t</li>\n\t\t</ul>\n\t\t</li>\n\t</ul>\n\t</li>')
+            'item 1.1.1\n\t\t\t<ul>\n\t\t\t\t<li>item 1.1.1.1</li>\n\t\t\t'
+            '</ul>\n\t\t\t</li>\n\t\t</ul>\n\t\t</li>\n\t</ul>\n\t</li>')
 
         self.assertEqual(unordered_list(
             ['States', ['Kansas', ['Lawrence', 'Topeka'], 'Illinois']]),
             '\t<li>States\n\t<ul>\n\t\t<li>Kansas\n\t\t<ul>\n\t\t\t<li>'
-              'Lawrence</li>\n\t\t\t<li>Topeka</li>\n\t\t</ul>\n\t\t</li>'
-              '\n\t\t<li>Illinois</li>\n\t</ul>\n\t</li>')
+            'Lawrence</li>\n\t\t\t<li>Topeka</li>\n\t\t</ul>\n\t\t</li>'
+            '\n\t\t<li>Illinois</li>\n\t</ul>\n\t</li>')
 
         class ULItem(object):
             def __init__(self, title):
@@ -471,7 +473,7 @@ class DefaultFiltersTests(TestCase):
 
         self.assertEqual(unordered_list(['item 1', [['item 1.1', []],
             ['item 1.2', []]]]), '\t<li>item 1\n\t<ul>\n\t\t<li>item 1.1'
-               '</li>\n\t\t<li>item 1.2</li>\n\t</ul>\n\t</li>')
+            '</li>\n\t\t<li>item 1.2</li>\n\t</ul>\n\t</li>')
 
         self.assertEqual(unordered_list(['States', [['Kansas', [['Lawrence',
             []], ['Topeka', []]]], ['Illinois', []]]]), '\t<li>States\n\t'
@@ -510,7 +512,7 @@ class DefaultFiltersTests(TestCase):
 
         self.assertEqual(
             timesince_filter(datetime.datetime(2005, 12, 29),
-                      datetime.datetime(2005, 12, 30)),
+                             datetime.datetime(2005, 12, 30)),
             '1 day')
 
     def test_timeuntil(self):
@@ -518,9 +520,10 @@ class DefaultFiltersTests(TestCase):
             timeuntil_filter(datetime.datetime.now() + datetime.timedelta(1, 1)),
             '1 day')
 
-        self.assertEqual(timeuntil_filter(datetime.datetime(2005, 12, 30),
-                                          datetime.datetime(2005, 12, 29)),
-                          '1 day')
+        self.assertEqual(
+            timeuntil_filter(datetime.datetime(2005, 12, 30),
+                             datetime.datetime(2005, 12, 29)),
+            '1 day')
 
     def test_default(self):
         self.assertEqual(default("val", "default"), 'val')

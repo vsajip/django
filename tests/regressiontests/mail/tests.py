@@ -143,16 +143,15 @@ class MailTests(TestCase):
         make sure the email addresses are parsed correctly (especially with
         regards to commas)
         """
-        email = EmailMessage('Subject', 'Content', 'from@example.com', ['"Firstname S\xfcrname" <to@example.com>', 'other@example.com'])
+        email = EmailMessage('Subject', 'Content', 'from@example.com', ['"Firstname Sürname" <to@example.com>', 'other@example.com'])
         self.assertEqual(email.message()['To'], '=?utf-8?q?Firstname_S=C3=BCrname?= <to@example.com>, other@example.com')
-        email = EmailMessage('Subject', 'Content', 'from@example.com', ['"S\xfcrname, Firstname" <to@example.com>', 'other@example.com'])
+        email = EmailMessage('Subject', 'Content', 'from@example.com', ['"Sürname, Firstname" <to@example.com>', 'other@example.com'])
         self.assertEqual(email.message()['To'], '=?utf-8?q?S=C3=BCrname=2C_Firstname?= <to@example.com>, other@example.com')
 
     def test_unicode_headers(self):
-
-        email = EmailMessage("G\u017ceg\u017c\xf3\u0142ka", "Content", "from@example.com", ["to@example.com"],
-                             headers={"Sender": '"Firstname S\xfcrname" <sender@example.com>',
-                                      "Comments": 'My S\xfcrname is non-ASCII'})
+        email = EmailMessage("Gżegżółka", "Content", "from@example.com", ["to@example.com"],
+                             headers={"Sender": '"Firstname Sürname" <sender@example.com>',
+                                      "Comments": 'My Sürname is non-ASCII'})
         message = email.message()
         self.assertEqual(_get_message_item(message, 'Subject'), '=?utf-8?b?R8W8ZWfFvMOzxYJrYQ==?=')
         self.assertEqual(_get_message_item(message, 'Sender'), '=?utf-8?q?Firstname_S=C3=BCrname?= <sender@example.com>')
@@ -164,30 +163,29 @@ class MailTests(TestCase):
         SafeMIMEMultipart as well
         """
         headers = {"Date": "Fri, 09 Nov 2001 01:08:47 -0000", "Message-ID": "foo"}
-        subject, from_email, to = 'hello', 'from@example.com', '"S\xfcrname, Firstname" <to@example.com>'
+        subject, from_email, to = 'hello', 'from@example.com', '"Sürname, Firstname" <to@example.com>'
         text_content = 'This is an important message.'
         html_content = '<p>This is an <strong>important</strong> message.</p>'
-        msg = EmailMultiAlternatives('Message from Firstname S\xfcrname', text_content, from_email, [to], headers=headers)
+        msg = EmailMultiAlternatives('Message from Firstname Sürname', text_content, from_email, [to], headers=headers)
         msg.attach_alternative(html_content, "text/html")
         msg.encoding = 'iso-8859-1'
-        message = msg.message()
-        self.assertEqual(message['To'], '=?iso-8859-1?q?S=FCrname=2C_Firstname?= <to@example.com>')
-        self.assertEqual(message['Subject'].encode(), '=?iso-8859-1?q?Message_from_Firstname_S=FCrname?=')
+        self.assertEqual(msg.message()['To'], '=?iso-8859-1?q?S=FCrname=2C_Firstname?= <to@example.com>')
+        self.assertEqual(msg.message()['Subject'].encode(), '=?iso-8859-1?q?Message_from_Firstname_S=FCrname?=')
 
     def test_encoding(self):
         """
         Regression for #12791 - Encode body correctly with other encodings
         than utf-8
         """
-        email = EmailMessage('Subject', 'Firstname S\xfcrname is a great guy.', 'from@example.com', ['other@example.com'])
+        email = EmailMessage('Subject', 'Firstname Sürname is a great guy.', 'from@example.com', ['other@example.com'])
         email.encoding = 'iso-8859-1'
         message = email.message()
         self.assertTrue(message.as_string().startswith('Content-Type: text/plain; charset="iso-8859-1"\nMIME-Version: 1.0\nContent-Transfer-Encoding: quoted-printable\nSubject: Subject\nFrom: from@example.com\nTo: other@example.com'))
         self.assertEqual(message.get_payload(), 'Firstname S=FCrname is a great guy.')
 
         # Make sure MIME attachments also works correctly with other encodings than utf-8
-        text_content = 'Firstname S\xfcrname is a great guy.'
-        html_content = '<p>Firstname S\xfcrname is a <strong>great</strong> guy.</p>'
+        text_content = 'Firstname Sürname is a great guy.'
+        html_content = '<p>Firstname Sürname is a <strong>great</strong> guy.</p>'
         msg = EmailMultiAlternatives('Subject', text_content, 'from@example.com', ['to@example.com'])
         msg.encoding = 'iso-8859-1'
         msg.attach_alternative(html_content, "text/html")
@@ -219,11 +217,11 @@ class MailTests(TestCase):
         content = 'This is the message.'
         msg = EmailMessage(subject, content, from_email, [to], headers=headers)
         # Unicode in file name
-        msg.attach("une pi\xe8ce jointe.pdf", b"%PDF-1.4.%...", mimetype="application/pdf")
+        msg.attach("une pièce jointe.pdf", b"%PDF-1.4.%...", mimetype="application/pdf")
         msg_str = msg.message().as_string()
         message = email.message_from_string(msg_str)
         payload = message.get_payload()
-        self.assertEqual(payload[1].get_filename(), 'une pi\xe8ce jointe.pdf')
+        self.assertEqual(payload[1].get_filename(), 'une pièce jointe.pdf')
 
     def test_dummy_backend(self):
         """
@@ -319,12 +317,12 @@ class MailTests(TestCase):
         self.assertTrue('Content-Transfer-Encoding: 7bit' in s)
 
         # Shouldn't use quoted printable, should detect it can represent content with 8 bit data
-        msg = EmailMessage('Subject', 'Body with latin characters: \xe0\xe1\xe4.', 'bounce@example.com', ['to@example.com'], headers={'From': 'from@example.com'})
+        msg = EmailMessage('Subject', 'Body with latin characters: àáä.', 'bounce@example.com', ['to@example.com'], headers={'From': 'from@example.com'})
         s = msg.message().as_string()
         self.assertFalse(n('Content-Transfer-Encoding: quoted-printable') in s)
         self.assertTrue(n('Content-Transfer-Encoding: 8bit') in s)
 
-        msg = EmailMessage('Subject', 'Body with non latin characters: \u0410 \u0411 \u0412 \u0413 \u0414 \u0415 \u0416 \u0405 \u0417 \u0418 \u0406 \u041a \u041b \u041c \u041d \u041e \u041f.', 'bounce@example.com', ['to@example.com'], headers={'From': 'from@example.com'})
+        msg = EmailMessage('Subject', 'Body with non latin characters: А Б В Г Д Е Ж Ѕ З И І К Л М Н О П.', 'bounce@example.com', ['to@example.com'], headers={'From': 'from@example.com'})
         s = msg.message().as_string()
         self.assertFalse(n('Content-Transfer-Encoding: quoted-printable') in s)
         self.assertTrue(n('Content-Transfer-Encoding: 8bit') in s)
@@ -379,13 +377,11 @@ class BaseEmailBackendTests(object):
         self.assertEqual(messages[1].get_payload(), "Content2")
 
     def test_send_verbose_name(self):
-        email = EmailMessage("Subject", "Content", '"Firstname S\xfcrname" <from@example.com>',
+        email = EmailMessage("Subject", "Content", '"Firstname Sürname" <from@example.com>',
                              ["to@example.com"])
-        # django3: added next line
         email.encoding = 'utf-8'
         email.send()
         message = self.get_the_message()
-
         self.assertEqual(message["subject"], "Subject")
         self.assertEqual(message.get_payload(), "Content")
         self.assertEqual(message["from"], "=?utf-8?q?Firstname_S=C3=BCrname?= <from@example.com>")
@@ -410,6 +406,7 @@ class BaseEmailBackendTests(object):
         """Test html_message argument to mail_admins """
         mail_admins('Subject', 'Content', html_message='HTML Content')
         message = self.get_the_message()
+
         self.assertEqual(message.get('subject'), '[Django] Subject')
         self.assertEqual(message.get_all('to'), ['nobody@example.com'])
         self.assertTrue(message.is_multipart())
@@ -460,15 +457,15 @@ class BaseEmailBackendTests(object):
         """
         Regression test for #14301
         """
-        self.assertTrue(send_mail('Subject', 'Content', 'from@\xf6\xe4\xfc.com', ['to@\xf6\xe4\xfc.com']))
+        self.assertTrue(send_mail('Subject', 'Content', 'from@öäü.com', ['to@öäü.com']))
         message = self.get_the_message()
         self.assertEqual(message.get('subject'), 'Subject')
         self.assertEqual(message.get('from'), 'from@xn--4ca9at.com')
         self.assertEqual(message.get('to'), 'to@xn--4ca9at.com')
 
         self.flush_mailbox()
-        m = EmailMessage('Subject', 'Content', 'from@\xf6\xe4\xfc.com',
-                     ['to@\xf6\xe4\xfc.com'], cc=['cc@\xf6\xe4\xfc.com'])
+        m = EmailMessage('Subject', 'Content', 'from@öäü.com',
+                     ['to@öäü.com'], cc=['cc@öäü.com'])
         m.send()
         message = self.get_the_message()
         self.assertEqual(message.get('subject'), 'Subject')
@@ -516,14 +513,14 @@ class FileBackendTests(BaseEmailBackendTests, TestCase):
     email_backend = 'django.core.mail.backends.filebased.EmailBackend'
 
     def setUp(self):
+        super(FileBackendTests, self).setUp()
         self.tmp_dir = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, self.tmp_dir)
-        self.settings_override = override_settings(EMAIL_FILE_PATH=self.tmp_dir)
-        self.settings_override.enable()
-        super(FileBackendTests, self).setUp()
+        self._settings_override = override_settings(EMAIL_FILE_PATH=self.tmp_dir)
+        self._settings_override.enable()
 
     def tearDown(self):
-        self.settings_override.disable()
+        self._settings_override.disable()
         super(FileBackendTests, self).tearDown()
 
     def flush_mailbox(self):
@@ -533,7 +530,8 @@ class FileBackendTests(BaseEmailBackendTests, TestCase):
     def get_mailbox_content(self):
         messages = []
         for filename in os.listdir(self.tmp_dir):
-            session = open(os.path.join(self.tmp_dir, filename)).read().split('\n' + ('-' * 79) + '\n')
+            with open(os.path.join(self.tmp_dir, filename), 'r') as fp:
+                session = fp.read().split('\n' + ('-' * 79) + '\n')
             messages.extend(email.message_from_string(n(m)) for m in session if m)
         return messages
 
@@ -544,7 +542,8 @@ class FileBackendTests(BaseEmailBackendTests, TestCase):
         connection.send_messages([msg])
 
         self.assertEqual(len(os.listdir(self.tmp_dir)), 1)
-        message = email.message_from_file(open(os.path.join(self.tmp_dir, os.listdir(self.tmp_dir)[0])))
+        with open(os.path.join(self.tmp_dir, os.listdir(self.tmp_dir)[0])) as fp:
+            message = email.message_from_file(fp)
         self.assertEqual(message.get_content_type(), 'text/plain')
         self.assertEqual(message.get('subject'), 'Subject')
         self.assertEqual(message.get('from'), 'from@example.com')
@@ -662,15 +661,15 @@ class SMTPBackendTests(BaseEmailBackendTests, TestCase):
     @classmethod
     def setUpClass(cls):
         cls.server = FakeSMTPServer(('127.0.0.1', 0), None)
-        cls.settings_override = override_settings(
+        cls._settings_override = override_settings(
             EMAIL_HOST="127.0.0.1",
             EMAIL_PORT=cls.server.socket.getsockname()[1])
-        cls.settings_override.enable()
+        cls._settings_override.enable()
         cls.server.start()
 
     @classmethod
     def tearDownClass(cls):
-        cls.settings_override.disable()
+        cls._settings_override.disable()
         cls.server.stop()
 
     def setUp(self):

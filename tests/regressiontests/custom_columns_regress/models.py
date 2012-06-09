@@ -5,7 +5,6 @@ Checks some pathological column naming to make sure it doesn't break
 table creation or queries.
 
 """
-
 from __future__ import unicode_literals
 
 from django.db import models

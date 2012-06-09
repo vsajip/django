@@ -58,10 +58,8 @@ class FormsRegressionsTestCase(TestCase):
 
         # Testing choice validation with UTF-8 bytestrings as input (these are the
         # Russian abbreviations "мес." and "шт.".
-        UNITS = (
-            (b'\xd0\xbc\xd0\xb5\xd1\x81.'.decode('utf-8'), b'\xd0\xbc\xd0\xb5\xd1\x81.'.decode('utf-8')),
-            (b'\xd1\x88\xd1\x82.'.decode('utf-8'), b'\xd1\x88\xd1\x82.'.decode('utf-8'))
-        )
+        UNITS = ((b'\xd0\xbc\xd0\xb5\xd1\x81.', b'\xd0\xbc\xd0\xb5\xd1\x81.'),
+                 (b'\xd1\x88\xd1\x82.', b'\xd1\x88\xd1\x82.'))
         f = ChoiceField(choices=UNITS)
         self.assertEqual(f.clean('\u0448\u0442.'), '\u0448\u0442.')
         with catch_warnings(record=True):

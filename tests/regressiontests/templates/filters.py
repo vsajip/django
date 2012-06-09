@@ -6,13 +6,12 @@ The tests are hidden inside a function so that things like timestamps and
 timezones are only evaluated at the moment of execution and will therefore be
 consistent.
 """
-
 from __future__ import unicode_literals
 
 from datetime import date, datetime, timedelta
 
+from django.test.utils import str_prefix
 from django.utils.tzinfo import LocalTimezone, FixedOffset
-from django.utils.py3 import py3_prefix
 from django.utils.safestring import mark_safe
 
 # These two classes are used to test auto-escaping of __unicode__ output.
@@ -111,10 +110,10 @@ def get_filter_tests():
 
         # The make_list filter can destroy existing escaping, so the results are
         # escaped.
-        'filter-make_list01': ("{% autoescape off %}{{ a|make_list }}{% endautoescape %}", {"a": mark_safe("&")}, py3_prefix("[%(_)s'&']")),
-        'filter-make_list02': ("{{ a|make_list }}", {"a": mark_safe("&")}, py3_prefix("[%(_)s&#39;&amp;&#39;]")),
-        'filter-make_list03': ('{% autoescape off %}{{ a|make_list|stringformat:"s"|safe }}{% endautoescape %}', {"a": mark_safe("&")}, py3_prefix("[%(_)s'&']")),
-        'filter-make_list04': ('{{ a|make_list|stringformat:"s"|safe }}', {"a": mark_safe("&")}, py3_prefix("[%(_)s'&']")),
+        'filter-make_list01': ("{% autoescape off %}{{ a|make_list }}{% endautoescape %}", {"a": mark_safe("&")}, str_prefix("[%(_)s'&']")),
+        'filter-make_list02': ("{{ a|make_list }}", {"a": mark_safe("&")}, str_prefix("[%(_)s&#39;&amp;&#39;]")),
+        'filter-make_list03': ('{% autoescape off %}{{ a|make_list|stringformat:"s"|safe }}{% endautoescape %}', {"a": mark_safe("&")}, str_prefix("[%(_)s'&']")),
+        'filter-make_list04': ('{{ a|make_list|stringformat:"s"|safe }}', {"a": mark_safe("&")}, str_prefix("[%(_)s'&']")),
 
         # Running slugify on a pre-escaped string leads to odd behavior,
         # but the result is still safe.

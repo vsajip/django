@@ -29,7 +29,6 @@ from __future__ import unicode_literals
 import datetime
 import re
 import os
-import shutil
 from decimal import Decimal
 
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -243,7 +242,7 @@ class FieldsTests(SimpleTestCase):
         self.assertRaisesMessage(ValidationError, "'Enter a number.'", f.clean, 'Inf')
         self.assertRaisesMessage(ValidationError, "'Enter a number.'", f.clean, '-Inf')
         self.assertRaisesMessage(ValidationError, "'Enter a number.'", f.clean, 'a')
-        self.assertRaisesMessage(ValidationError, "'Enter a number.'", f.clean, '\u0142\u0105\u015b\u0107')
+        self.assertRaisesMessage(ValidationError, "'Enter a number.'", f.clean, 'łąść')
         self.assertEqual(f.clean('1.0 '), Decimal("1.0"))
         self.assertEqual(f.clean(' 1.0'), Decimal("1.0"))
         self.assertEqual(f.clean(' 1.0 '), Decimal("1.0"))
@@ -486,7 +485,7 @@ class FieldsTests(SimpleTestCase):
         Refs #.
         """
         f = RegexField('^\w+$')
-        self.assertEqual('\xe9\xe8\xf8\xe7\xce\xce\u4f60\u597d', f.clean('\xe9\xe8\xf8\xe7\xce\xce\u4f60\u597d'))
+        self.assertEqual('éèøçÎÎ你好', f.clean('éèøçÎÎ你好'))
 
     def test_change_regex_after_init(self):
         f = RegexField('^[a-z]+$')
@@ -511,7 +510,7 @@ class FieldsTests(SimpleTestCase):
         self.assertEqual('example@valid-----hyphens.com', f.clean('example@valid-----hyphens.com'))
         self.assertEqual('example@valid-with-hyphens.com', f.clean('example@valid-with-hyphens.com'))
         self.assertRaisesMessage(ValidationError, "'Enter a valid e-mail address.'", f.clean, 'example@.com')
-        self.assertEqual('local@domain.with.idn.xyz\xe4\xf6\xfc\xdfabc.part.com', f.clean('local@domain.with.idn.xyz\xe4\xf6\xfc\xdfabc.part.com'))
+        self.assertEqual('local@domain.with.idn.xyz\xe4\xf6\xfc\xdfabc.part.com', f.clean('local@domain.with.idn.xyzäöüßabc.part.com'))
 
     def test_email_regexp_for_performance(self):
         f = EmailField()
@@ -557,7 +556,7 @@ class FieldsTests(SimpleTestCase):
         self.assertRaisesMessage(ValidationError, "'The submitted file is empty.'", f.clean, SimpleUploadedFile('name', None))
         self.assertRaisesMessage(ValidationError, "'The submitted file is empty.'", f.clean, SimpleUploadedFile('name', b''))
         self.assertEqual(SimpleUploadedFile, type(f.clean(SimpleUploadedFile('name', b'Some File Content'))))
-        self.assertEqual(SimpleUploadedFile, type(f.clean(SimpleUploadedFile('\u6211\u96bb\u6c23\u588a\u8239\u88dd\u6eff\u6652\u9c54.txt', '\u092e\u0947\u0930\u0940 \u092e\u0901\u0921\u0930\u093e\u0928\u0947 \u0935\u093e\u0932\u0940 \u0928\u093e\u0935 \u0938\u0930\u094d\u092a\u092e\u0940\u0928\u094b\u0902 \u0938\u0947 \u092d\u0930\u0940 \u0939'.encode('utf-8')))))
+        self.assertEqual(SimpleUploadedFile, type(f.clean(SimpleUploadedFile('我隻氣墊船裝滿晒鱔.txt', 'मेरी मँडराने वाली नाव सर्पमीनों से भरी ह'.encode('utf-8')))))
         self.assertEqual(SimpleUploadedFile, type(f.clean(SimpleUploadedFile('name', b'Some File Content'), 'files/test4.pdf')))
 
     def test_filefield_2(self):
@@ -599,7 +598,7 @@ class FieldsTests(SimpleTestCase):
         self.assertRaisesMessage(ValidationError, "'Enter a valid URL.'", f.clean, 'http://inv-.alid-.com')
         self.assertRaisesMessage(ValidationError, "'Enter a valid URL.'", f.clean, 'http://inv-.-alid.com')
         self.assertEqual('http://valid-----hyphens.com/', f.clean('http://valid-----hyphens.com'))
-        self.assertEqual('http://some.idn.xyz\xe4\xf6\xfc\xdfabc.domain.com:123/blah', f.clean('http://some.idn.xyz\xe4\xf6\xfc\xdfabc.domain.com:123/blah'))
+        self.assertEqual('http://some.idn.xyz\xe4\xf6\xfc\xdfabc.domain.com:123/blah', f.clean('http://some.idn.xyzäöüßabc.domain.com:123/blah'))
         self.assertEqual('http://www.example.com/s/http://code.djangoproject.com/ticket/13804', f.clean('www.example.com/s/http://code.djangoproject.com/ticket/13804'))
         self.assertRaisesMessage(ValidationError, "'Enter a valid URL.'", f.clean, '[a')
         self.assertRaisesMessage(ValidationError, "'Enter a valid URL.'", f.clean, 'http://[a')
@@ -650,18 +649,18 @@ class FieldsTests(SimpleTestCase):
     def test_urlfield_9(self):
         f = URLField()
         urls = (
-            'http://\u05e2\u05d1\u05e8\u05d9\u05ea.idn.icann.org/',
-            'http://s\xe3opaulo.com/',
-            'http://s\xe3opaulo.com.br/',
-            'http://\u043f\u0440\u0438\u043c\u0435\u0440.\u0438\u0441\u043f\u044b\u0442\u0430\u043d\u0438\u0435/',
-            'http://\u0645\u062b\u0627\u0644.\u0625\u062e\u062a\u0628\u0627\u0631/',
-            'http://\u4f8b\u5b50.\u6d4b\u8bd5/',
-            'http://\u4f8b\u5b50.\u6e2c\u8a66/',
-            'http://\u0909\u0926\u093e\u0939\u0930\u0923.\u092a\u0930\u0940\u0915\u094d\u0937\u093e/',
-            'http://\u4f8b\u3048.\u30c6\u30b9\u30c8/',
-            'http://\u0645\u062b\u0627\u0644.\u0622\u0632\u0645\u0627\u06cc\u0634\u06cc/',
-            'http://\uc2e4\ub840.\ud14c\uc2a4\ud2b8/',
-            'http://\u0627\u0644\u0639\u0631\u0628\u064a\u0629.idn.icann.org/',
+            'http://עברית.idn.icann.org/',
+            'http://sãopaulo.com/',
+            'http://sãopaulo.com.br/',
+            'http://пример.испытание/',
+            'http://مثال.إختبار/',
+            'http://例子.测试/',
+            'http://例子.測試/',
+            'http://उदाहरण.परीक्षा/',
+            'http://例え.テスト/',
+            'http://مثال.آزمایشی/',
+            'http://실례.테스트/',
+            'http://العربية.idn.icann.org/',
         )
         for url in urls:
             # Valid IDN

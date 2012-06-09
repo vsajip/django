@@ -201,7 +201,7 @@ class Templates(unittest.TestCase):
         test_template_sources('Ångström', template_dirs,
                               ['/dir1/Ångström'.encode('utf-8'), '/dir2/Ångström'.encode('utf-8')])
         test_template_sources('Ångström', [b'/Stra\xc3\x9fe'], ['/Straße/Ångström'.encode('utf-8')])
-        test_template_sources(b'\xc3\x85ngstr\xc3\xb6m', ['/Stra\xdfe'.encode('utf-8')],
+        test_template_sources(b'\xc3\x85ngstr\xc3\xb6m', [b'/Stra\xc3\x9fe'],
                               ['/Straße/Ångström'.encode('utf-8')])
         # Invalid UTF-8 encoding in bytestrings is not. Should raise a
         # semi-useful error message.
@@ -644,11 +644,11 @@ class Templates(unittest.TestCase):
             # Chained filters
             'filter-syntax02': ("{{ var|upper|lower }}", {"var": "Django is the greatest!"}, "django is the greatest!"),
 
-            # Raise TemplateSyntaxError for space between a variable and filter pipe
-            'filter-syntax03': ("{{ var |upper }}", {}, template.TemplateSyntaxError),
+            # Allow spaces before the filter pipe
+            'filter-syntax03': ("{{ var |upper }}", {"var": "Django is the greatest!"}, "DJANGO IS THE GREATEST!"),
 
-            # Raise TemplateSyntaxError for space after a filter pipe
-            'filter-syntax04': ("{{ var| upper }}", {}, template.TemplateSyntaxError),
+            # Allow spaces after the filter pipe
+            'filter-syntax04': ("{{ var| upper }}", {"var": "Django is the greatest!"}, "DJANGO IS THE GREATEST!"),
 
             # Raise TemplateSyntaxError for a nonexistent filter
             'filter-syntax05': ("{{ var|does_not_exist }}", {}, template.TemplateSyntaxError),
@@ -1626,6 +1626,14 @@ class Templates(unittest.TestCase):
             'static-prefixtag04': ('{% load static %}{% get_media_prefix as media_prefix %}{{ media_prefix }}', {}, settings.MEDIA_URL),
             'static-statictag01': ('{% load static %}{% static "admin/base.css" %}', {}, urljoin(settings.STATIC_URL, 'admin/base.css')),
             'static-statictag02': ('{% load static %}{% static base_css %}', {'base_css': 'admin/base.css'}, urljoin(settings.STATIC_URL, 'admin/base.css')),
+
+            # Verbatim template tag outputs contents without rendering.
+            'verbatim-tag01': ('{% verbatim %}{{bare   }}{% endverbatim %}', {}, '{{bare   }}'),
+            'verbatim-tag02': ('{% verbatim %}{% endif %}{% endverbatim %}', {}, '{% endif %}'),
+            'verbatim-tag03': ("{% verbatim %}It's the {% verbatim %} tag{% endverbatim %}", {}, "It's the {% verbatim %} tag"),
+            'verbatim-tag04': ('{% verbatim %}{% verbatim %}{% endverbatim %}{% endverbatim %}', {}, template.TemplateSyntaxError),
+            'verbatim-tag05': ('{% verbatim %}{% endverbatim %}{% verbatim %}{% endverbatim %}', {}, ''),
+            'verbatim-tag06': ("{% verbatim -- %}Don't {% endverbatim %} just yet{% -- %}", {}, "Don't {% endverbatim %} just yet"),
         }
         return tests
 

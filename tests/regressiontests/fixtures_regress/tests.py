@@ -319,8 +319,11 @@ class TestFixtures(TestCase):
             format='json',
             stdout=stdout
         )
-        expected = """[{"pk": %d, "model": "fixtures_regress.widget", "fields": {"name": "grommet"}}]""" % widget.pk
-        self.assertEqual(stdout.getvalue(), expected)
+        self.assertEqual(
+            stdout.getvalue(),
+            """[{"pk": %d, "model": "fixtures_regress.widget", "fields": {"name": "grommet"}}]"""
+            % widget.pk
+            )
 
     def test_loaddata_works_when_fixture_has_forward_refs(self):
         """

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 from __future__ import absolute_import, unicode_literals
 
 import datetime
@@ -556,7 +555,7 @@ class FormsExtraTestCase(TestCase, AssertFormErrorsMixin):
     def test_smart_unicode(self):
         class Test:
             def __str__(self):
-               result = '\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111'
+               result = 'ŠĐĆŽćžšđ'
                if not PY3: result = result.encode('utf-8')
                return result
 

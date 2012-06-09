@@ -1,5 +1,4 @@
-# coding: utf-8
-
+# -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 
 from django.conf import settings
@@ -10,6 +9,7 @@ from django.contrib.contenttypes.generic import (
 from django.forms.models import ModelForm
 from django.test import TestCase
 from django.test.utils import override_settings
+from django.utils.py3 import dictkeys
 
 # local test models
 from .admin import MediaInline, MediaPermanentInline
@@ -277,7 +277,7 @@ class GenericInlineModelAdminTest(TestCase):
 
         ma = EpisodeAdmin(Episode, self.site)
         self.assertEqual(
-            list(list(ma.get_formsets(request))[0]().forms[0].fields.keys()),
+            dictkeys(list(ma.get_formsets(request))[0]().forms[0].fields),
             ['keywords', 'id', 'DELETE'])
 
     def test_custom_form_meta_exclude(self):
@@ -307,7 +307,7 @@ class GenericInlineModelAdminTest(TestCase):
 
         ma = EpisodeAdmin(Episode, self.site)
         self.assertEqual(
-            list(list(ma.get_formsets(request))[0]().forms[0].fields.keys()),
+            dictkeys(list(ma.get_formsets(request))[0]().forms[0].fields),
             ['url', 'keywords', 'id', 'DELETE'])
 
         # Then, only with `ModelForm`  -----------------
@@ -323,5 +323,5 @@ class GenericInlineModelAdminTest(TestCase):
 
         ma = EpisodeAdmin(Episode, self.site)
         self.assertEqual(
-            list(list(ma.get_formsets(request))[0]().forms[0].fields.keys()),
+            dictkeys(list(ma.get_formsets(request))[0]().forms[0].fields),
             ['description', 'keywords', 'id', 'DELETE'])

@@ -10,7 +10,7 @@ import tempfile
 
 from django.template import loader, Context
 from django.conf import settings
-from django.core.cache.backends.base import BaseCache, CacheKeyWarning
+from django.core.cache.backends.base import BaseCache
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.storage import default_storage
 from django.core.management import call_command
@@ -174,8 +174,7 @@ class TestDefaults(object):
         """
         Can find a file with non-ASCII character in an app static/ directory.
         """
-        self.assertFileContains('test/fi\u015fier.txt',
-                                'fi\u015fier in the app dir')
+        self.assertFileContains('test/fişier.txt', 'fişier in the app dir')
 
     def test_camelcase_filenames(self):
         """

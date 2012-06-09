@@ -1,26 +1,26 @@
 from __future__ import unicode_literals
 
-from datetime import datetime, timedelta
 import time
 import warnings
+from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.core.handlers.wsgi import WSGIRequest, LimitedStream
 from django.http import HttpRequest, HttpResponse, parse_cookie, build_request_repr, UnreadablePostError
-from django.test.utils import get_warnings_state, restore_warnings_state
+from django.test.utils import str_prefix
 from django.utils import unittest
 from django.utils.http import cookie_date
-from django.utils.py3 import StringIO, PyStringIO, BytesIO, py3_prefix, n
+from django.utils.py3 import StringIO, PyStringIO, BytesIO, n, dictkeys
 from django.utils.timezone import utc
 
 
 class RequestsTests(unittest.TestCase):
     def test_httprequest(self):
         request = HttpRequest()
-        self.assertEqual(list(request.GET.keys()), [])
-        self.assertEqual(list(request.POST.keys()), [])
-        self.assertEqual(list(request.COOKIES.keys()), [])
-        self.assertEqual(list(request.META.keys()), [])
+        self.assertEqual(dictkeys(request.GET), [])
+        self.assertEqual(dictkeys(request.POST), [])
+        self.assertEqual(dictkeys(request.COOKIES), [])
+        self.assertEqual(dictkeys(request.META), [])
 
     def test_httprequest_repr(self):
         request = HttpRequest()
@@ -29,20 +29,16 @@ class RequestsTests(unittest.TestCase):
         request.POST = {'post-key': 'post-value'}
         request.COOKIES = {'post-key': 'post-value'}
         request.META = {'post-key': 'post-value'}
-        s1 = repr(request)
-        s2 = py3_prefix("<HttpRequest\npath:/somepath/,\nGET:{%(_)s'get-key': %(_)s'get-value'},\nPOST:{%(_)s'post-key': %(_)s'post-value'},\nCOOKIES:{%(_)s'post-key': %(_)s'post-value'},\nMETA:{%(_)s'post-key': %(_)s'post-value'}>")
-        self.assertEqual(s1, s2)
+        self.assertEqual(repr(request), str_prefix("<HttpRequest\npath:/somepath/,\nGET:{%(_)s'get-key': %(_)s'get-value'},\nPOST:{%(_)s'post-key': %(_)s'post-value'},\nCOOKIES:{%(_)s'post-key': %(_)s'post-value'},\nMETA:{%(_)s'post-key': %(_)s'post-value'}>"))
         self.assertEqual(build_request_repr(request), repr(request))
-        s1 = build_request_repr(request, path_override='/otherpath/', GET_override={'a': 'b'}, POST_override={'c': 'd'}, COOKIES_override={'e': 'f'}, META_override={'g': 'h'})
-        s2 = py3_prefix("<HttpRequest\npath:/otherpath/,\nGET:{%(_)s'a': %(_)s'b'},\nPOST:{%(_)s'c': %(_)s'd'},\nCOOKIES:{%(_)s'e': %(_)s'f'},\nMETA:{%(_)s'g': %(_)s'h'}>")
-        self.assertEqual(s1, s2)
-                         
+        self.assertEqual(build_request_repr(request, path_override='/otherpath/', GET_override={'a': 'b'}, POST_override={'c': 'd'}, COOKIES_override={'e': 'f'}, META_override={'g': 'h'}),
+                         str_prefix("<HttpRequest\npath:/otherpath/,\nGET:{%(_)s'a': %(_)s'b'},\nPOST:{%(_)s'c': %(_)s'd'},\nCOOKIES:{%(_)s'e': %(_)s'f'},\nMETA:{%(_)s'g': %(_)s'h'}>"))
 
     def test_wsgirequest(self):
         request = WSGIRequest({'PATH_INFO': 'bogus', 'REQUEST_METHOD': 'bogus', 'wsgi.input': StringIO('')})
-        self.assertEqual(list(request.GET.keys()), [])
-        self.assertEqual(list(request.POST.keys()), [])
-        self.assertEqual(list(request.COOKIES.keys()), [])
+        self.assertEqual(dictkeys(request.GET), [])
+        self.assertEqual(dictkeys(request.POST), [])
+        self.assertEqual(dictkeys(request.COOKIES), [])
         self.assertEqual(set(request.META.keys()), set(['PATH_INFO', 'REQUEST_METHOD', 'SCRIPT_NAME', 'wsgi.input']))
         self.assertEqual(request.META['PATH_INFO'], 'bogus')
         self.assertEqual(request.META['REQUEST_METHOD'], 'bogus')
@@ -54,13 +50,10 @@ class RequestsTests(unittest.TestCase):
         request.POST = {'post-key': 'post-value'}
         request.COOKIES = {'post-key': 'post-value'}
         request.META = {'post-key': 'post-value'}
-        s1 = repr(request)
-        s2 = py3_prefix("<WSGIRequest\npath:/somepath/,\nGET:{%(_)s'get-key': %(_)s'get-value'},\nPOST:{%(_)s'post-key': %(_)s'post-value'},\nCOOKIES:{%(_)s'post-key': %(_)s'post-value'},\nMETA:{%(_)s'post-key': %(_)s'post-value'}>")
-        self.assertEqual(s1, s2)
+        self.assertEqual(repr(request), str_prefix("<WSGIRequest\npath:/somepath/,\nGET:{%(_)s'get-key': %(_)s'get-value'},\nPOST:{%(_)s'post-key': %(_)s'post-value'},\nCOOKIES:{%(_)s'post-key': %(_)s'post-value'},\nMETA:{%(_)s'post-key': %(_)s'post-value'}>"))
         self.assertEqual(build_request_repr(request), repr(request))
-        s1 = build_request_repr(request, path_override='/otherpath/', GET_override={'a': 'b'}, POST_override={'c': 'd'}, COOKIES_override={'e': 'f'}, META_override={'g': 'h'})
-        s2 = py3_prefix("<WSGIRequest\npath:/otherpath/,\nGET:{%(_)s'a': %(_)s'b'},\nPOST:{%(_)s'c': %(_)s'd'},\nCOOKIES:{%(_)s'e': %(_)s'f'},\nMETA:{%(_)s'g': %(_)s'h'}>")
-        self.assertEqual(s1, s2)
+        self.assertEqual(build_request_repr(request, path_override='/otherpath/', GET_override={'a': 'b'}, POST_override={'c': 'd'}, COOKIES_override={'e': 'f'}, META_override={'g': 'h'}),
+                         str_prefix("<WSGIRequest\npath:/otherpath/,\nGET:{%(_)s'a': %(_)s'b'},\nPOST:{%(_)s'c': %(_)s'd'},\nCOOKIES:{%(_)s'e': %(_)s'f'},\nMETA:{%(_)s'g': %(_)s'h'}>"))
 
     def test_parse_cookie(self):
         self.assertEqual(parse_cookie('invalid:key=true'), {})
@@ -309,13 +302,13 @@ class RequestsTests(unittest.TestCase):
         # Because multipart is used for large amounts fo data i.e. file uploads,
         # we don't want the data held in memory twice, and we don't want to
         # silence the error by setting body = '' either.
-        payload = ("\r\n".join([
+        payload = "\r\n".join([
                 '--boundary',
                 'Content-Disposition: form-data; name="name"',
                 '',
                 'value',
                 '--boundary--'
-                ''])).encode('utf-8')
+                '']).encode('utf-8')
         request = WSGIRequest({'REQUEST_METHOD': 'POST',
                                'CONTENT_TYPE': 'multipart/form-data; boundary=boundary',
                                'CONTENT_LENGTH': len(payload),
@@ -380,13 +373,13 @@ class RequestsTests(unittest.TestCase):
         POST should be populated even if body is read first, and then
         the stream is read second. Using multipart/form-data instead of urlencoded.
         """
-        payload = ("\r\n".join([
+        payload = "\r\n".join([
                 '--boundary',
                 'Content-Disposition: form-data; name="name"',
                 '',
                 'value',
                 '--boundary--'
-                ''])).encode('utf-8')
+                '']).encode('utf-8')
         request = WSGIRequest({'REQUEST_METHOD': 'POST',
                                'CONTENT_TYPE': 'multipart/form-data; boundary=boundary',
                                'CONTENT_LENGTH': len(payload),

@@ -355,8 +355,8 @@ class FormattingTests(TestCase):
             self.assertEqual('10000', nformat(self.l, decimal_sep='.', decimal_pos=0, grouping=0, force_grouping=True))
 
             # date filter
-            self.assertEqual('31.12.2009 \u0432 20:50', Template('{{ dt|date:"d.m.Y \u0432 H:i" }}').render(self.ctxt))
-            self.assertEqual('\u231a 10:15', Template('{{ t|time:"\u231a H:i" }}').render(self.ctxt))
+            self.assertEqual('31.12.2009 в 20:50', Template('{{ dt|date:"d.m.Y в H:i" }}').render(self.ctxt))
+            self.assertEqual('⌚ 10:15', Template('{{ t|time:"⌚ H:i" }}').render(self.ctxt))
 
     def test_l10n_disabled(self):
         """
@@ -904,9 +904,9 @@ class TestModels(TestCase):
 
     def test_safestr(self):
         c = Company(cents_paid=12, products_delivered=1)
-        c.name = SafeUnicode('I\xf1t\xebrn\xe2ti\xf4n\xe0liz\xe6ti\xf8n1')
+        c.name = SafeUnicode('Iñtërnâtiônàlizætiøn1')
         c.save()
-        c.name = SafeString('I\xf1t\xebrn\xe2ti\xf4n\xe0liz\xe6ti\xf8n1'.encode('utf-8'))
+        c.name = SafeString('Iñtërnâtiônàlizætiøn1'.encode('utf-8'))
         c.save()
 
 

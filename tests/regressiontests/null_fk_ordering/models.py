@@ -5,8 +5,8 @@ Regression tests for proper working of ForeignKey(null=True). Tests these bugs:
 xpected results
 
 """
-
 from __future__ import unicode_literals
+
 from django.db import models
 
 

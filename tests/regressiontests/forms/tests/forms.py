@@ -8,8 +8,8 @@ from django.forms import *
 from django.http import QueryDict
 from django.template import Template, Context
 from django.test import TestCase
+from django.test.utils import str_prefix
 from django.utils.datastructures import MultiValueDict, MergeDict
-from django.utils.py3 import py3_prefix
 from django.utils.safestring import mark_safe
 
 
@@ -299,7 +299,7 @@ class FormsTestCase(TestCase):
             message = CharField(widget=Textarea(attrs={'rows': 80, 'cols': 20}))
 
         f = ContactForm(auto_id=False)
-        self.assertHTMLEqual(str(f['message']), '<textarea rows="80" cols="20" name="message"></textarea>')
+        self.assertHTMLEqual(str(f['message']), '<textarea name="message" rows="80" cols="20"></textarea>')
 
         # Instance-level attrs are *not* carried over to as_textarea(), as_text() and
         # as_hidden():
@@ -987,7 +987,7 @@ class FormsTestCase(TestCase):
 
         # A label can be a Unicode object or a bytestring with special characters.
         class UserRegistration(Form):
-            username = CharField(max_length=10, label='\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111')
+            username = CharField(max_length=10, label='ŠĐĆŽćžšđ')
             password = CharField(widget=PasswordInput, label='\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111')
 
         p = UserRegistration(auto_id=False)
@@ -1254,7 +1254,7 @@ class FormsTestCase(TestCase):
 
         # Help text can include arbitrary Unicode characters.
         class UserRegistration(Form):
-            username = CharField(max_length=10, help_text='\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111')
+            username = CharField(max_length=10, help_text='ŠĐĆŽćžšđ')
 
         p = UserRegistration(auto_id=False)
         self.assertHTMLEqual(p.as_ul(), '<li>Username: <input type="text" name="username" maxlength="10" /> <span class="helptext">\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111</span></li>')
@@ -1476,7 +1476,7 @@ class FormsTestCase(TestCase):
         self.assertHTMLEqual(f.as_table(), '<tr><th>File1:</th><td><input type="file" name="file1" /></td></tr>')
         self.assertTrue(f.is_valid())
 
-        f = FileForm(data={}, files={'file1': SimpleUploadedFile('\u6211\u96bb\u6c23\u588a\u8239\u88dd\u6eff\u6652\u9c54.txt', '\u092e\u0947\u0930\u0940 \u092e\u0901\u0921\u0930\u093e\u0928\u0947 \u0935\u093e\u0932\u0940 \u0928\u093e\u0935 \u0938\u0930\u094d\u092a\u092e\u0940\u0928\u094b\u0902 \u0938\u0947 \u092d\u0930\u0940 \u0939'.encode('utf-8'))}, auto_id=False)
+        f = FileForm(data={}, files={'file1': SimpleUploadedFile('我隻氣墊船裝滿晒鱔.txt', 'मेरी मँडराने वाली नाव सर्पमीनों से भरी ह'.encode('utf-8'))}, auto_id=False)
         self.assertHTMLEqual(f.as_table(), '<tr><th>File1:</th><td><input type="file" name="file1" /></td></tr>')
 
     def test_basic_processing_in_view(self):
@@ -1523,8 +1523,7 @@ class FormsTestCase(TestCase):
 <input type="submit" />
 </form>""")
         # Case 3: POST with valid data (the success message).)
-        self.assertHTMLEqual(my_function('POST', {'username': 'adrian', 'password1': 'secret', 'password2': 'secret'}),
-                         py3_prefix("VALID: {'username': %(_)s'adrian', 'password1': %(_)s'secret', 'password2': %(_)s'secret'}"))
+        self.assertHTMLEqual(my_function('POST', {'username': 'adrian', 'password1': 'secret', 'password2': 'secret'}), str_prefix("VALID: {'username': %(_)s'adrian', 'password1': %(_)s'secret', 'password2': %(_)s'secret'}"))
 
     def test_templates_with_forms(self):
         class UserRegistration(Form):

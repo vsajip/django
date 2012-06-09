@@ -20,7 +20,7 @@ class SimpleTests(TestCase):
 
     def test_international(self):
         a = InternationalArticle.objects.create(
-            headline='Girl wins \u20ac12.500 in lottery',
+            headline='Girl wins €12.500 in lottery',
             pub_date=datetime.datetime(2005, 7, 28)
         )
         # The default str() output will be the UTF-8 encoded output of __unicode__().

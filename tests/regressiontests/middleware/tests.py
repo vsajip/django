@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import gzip
+import re
 import os
 import random
-import re
-import sys
 
 from django.conf import settings
 from django.core import mail

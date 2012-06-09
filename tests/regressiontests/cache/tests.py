@@ -141,8 +141,8 @@ class DummyCacheTests(unittest.TestCase):
         "Unicode values are ignored by the dummy cache"
         stuff = {
             'ascii': 'ascii_value',
-            'unicode_ascii': 'I\xf1t\xebrn\xe2ti\xf4n\xe0liz\xe6ti\xf8n1',
-            'I\xf1t\xebrn\xe2ti\xf4n\xe0liz\xe6ti\xf8n': 'I\xf1t\xebrn\xe2ti\xf4n\xe0liz\xe6ti\xf8n2',
+            'unicode_ascii': 'Iñtërnâtiônàlizætiøn1',
+            'Iñtërnâtiônàlizætiøn': 'Iñtërnâtiônàlizætiøn2',
             'ascii2': {'x' : 1 }
             }
         for (key, value) in stuff.items():
@@ -339,8 +339,8 @@ class BaseCacheTests(object):
         # Unicode values can be cached
         stuff = {
             'ascii': 'ascii_value',
-            'unicode_ascii': 'I\xf1t\xebrn\xe2ti\xf4n\xe0liz\xe6ti\xf8n1',
-            'I\xf1t\xebrn\xe2ti\xf4n\xe0liz\xe6ti\xf8n': 'I\xf1t\xebrn\xe2ti\xf4n\xe0liz\xe6ti\xf8n2',
+            'unicode_ascii': 'Iñtërnâtiônàlizætiøn1',
+            'Iñtërnâtiônàlizætiøn': 'Iñtërnâtiônàlizætiøn2',
             'ascii2': {'x' : 1 }
             }
         # Test `set`
@@ -1338,12 +1338,12 @@ class CacheI18nTest(TestCase):
         request = self._get_request()
         response = HttpResponse()
         with timezone.override(CustomTzName()):
-            CustomTzName.name = b'Hora est\xc3\xa1ndar de Argentina'    # UTF-8 string
+            CustomTzName.name = 'Hora estándar de Argentina'.encode('UTF-8') # UTF-8 string
             sanitized_name = 'Hora_estndar_de_Argentina'
             self.assertIn(sanitized_name, learn_cache_key(request, response),
                     "Cache keys should include the time zone name when time zones are active")
 
-            CustomTzName.name = 'Hora est\xe1ndar de Argentina'    # unicode
+            CustomTzName.name = 'Hora estándar de Argentina'    # unicode
             sanitized_name = 'Hora_estndar_de_Argentina'
             self.assertIn(sanitized_name, learn_cache_key(request, response),
                     "Cache keys should include the time zone name when time zones are active")

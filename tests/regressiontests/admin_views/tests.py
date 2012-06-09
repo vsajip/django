@@ -24,12 +24,12 @@ from django.contrib.contenttypes.models import ContentType
 from django.forms.util import ErrorList
 from django.template.response import TemplateResponse
 from django.test import TestCase
-from django.test.utils import override_settings
 from django.utils import formats, translation, unittest
 from django.utils.cache import get_max_age
 from django.utils.encoding import iri_to_uri
 from django.utils.html import escape
 from django.utils.http import urlencode
+from django.test.utils import override_settings
 from django.utils.py3 import urljoin, text_type
 
 # local test models
@@ -154,7 +154,7 @@ class AdminViewBasicTest(TestCase):
         "article_set-MAX_NUM_FORMS": "0",
         "article_set-0-id": "1",
         # there is no title in database, give one here or formset will fail.
-        "article_set-0-title": "Norske bostaver \xe6\xf8\xe5 skaper problemer",
+        "article_set-0-title": "Norske bostaver æøå skaper problemer",
         "article_set-0-content": "&lt;p&gt;Middle content&lt;/p&gt;",
         "article_set-0-date_0": "2008-03-18",
         "article_set-0-date_1": "11:54:58",
@@ -943,7 +943,7 @@ class AdminViewPermissionsTest(TestCase):
     def testAddView(self):
         """Test add view restricts access and actually adds items."""
 
-        add_dict = {'title' : 'D\xf8m ikke',
+        add_dict = {'title' : 'Døm ikke',
                     'content': '<p>great article</p>',
                     'date_0': '2008-03-18', 'date_1': '10:54:39',
                     'section': 1}
@@ -1000,7 +1000,7 @@ class AdminViewPermissionsTest(TestCase):
     def testChangeView(self):
         """Change view should restrict access and allow users to edit items."""
 
-        change_dict = {'title' : 'Ikke ford\xf8mt',
+        change_dict = {'title' : 'Ikke fordømt',
                        'content': '<p>edited article</p>',
                        'date_0': '2008-03-18', 'date_1': '10:54:39',
                        'section': 1}
@@ -1030,14 +1030,13 @@ class AdminViewPermissionsTest(TestCase):
         # one error in form should produce singular error message, multiple errors plural
         change_dict['title'] = ''
         post = self.client.post('/test_admin/admin/admin_views/article/1/', change_dict)
-        self.assertEqual(request.status_code, 200)
-        self.assertTrue(b'Please correct the error below.' in post.content,
-                        'Singular error message not found in response to post with one error.')
+        self.assertContains(post, 'Please correct the error below.',
+            msg_prefix='Singular error message not found in response to post with one error')
+
         change_dict['content'] = ''
         post = self.client.post('/test_admin/admin/admin_views/article/1/', change_dict)
-        self.assertEqual(request.status_code, 200)
-        self.assertTrue(b'Please correct the errors below.' in post.content,
-                        'Plural error message not found in response to post with multiple errors.')
+        self.assertContains(post, 'Please correct the errors below.',
+            msg_prefix='Plural error message not found in response to post with multiple errors')
         self.client.get('/test_admin/admin/logout/')
 
         # Test redirection when using row-level change permissions. Refs #11513.
@@ -1601,17 +1600,17 @@ class AdminViewUnicodeTest(TestCase):
         A test to ensure that POST on edit_view handles non-ascii characters.
         """
         post_data = {
-            "name": "Test l\xe6rdommer",
+            "name": "Test lærdommer",
             # inline data
             "chapter_set-TOTAL_FORMS": "6",
             "chapter_set-INITIAL_FORMS": "3",
             "chapter_set-MAX_NUM_FORMS": "0",
             "chapter_set-0-id": "1",
-            "chapter_set-0-title": "Norske bostaver \xe6\xf8\xe5 skaper problemer",
-            "chapter_set-0-content": "&lt;p&gt;Sv\xe6rt frustrerende med UnicodeDecodeError&lt;/p&gt;",
+            "chapter_set-0-title": "Norske bostaver æøå skaper problemer",
+            "chapter_set-0-content": "&lt;p&gt;Svært frustrerende med UnicodeDecodeError&lt;/p&gt;",
             "chapter_set-1-id": "2",
-            "chapter_set-1-title": "Kj\xe6rlighet.",
-            "chapter_set-1-content": "&lt;p&gt;La kj\xe6rligheten til de lidende seire.&lt;/p&gt;",
+            "chapter_set-1-title": "Kjærlighet.",
+            "chapter_set-1-content": "&lt;p&gt;La kjærligheten til de lidende seire.&lt;/p&gt;",
             "chapter_set-2-id": "3",
             "chapter_set-2-title": "Need a title.",
             "chapter_set-2-content": "&lt;p&gt;Newest content&lt;/p&gt;",
@@ -2969,7 +2968,7 @@ class SeleniumPrePopulatedFirefoxTests(AdminSeleniumWebDriverTestCase):
         # Main form ----------------------------------------------------------
         self.selenium.find_element_by_css_selector('#id_pubdate').send_keys('2012-02-18')
         self.get_select_option('#id_status', 'option two').click()
-        self.selenium.find_element_by_css_selector('#id_name').send_keys(' this is the mAin n\xc0M\xeb and it\'s aw\u03b5\u0161ome')
+        self.selenium.find_element_by_css_selector('#id_name').send_keys(' this is the mAin nÀMë and it\'s awεšome')
         slug1 = self.selenium.find_element_by_css_selector('#id_slug1').get_attribute('value')
         slug2 = self.selenium.find_element_by_css_selector('#id_slug2').get_attribute('value')
         self.assertEqual(slug1, 'main-name-and-its-awesome-2012-02-18')
@@ -2979,7 +2978,7 @@ class SeleniumPrePopulatedFirefoxTests(AdminSeleniumWebDriverTestCase):
         # Initial inline
         self.selenium.find_element_by_css_selector('#id_relatedprepopulated_set-0-pubdate').send_keys('2011-12-17')
         self.get_select_option('#id_relatedprepopulated_set-0-status', 'option one').click()
-        self.selenium.find_element_by_css_selector('#id_relatedprepopulated_set-0-name').send_keys(' here is a s\u0164\u0101\xc7ke\xf0   inline !  ')
+        self.selenium.find_element_by_css_selector('#id_relatedprepopulated_set-0-name').send_keys(' here is a sŤāÇkeð   inline !  ')
         slug1 = self.selenium.find_element_by_css_selector('#id_relatedprepopulated_set-0-slug1').get_attribute('value')
         slug2 = self.selenium.find_element_by_css_selector('#id_relatedprepopulated_set-0-slug2').get_attribute('value')
         self.assertEqual(slug1, 'here-stacked-inline-2011-12-17')
@@ -2989,7 +2988,7 @@ class SeleniumPrePopulatedFirefoxTests(AdminSeleniumWebDriverTestCase):
         self.selenium.find_elements_by_link_text('Add another Related Prepopulated')[0].click()
         self.selenium.find_element_by_css_selector('#id_relatedprepopulated_set-1-pubdate').send_keys('1999-01-25')
         self.get_select_option('#id_relatedprepopulated_set-1-status', 'option two').click()
-        self.selenium.find_element_by_css_selector('#id_relatedprepopulated_set-1-name').send_keys(' now you haVe an\xf6ther   s\u0164\u0101\xc7ke\xf0  inline with a very ... loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooog text... ')
+        self.selenium.find_element_by_css_selector('#id_relatedprepopulated_set-1-name').send_keys(' now you haVe anöther   sŤāÇkeð  inline with a very ... loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooog text... ')
         slug1 = self.selenium.find_element_by_css_selector('#id_relatedprepopulated_set-1-slug1').get_attribute('value')
         slug2 = self.selenium.find_element_by_css_selector('#id_relatedprepopulated_set-1-slug2').get_attribute('value')
         self.assertEqual(slug1, 'now-you-have-another-stacked-inline-very-loooooooo') # 50 characters maximum for slug1 field
@@ -2999,7 +2998,7 @@ class SeleniumPrePopulatedFirefoxTests(AdminSeleniumWebDriverTestCase):
         # Initial inline
         self.selenium.find_element_by_css_selector('#id_relatedprepopulated_set-2-0-pubdate').send_keys('1234-12-07')
         self.get_select_option('#id_relatedprepopulated_set-2-0-status', 'option two').click()
-        self.selenium.find_element_by_css_selector('#id_relatedprepopulated_set-2-0-name').send_keys('And now, with a t\xc3b\u0171la\u0158 inline !!!')
+        self.selenium.find_element_by_css_selector('#id_relatedprepopulated_set-2-0-name').send_keys('And now, with a tÃbűlaŘ inline !!!')
         slug1 = self.selenium.find_element_by_css_selector('#id_relatedprepopulated_set-2-0-slug1').get_attribute('value')
         slug2 = self.selenium.find_element_by_css_selector('#id_relatedprepopulated_set-2-0-slug2').get_attribute('value')
         self.assertEqual(slug1, 'and-now-tabular-inline-1234-12-07')
@@ -3009,7 +3008,7 @@ class SeleniumPrePopulatedFirefoxTests(AdminSeleniumWebDriverTestCase):
         self.selenium.find_elements_by_link_text('Add another Related Prepopulated')[1].click()
         self.selenium.find_element_by_css_selector('#id_relatedprepopulated_set-2-1-pubdate').send_keys('1981-08-22')
         self.get_select_option('#id_relatedprepopulated_set-2-1-status', 'option one').click()
-        self.selenium.find_element_by_css_selector('#id_relatedprepopulated_set-2-1-name').send_keys('a t\xc3b\u0171la\u0158 inline with ignored ;"&*^\\%$#@-/`~ characters')
+        self.selenium.find_element_by_css_selector('#id_relatedprepopulated_set-2-1-name').send_keys('a tÃbűlaŘ inline with ignored ;"&*^\%$#@-/`~ characters')
         slug1 = self.selenium.find_element_by_css_selector('#id_relatedprepopulated_set-2-1-slug1').get_attribute('value')
         slug2 = self.selenium.find_element_by_css_selector('#id_relatedprepopulated_set-2-1-slug2').get_attribute('value')
         self.assertEqual(slug1, 'tabular-inline-ignored-characters-1981-08-22')
@@ -3029,7 +3028,7 @@ class SeleniumPrePopulatedFirefoxTests(AdminSeleniumWebDriverTestCase):
 
         self.assertEqual(MainPrepopulated.objects.all().count(), 1)
         MainPrepopulated.objects.get(
-            name=' this is the mAin n\xc0M\xeb and it\'s aw\u03b5\u0161ome',
+            name=' this is the mAin nÀMë and it\'s awεšome',
             pubdate='2012-02-18',
             status='option two',
             slug1='main-name-and-its-awesome-2012-02-18',
@@ -3037,28 +3036,28 @@ class SeleniumPrePopulatedFirefoxTests(AdminSeleniumWebDriverTestCase):
         )
         self.assertEqual(RelatedPrepopulated.objects.all().count(), 4)
         RelatedPrepopulated.objects.get(
-            name=' here is a s\u0164\u0101\xc7ke\xf0   inline !  ',
+            name=' here is a sŤāÇkeð   inline !  ',
             pubdate='2011-12-17',
             status='option one',
             slug1='here-stacked-inline-2011-12-17',
             slug2='option-one-here-stacked-inline',
         )
         RelatedPrepopulated.objects.get(
-            name=' now you haVe an\xf6ther   s\u0164\u0101\xc7ke\xf0  inline with a very ... loooooooooooooooooo', # 75 characters in name field
+            name=' now you haVe anöther   sŤāÇkeð  inline with a very ... loooooooooooooooooo', # 75 characters in name field
             pubdate='1999-01-25',
             status='option two',
             slug1='now-you-have-another-stacked-inline-very-loooooooo',
             slug2='option-two-now-you-have-another-stacked-inline-very-looooooo',
         )
         RelatedPrepopulated.objects.get(
-            name='And now, with a t\xc3b\u0171la\u0158 inline !!!',
+            name='And now, with a tÃbűlaŘ inline !!!',
             pubdate='1234-12-07',
             status='option two',
             slug1='and-now-tabular-inline-1234-12-07',
             slug2='option-two-and-now-tabular-inline',
         )
         RelatedPrepopulated.objects.get(
-            name='a t\xc3b\u0171la\u0158 inline with ignored ;"&*^\\%$#@-/`~ characters',
+            name='a tÃbűlaŘ inline with ignored ;"&*^\%$#@-/`~ characters',
             pubdate='1981-08-22',
             status='option one',
             slug1='tabular-inline-ignored-characters-1981-08-22',
@@ -3172,7 +3171,6 @@ class RawIdFieldsTest(TestCase):
         # Find the link
         m = re.search(br'<a href="([^"]*)"[^>]* id="lookup_id_inquisition"', response.content)
         self.assertTrue(m) # Got a match
-        #django3: added decode()
         popup_url = m.groups()[0].replace(b"&amp;", b"&").decode('utf-8')
 
         # Handle relative links

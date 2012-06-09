@@ -8,6 +8,7 @@ from django.core.management import call_command
 from django.db.models.loading import cache, load_app
 from django.test import TestCase, TransactionTestCase
 from django.test.utils import override_settings
+from django.utils.py3 import lmap
 
 from .models import (ConcreteModel, ConcreteModelSubclass,
     ConcreteModelSubclassProxy)
@@ -24,7 +25,7 @@ class ProxyModelInheritanceTests(TransactionTestCase):
     def setUp(self):
         self.old_sys_path = sys.path[:]
         sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-        list(map(load_app, settings.INSTALLED_APPS))
+        lmap(load_app, settings.INSTALLED_APPS)
 
     def tearDown(self):
         sys.path = self.old_sys_path

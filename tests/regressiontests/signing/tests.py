@@ -47,12 +47,9 @@ class TestSigner(TestCase):
             '\u2019',
         )
         for example in examples:
-            s1 = force_unicode(example)
-            s2 = force_unicode(signer.sign(example))
-            self.assertNotEqual(s1, s2)
-            s1 = example
-            s2 = signer.unsign(signer.sign(example))
-            self.assertEqual(s1, s2)
+            self.assertNotEqual(
+                force_unicode(example), force_unicode(signer.sign(example)))
+            self.assertEqual(example, signer.unsign(signer.sign(example)))
 
     def unsign_detects_tampering(self):
         "unsign should raise an exception if the value has been tampered with"
@@ -79,9 +76,8 @@ class TestSigner(TestCase):
             {'a': 'dictionary'},
         )
         for o in objects:
-            s = signing.dumps(o)
-            self.assertNotEqual(o, s)
-            self.assertEqual(o, signing.loads(s))
+            self.assertNotEqual(o, signing.dumps(o))
+            self.assertEqual(o, signing.loads(signing.dumps(o)))
 
     def test_decode_detects_tampering(self):
         "loads should raise exception for tampered objects"

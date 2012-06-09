@@ -42,14 +42,14 @@ class Book(models.Model):
     """
     A simple book that has chapters.
     """
-    name = models.CharField(max_length=100, verbose_name='\xbfName?')
+    name = models.CharField(max_length=100, verbose_name='¿Name?')
 
     def __unicode__(self):
         return self.name
 
 
 class Promo(models.Model):
-    name = models.CharField(max_length=100, verbose_name='\xbfName?')
+    name = models.CharField(max_length=100, verbose_name='¿Name?')
     book = models.ForeignKey(Book)
 
     def __unicode__(self):
@@ -57,7 +57,7 @@ class Promo(models.Model):
 
 
 class Chapter(models.Model):
-    title = models.CharField(max_length=100, verbose_name='\xbfTitle?')
+    title = models.CharField(max_length=100, verbose_name='¿Title?')
     content = models.TextField()
     book = models.ForeignKey(Book)
 
@@ -70,19 +70,19 @@ class Chapter(models.Model):
 
 
 class ChapterXtra1(models.Model):
-    chap = models.OneToOneField(Chapter, verbose_name='\xbfChap?')
-    xtra = models.CharField(max_length=100, verbose_name='\xbfXtra?')
+    chap = models.OneToOneField(Chapter, verbose_name='¿Chap?')
+    xtra = models.CharField(max_length=100, verbose_name='¿Xtra?')
 
     def __unicode__(self):
-        return '\xbfXtra1: %s' % self.xtra
+        return '¿Xtra1: %s' % self.xtra
 
 
 class ChapterXtra2(models.Model):
-    chap = models.OneToOneField(Chapter, verbose_name='\xbfChap?')
-    xtra = models.CharField(max_length=100, verbose_name='\xbfXtra?')
+    chap = models.OneToOneField(Chapter, verbose_name='¿Chap?')
+    xtra = models.CharField(max_length=100, verbose_name='¿Xtra?')
 
     def __unicode__(self):
-        return '\xbfXtra2: %s' % self.xtra
+        return '¿Xtra2: %s' % self.xtra
 
 
 class RowLevelChangePermissionModel(models.Model):
@@ -361,11 +361,11 @@ class PrePopulatedSubPost(models.Model):
 
 
 class Post(models.Model):
-    title = models.CharField(max_length=100, help_text="Some help text for the title (with unicode \u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111)")
-    content = models.TextField(help_text="Some help text for the content (with unicode \u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111)")
+    title = models.CharField(max_length=100, help_text="Some help text for the title (with unicode ŠĐĆŽćžšđ)")
+    content = models.TextField(help_text="Some help text for the content (with unicode ŠĐĆŽćžšđ)")
     posted = models.DateField(
             default=datetime.date.today,
-            help_text="Some help text for the date (with unicode \u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111)"
+            help_text="Some help text for the date (with unicode ŠĐĆŽćžšđ)"
     )
     public = models.NullBooleanField()
 

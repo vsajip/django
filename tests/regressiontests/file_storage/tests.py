@@ -389,7 +389,7 @@ class UnicodeFileNameTests(unittest.TestCase):
         out the encoding situation between doctest and this file, but the actual
         repr doesn't matter; it just shouldn't return a unicode object.
         """
-        uf = UploadedFile(name='\xbfC\xf3mo?',content_type='text')
+        uf = UploadedFile(name='¿Cómo?',content_type='text')
         self.assertEqual(type(uf.__repr__()), str)
 
 # Tests for a race condition on file saving (#4948).
@@ -425,7 +425,7 @@ class FileSaveRaceConditionTest(unittest.TestCase):
 class FileStoragePermissions(unittest.TestCase):
     def setUp(self):
         self.old_perms = settings.FILE_UPLOAD_PERMISSIONS
-        settings.FILE_UPLOAD_PERMISSIONS = 0x1b6    # 0666
+        settings.FILE_UPLOAD_PERMISSIONS = 0o666
         self.storage_dir = tempfile.mkdtemp()
         self.storage = FileSystemStorage(self.storage_dir)
 
@@ -435,8 +435,8 @@ class FileStoragePermissions(unittest.TestCase):
 
     def test_file_upload_permissions(self):
         name = self.storage.save("the_file", ContentFile(b"data"))
-        actual_mode = os.stat(self.storage.path(name))[0] & 0x1ff    # 0777
-        self.assertEqual(actual_mode, 0x1b6)    # 0666
+        actual_mode = os.stat(self.storage.path(name))[0] & 0o777
+        self.assertEqual(actual_mode, 0o666)
 
 
 class FileStoragePathParsing(unittest.TestCase):

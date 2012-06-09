@@ -32,7 +32,7 @@ class FormsUtilTestCase(TestCase):
 
         # Can take a unicode string.
         self.assertHTMLEqual(text_type(ErrorList(ValidationError("Not \u03C0.").messages)),
-                         '<ul class="errorlist"><li>Not \u03c0.</li></ul>')
+                         '<ul class="errorlist"><li>Not π.</li></ul>')
 
         # Can take a lazy string.
         self.assertHTMLEqual(str(ErrorList(ValidationError(ugettext_lazy("Error.")).messages)),
@@ -43,8 +43,8 @@ class FormsUtilTestCase(TestCase):
                          '<ul class="errorlist"><li>Error one.</li><li>Error two.</li></ul>')
 
         # Can take a mixture in a list.
-        self.assertHTMLEqual(text_type(ErrorList(ValidationError(["First error.", "Not \u03C0.", ugettext_lazy("Error.")]).messages)),
-                         '<ul class="errorlist"><li>First error.</li><li>Not \u03c0.</li><li>Error.</li></ul>')
+        self.assertHTMLEqual(str(ErrorList(ValidationError(["First error.", "Not \u03C0.", ugettext_lazy("Error.")]).messages)),
+                         '<ul class="errorlist"><li>First error.</li><li>Not π.</li><li>Error.</li></ul>')
 
         class VeryBadError:
             def __unicode__(self): return "A very bad error."

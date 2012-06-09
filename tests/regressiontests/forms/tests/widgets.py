@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 from __future__ import unicode_literals
 
 import copy
@@ -9,11 +8,11 @@ from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.forms import *
 from django.forms.widgets import RadioFieldRenderer
-from django.test import TestCase
 from django.utils import formats
 from django.utils.py3 import text_type
 from django.utils.safestring import mark_safe
 from django.utils.translation import activate, deactivate
+from django.test import TestCase
 
 
 class FormsWidgetTestCase(TestCase):
@@ -28,8 +27,7 @@ class FormsWidgetTestCase(TestCase):
         self.assertHTMLEqual(w.render('email', 'some "quoted" & ampersanded value'), '<input type="text" name="email" value="some &quot;quoted&quot; &amp; ampersanded value" />')
         self.assertHTMLEqual(w.render('email', 'test@example.com', attrs={'class': 'fun'}), '<input type="text" name="email" value="test@example.com" class="fun" />')
 
-        result = '<input type="text" name="email" value="\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111" class="fun" />'
-        self.assertHTMLEqual(w.render('email', '\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111', attrs={'class': 'fun'}), result)
+        self.assertHTMLEqual(w.render('email', 'ŠĐĆŽćžšđ', attrs={'class': 'fun'}), '<input type="text" name="email" value="\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111" class="fun" />')
 
         # You can also pass 'attrs' to the constructor:
         w = TextInput(attrs={'class': 'fun'})
@@ -68,7 +66,7 @@ class FormsWidgetTestCase(TestCase):
         w = PasswordInput(attrs={'class': 'pretty'}, render_value=True)
         self.assertHTMLEqual(w.render('email', '', attrs={'class': 'special'}), '<input type="password" class="special" name="email" />')
 
-        self.assertHTMLEqual(w.render('email', '\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111', attrs={'class': 'fun'}), '<input type="password" class="fun" value="\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111" name="email" />')
+        self.assertHTMLEqual(w.render('email', 'ŠĐĆŽćžšđ', attrs={'class': 'fun'}), '<input type="password" class="fun" value="\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111" name="email" />')
 
     def test_hiddeninput(self):
         w = HiddenInput()
@@ -87,7 +85,7 @@ class FormsWidgetTestCase(TestCase):
         w = HiddenInput(attrs={'class': 'pretty'})
         self.assertHTMLEqual(w.render('email', '', attrs={'class': 'special'}), '<input type="hidden" class="special" name="email" />')
 
-        self.assertHTMLEqual(w.render('email', '\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111', attrs={'class': 'fun'}), '<input type="hidden" class="fun" value="\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111" name="email" />')
+        self.assertHTMLEqual(w.render('email', 'ŠĐĆŽćžšđ', attrs={'class': 'fun'}), '<input type="hidden" class="fun" value="\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111" name="email" />')
 
         # 'attrs' passed to render() get precedence over those passed to the constructor:
         w = HiddenInput(attrs={'class': 'pretty'})
@@ -118,7 +116,7 @@ class FormsWidgetTestCase(TestCase):
         w = MultipleHiddenInput(attrs={'class': 'pretty'})
         self.assertHTMLEqual(w.render('email', ['foo@example.com'], attrs={'class': 'special'}), '<input type="hidden" class="special" value="foo@example.com" name="email" />')
 
-        self.assertHTMLEqual(w.render('email', ['\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111'], attrs={'class': 'fun'}), '<input type="hidden" class="fun" value="\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111" name="email" />')
+        self.assertHTMLEqual(w.render('email', ['ŠĐĆŽćžšđ'], attrs={'class': 'fun'}), '<input type="hidden" class="fun" value="\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111" name="email" />')
 
         # 'attrs' passed to render() get precedence over those passed to the constructor:
         w = MultipleHiddenInput(attrs={'class': 'pretty'})
@@ -143,7 +141,7 @@ class FormsWidgetTestCase(TestCase):
         self.assertHTMLEqual(w.render('email', ''), '<input type="file" class="fun" name="email" />')
         self.assertHTMLEqual(w.render('email', 'foo@example.com'), '<input type="file" class="fun" name="email" />')
 
-        self.assertEqual(w.render('email', '\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111', attrs={'class': 'fun'}), '<input type="file" class="fun" name="email" />')
+        self.assertHTMLEqual(w.render('email', 'ŠĐĆŽćžšđ', attrs={'class': 'fun'}), '<input type="file" class="fun" name="email" />')
 
         # Test for the behavior of _has_changed for FileInput. The value of data will
         # more than likely come from request.FILES. The value of initial data will
@@ -182,7 +180,7 @@ class FormsWidgetTestCase(TestCase):
         w = Textarea(attrs={'class': 'pretty'})
         self.assertHTMLEqual(w.render('msg', '', attrs={'class': 'special'}), '<textarea rows="10" cols="40" name="msg" class="special"></textarea>')
 
-        self.assertHTMLEqual(w.render('msg', '\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111', attrs={'class': 'fun'}), '<textarea rows="10" cols="40" name="msg" class="fun">\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111</textarea>')
+        self.assertHTMLEqual(w.render('msg', 'ŠĐĆŽćžšđ', attrs={'class': 'fun'}), '<textarea rows="10" cols="40" name="msg" class="fun">\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111</textarea>')
 
     def test_checkboxinput(self):
         w = CheckboxInput()
@@ -337,7 +335,7 @@ class FormsWidgetTestCase(TestCase):
 </select>""")
 
         # Unicode choices are correctly rendered as HTML
-        self.assertHTMLEqual(w.render('email', '\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111', choices=[('\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111', '\u0160\u0110abc\u0106\u017d\u0107\u017e\u0161\u0111'), ('\u0107\u017e\u0161\u0111', 'abc\u0107\u017e\u0161\u0111')]), '<select name="email">\n<option value="1">1</option>\n<option value="2">2</option>\n<option value="3">3</option>\n<option value="\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111" selected="selected">\u0160\u0110abc\u0106\u017d\u0107\u017e\u0161\u0111</option>\n<option value="\u0107\u017e\u0161\u0111">abc\u0107\u017e\u0161\u0111</option>\n</select>')
+        self.assertHTMLEqual(w.render('email', 'ŠĐĆŽćžšđ', choices=[('ŠĐĆŽćžšđ', 'ŠĐabcĆŽćžšđ'), ('ćžšđ', 'abcćžšđ')]), '<select name="email">\n<option value="1">1</option>\n<option value="2">2</option>\n<option value="3">3</option>\n<option value="\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111" selected="selected">\u0160\u0110abc\u0106\u017d\u0107\u017e\u0161\u0111</option>\n<option value="\u0107\u017e\u0161\u0111">abc\u0107\u017e\u0161\u0111</option>\n</select>')
 
         # If choices is passed to the constructor and is a generator, it can be iterated
         # over multiple times without getting consumed:
@@ -528,7 +526,7 @@ class FormsWidgetTestCase(TestCase):
 </select>""")
 
         # Unicode choices are correctly rendered as HTML
-        self.assertHTMLEqual(w.render('nums', ['\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111'], choices=[('\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111', '\u0160\u0110abc\u0106\u017d\u0107\u017e\u0161\u0111'), ('\u0107\u017e\u0161\u0111', 'abc\u0107\u017e\u0161\u0111')]), '<select multiple="multiple" name="nums">\n<option value="1">1</option>\n<option value="2">2</option>\n<option value="3">3</option>\n<option value="\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111" selected="selected">\u0160\u0110abc\u0106\u017d\u0107\u017e\u0161\u0111</option>\n<option value="\u0107\u017e\u0161\u0111">abc\u0107\u017e\u0161\u0111</option>\n</select>')
+        self.assertHTMLEqual(w.render('nums', ['ŠĐĆŽćžšđ'], choices=[('ŠĐĆŽćžšđ', 'ŠĐabcĆŽćžšđ'), ('ćžšđ', 'abcćžšđ')]), '<select multiple="multiple" name="nums">\n<option value="1">1</option>\n<option value="2">2</option>\n<option value="3">3</option>\n<option value="\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111" selected="selected">\u0160\u0110abc\u0106\u017d\u0107\u017e\u0161\u0111</option>\n<option value="\u0107\u017e\u0161\u0111">abc\u0107\u017e\u0161\u0111</option>\n</select>')
 
         # Test the usage of _has_changed
         self.assertFalse(w._has_changed(None, None))
@@ -719,7 +717,7 @@ beatle J R Ringo False""")
 
         # Unicode choices are correctly rendered as HTML
         w = RadioSelect()
-        self.assertHTMLEqual(text_type(w.render('email', '\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111', choices=[('\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111', '\u0160\u0110abc\u0106\u017d\u0107\u017e\u0161\u0111'), ('\u0107\u017e\u0161\u0111', 'abc\u0107\u017e\u0161\u0111')])), '<ul>\n<li><label><input checked="checked" type="radio" name="email" value="\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111" /> \u0160\u0110abc\u0106\u017d\u0107\u017e\u0161\u0111</label></li>\n<li><label><input type="radio" name="email" value="\u0107\u017e\u0161\u0111" /> abc\u0107\u017e\u0161\u0111</label></li>\n</ul>')
+        self.assertHTMLEqual(text_type(w.render('email', 'ŠĐĆŽćžšđ', choices=[('ŠĐĆŽćžšđ', 'ŠĐabcĆŽćžšđ'), ('ćžšđ', 'abcćžšđ')])), '<ul>\n<li><label><input checked="checked" type="radio" name="email" value="\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111" /> \u0160\u0110abc\u0106\u017d\u0107\u017e\u0161\u0111</label></li>\n<li><label><input type="radio" name="email" value="\u0107\u017e\u0161\u0111" /> abc\u0107\u017e\u0161\u0111</label></li>\n</ul>')
 
         # Attributes provided at instantiation are passed to the constituent inputs
         w = RadioSelect(attrs={'id':'foo'})
@@ -849,7 +847,7 @@ beatle J R Ringo False""")
         self.assertFalse(w._has_changed([2, 1], ['1', '2']))
 
         # Unicode choices are correctly rendered as HTML
-        self.assertHTMLEqual(w.render('nums', ['\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111'], choices=[('\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111', '\u0160\u0110abc\u0106\u017d\u0107\u017e\u0161\u0111'), ('\u0107\u017e\u0161\u0111', 'abc\u0107\u017e\u0161\u0111')]), '<ul>\n<li><label><input type="checkbox" name="nums" value="1" /> 1</label></li>\n<li><label><input type="checkbox" name="nums" value="2" /> 2</label></li>\n<li><label><input type="checkbox" name="nums" value="3" /> 3</label></li>\n<li><label><input checked="checked" type="checkbox" name="nums" value="\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111" /> \u0160\u0110abc\u0106\u017d\u0107\u017e\u0161\u0111</label></li>\n<li><label><input type="checkbox" name="nums" value="\u0107\u017e\u0161\u0111" /> abc\u0107\u017e\u0161\u0111</label></li>\n</ul>')
+        self.assertHTMLEqual(w.render('nums', ['ŠĐĆŽćžšđ'], choices=[('ŠĐĆŽćžšđ', 'ŠĐabcĆŽćžšđ'), ('ćžšđ', 'abcćžšđ')]), '<ul>\n<li><label><input type="checkbox" name="nums" value="1" /> 1</label></li>\n<li><label><input type="checkbox" name="nums" value="2" /> 2</label></li>\n<li><label><input type="checkbox" name="nums" value="3" /> 3</label></li>\n<li><label><input checked="checked" type="checkbox" name="nums" value="\u0160\u0110\u0106\u017d\u0107\u017e\u0161\u0111" /> \u0160\u0110abc\u0106\u017d\u0107\u017e\u0161\u0111</label></li>\n<li><label><input type="checkbox" name="nums" value="\u0107\u017e\u0161\u0111" /> abc\u0107\u017e\u0161\u0111</label></li>\n</ul>')
 
         # Each input gets a separate ID
         self.assertHTMLEqual(CheckboxSelectMultiple().render('letters', list('ac'), choices=zip(list('abc'), list('ABC')), attrs={'id': 'abc'}), """<ul>

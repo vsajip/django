@@ -107,7 +107,7 @@ class ModelFormCallableModelDefault(TestCase):
 class FormsModelTestCase(TestCase):
     def test_unicode_filename(self):
         # FileModel with unicode filename and data #########################
-        f = FileForm(data={}, files={'file1': SimpleUploadedFile('\u6211\u96bb\u6c23\u588a\u8239\u88dd\u6eff\u6652\u9c54.txt', '\u092e\u0947\u0930\u0940 \u092e\u0901\u0921\u0930\u093e\u0928\u0947 \u0935\u093e\u0932\u0940 \u0928\u093e\u0935 \u0938\u0930\u094d\u092a\u092e\u0940\u0928\u094b\u0902 \u0938\u0947 \u092d\u0930\u0940 \u0939'.encode('utf-8'))}, auto_id=False)
+        f = FileForm(data={}, files={'file1': SimpleUploadedFile('我隻氣墊船裝滿晒鱔.txt', 'मेरी मँडराने वाली नाव सर्पमीनों से भरी ह'.encode('utf-8'))}, auto_id=False)
         self.assertTrue(f.is_valid())
         self.assertTrue('file1' in f.cleaned_data)
         m = FileModel.objects.create(file=f.cleaned_data['file1'])

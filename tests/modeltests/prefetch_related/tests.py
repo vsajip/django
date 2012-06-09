@@ -8,7 +8,7 @@ from django.utils.py3 import text_type
 
 from .models import (Author, Book, Reader, Qualification, Teacher, Department,
     TaggedItem, Bookmark, AuthorAddress, FavoriteAuthors, AuthorWithAge,
-    BookWithYear, Person, House, Room, Employee, Comment)
+    BookWithYear, BookReview, Person, House, Room, Employee, Comment)
 
 
 class PrefetchRelatedTests(TestCase):
@@ -336,6 +336,10 @@ class MultiTableInheritanceTest(TestCase):
         self.authorAddress = AuthorAddress.objects.create(
             author=self.author1, address='SomeStreet 1')
         self.book2.aged_authors.add(self.author2, self.author3)
+        self.br1 = BookReview.objects.create(
+            book=self.book1, notes="review book1")
+        self.br2 = BookReview.objects.create(
+            book=self.book2, notes="review book2")
 
     def test_foreignkey(self):
         with self.assertNumQueries(2):
@@ -343,6 +347,12 @@ class MultiTableInheritanceTest(TestCase):
             addresses = [[text_type(address) for address in obj.addresses.all()]
                          for obj in qs]
         self.assertEqual(addresses, [[text_type(self.authorAddress)], [], []])
+
+    def test_foreignkey_to_inherited(self):
+        with self.assertNumQueries(2):
+            qs = BookReview.objects.prefetch_related('book')
+            titles = [obj.book.title for obj in qs]
+        self.assertEquals(titles, ["Poems", "More poems"])
 
     def test_m2m_to_inheriting_model(self):
         qs = AuthorWithAge.objects.prefetch_related('books_with_year')

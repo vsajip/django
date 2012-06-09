@@ -7,7 +7,8 @@ from datetime import datetime, timedelta
 
 from django.core.exceptions import ValidationError
 from django.core.validators import *
-from django.utils.py3 import py3_prefix, PY3, n
+from django.test.utils import str_prefix
+from django.utils.py3 import PY3, n
 from django.utils.unittest import TestCase
 
 
@@ -158,7 +159,7 @@ TEST_DATA = (
     # django3: The following is not valid for PY3 - it's skipped below
     # and was moved to the end so that numbering of test methods is
     # least affected
-    (validate_slug, '\u4f60\u597d', ValidationError),
+    (validate_slug, '你好', ValidationError),
 )
 
 def create_simple_test_method(validator, expected, value, num):
@@ -182,13 +183,13 @@ def create_simple_test_method(validator, expected, value, num):
 class TestSimpleValidators(TestCase):
     def test_single_message(self):
         v = ValidationError('Not Valid')
-        self.assertEqual(str(v), py3_prefix("[%(_)s'Not Valid']"))
-        self.assertEqual(repr(v), py3_prefix("ValidationError([%(_)s'Not Valid'])"))
+        self.assertEqual(str(v), str_prefix("[%(_)s'Not Valid']"))
+        self.assertEqual(repr(v), str_prefix("ValidationError([%(_)s'Not Valid'])"))
 
     def test_message_list(self):
         v = ValidationError(['First Problem', 'Second Problem'])
-        self.assertEqual(str(v), py3_prefix("[%(_)s'First Problem', %(_)s'Second Problem']"))
-        self.assertEqual(repr(v), py3_prefix("ValidationError([%(_)s'First Problem', %(_)s'Second Problem'])"))
+        self.assertEqual(str(v), str_prefix("[%(_)s'First Problem', %(_)s'Second Problem']"))
+        self.assertEqual(repr(v), str_prefix("ValidationError([%(_)s'First Problem', %(_)s'Second Problem'])"))
 
     def test_message_dict(self):
         v = ValidationError({n('first'): n('First Problem')})
@@ -197,7 +198,7 @@ class TestSimpleValidators(TestCase):
 
 test_counter = 0
 for validator, value, expected in TEST_DATA:
-    if PY3 and value == '\u4f60\u597d':
+    if PY3 and value == '你好':
         continue
     name, method = create_simple_test_method(validator, expected, value, test_counter)
     setattr(TestSimpleValidators, name, method)

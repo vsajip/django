@@ -122,31 +122,6 @@ class FormsFormsetTestCase(TestCase):
         self.assertTrue(valid_formset.is_valid())
         self.assertTrue(valid_formset.has_changed())
 
-    def test_formset_has_changed(self):
-        # FormSet instances has_changed method will be True if any data is
-        # passed to his forms, even if the formset didn't validate
-        data = {
-            'choices-TOTAL_FORMS': '1', # the number of forms rendered
-            'choices-INITIAL_FORMS': '0', # the number of forms with initial data
-            'choices-MAX_NUM_FORMS': '0', # max number of forms
-            'choices-0-choice': '',
-            'choices-0-votes': '',
-        }
-        blank_formset = ChoiceFormSet(data, auto_id=False, prefix='choices')
-        self.assertFalse(blank_formset.has_changed())
-
-        # invalid formset test
-        data['choices-0-choice'] = 'Calexico'
-        invalid_formset = ChoiceFormSet(data, auto_id=False, prefix='choices')
-        self.assertFalse(invalid_formset.is_valid())
-        self.assertTrue(invalid_formset.has_changed())
-
-        # valid formset test
-        data['choices-0-votes'] = '100'
-        valid_formset = ChoiceFormSet(data, auto_id=False, prefix='choices')
-        self.assertTrue(valid_formset.is_valid())
-        self.assertTrue(valid_formset.has_changed())
-
     def test_formset_initial_data(self):
         # We can also prefill a FormSet with existing data by providing an ``initial``
         # argument to the constructor. ``initial`` should be a list of dicts. By default,

@@ -6,7 +6,8 @@ import pickle
 from django.http import (QueryDict, HttpResponse, SimpleCookie, BadHeaderError,
         parse_cookie)
 from django.utils import unittest
-from django.utils.py3 import unichr, next, PY3, n
+from django.utils.py3 import (unichr, next, PY3, n,
+                              dictitems, dictkeys, dictvalues)
 
 class QueryDictTests(unittest.TestCase):
     def test_missing_key(self):
@@ -33,11 +34,11 @@ class QueryDictTests(unittest.TestCase):
         if not PY3:
             self.assertEqual(q.has_key('foo'), False)
         self.assertEqual('foo' in q, False)
-        self.assertEqual(list(q.items()), [])
+        self.assertEqual(dictitems(q), [])
         self.assertEqual(q.lists(), [])
-        self.assertEqual(list(q.items()), [])
-        self.assertEqual(list(q.keys()), [])
-        self.assertEqual(list(q.values()), [])
+        self.assertEqual(dictitems(q), [])
+        self.assertEqual(dictkeys(q), [])
+        self.assertEqual(dictvalues(q), [])
         self.assertEqual(len(q), 0)
         self.assertEqual(q.urlencode(), '')
 
@@ -64,10 +65,10 @@ class QueryDictTests(unittest.TestCase):
             self.assertFalse(q.has_key('bar'))
         self.assertFalse('bar' in q)
 
-        self.assertEqual(list(q.items()), [('foo', 'bar')])
+        self.assertEqual(dictitems(q), [('foo', 'bar')])
         self.assertEqual(q.lists(), [('foo', ['bar'])])
-        self.assertEqual(list(q.keys()), ['foo'])
-        self.assertEqual(list(q.values()), ['bar'])
+        self.assertEqual(dictkeys(q), ['foo'])
+        self.assertEqual(dictvalues(q), ['bar'])
         self.assertEqual(len(q), 1)
 
         self.assertRaises(AttributeError, q.update, {'foo': 'bar'})
@@ -120,10 +121,10 @@ class QueryDictTests(unittest.TestCase):
             self.assertTrue(q.has_key('foo'))
         self.assertTrue('foo' in q)
 
-        self.assertEqual(list(q.items()),  [('foo', 'another'), ('name', 'john')])
+        self.assertEqual(dictitems(q),  [('foo', 'another'), ('name', 'john')])
         self.assertEqual(q.lists(), [('foo', ['bar', 'baz', 'another']), ('name', ['john'])])
-        self.assertEqual(list(q.keys()), ['foo', 'name'])
-        self.assertEqual(list(q.values()), ['another', 'john'])
+        self.assertEqual(dictkeys(q), ['foo', 'name'])
+        self.assertEqual(dictvalues(q), ['another', 'john'])
         self.assertEqual(len(q), 2)
 
         q.update({'foo': 'hello'})
@@ -164,10 +165,10 @@ class QueryDictTests(unittest.TestCase):
         if not PY3:
             self.assertEqual(q.has_key('foo'), False)
         self.assertEqual('foo' in q, False)
-        self.assertEqual(list(q.items()), [('vote', 'no')])
+        self.assertEqual(dictitems(q), [('vote', 'no')])
         self.assertEqual(q.lists(), [('vote', ['yes', 'no'])])
-        self.assertEqual(list(q.keys()), ['vote'])
-        self.assertEqual(list(q.values()), ['no'])
+        self.assertEqual(dictkeys(q), ['vote'])
+        self.assertEqual(dictvalues(q), ['no'])
         self.assertEqual(len(q), 1)
 
         self.assertRaises(AttributeError, q.update, {'foo': 'bar'})
@@ -211,11 +212,11 @@ class QueryDictTests(unittest.TestCase):
         ENCODING = 'rot_13'
         q = QueryDict(n('sbb=one'), encoding=ENCODING)
         self.assertEqual(q.encoding , ENCODING)
-        self.assertEqual(list(q.items()) , [('foo', 'bar')])
+        self.assertEqual(dictitems(q) , [('foo', 'bar')])
         self.assertEqual(q.urlencode() , 'sbb=one')
         q = q.copy()
         self.assertEqual(q.encoding, ENCODING)
-        self.assertEqual(list(q.items()) , [('foo', 'bar')])
+        self.assertEqual(dictitems(q) , [('foo', 'bar')])
         self.assertEqual(q.urlencode(), 'sbb=one')
         self.assertEqual(copy.copy(q).encoding, ENCODING)
         self.assertEqual(copy.deepcopy(q).encoding , ENCODING)

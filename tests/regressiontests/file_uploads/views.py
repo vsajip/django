@@ -45,7 +45,6 @@ def file_upload_view_verify(request):
         if isinstance(value, UploadedFile):
             new_hash = hashlib.sha1(value.read()).hexdigest()
         else:
-            # django3: added encode()
             new_hash = hashlib.sha1(value.encode('utf-8')).hexdigest()
         if new_hash != submitted_hash:
             return HttpResponseServerError()
@@ -96,7 +95,6 @@ def file_upload_echo_content(request):
     """
     Simple view to echo back the content of uploaded files for tests.
     """
-    # django3: added decode()
     r = dict([(k, f.read().decode('utf-8')) for k, f in request.FILES.items()])
     return HttpResponse(json.dumps(r))
 

@@ -13,7 +13,7 @@ from django.db.models.query import Q, ITER_CHUNK_SIZE, EmptyQuerySet
 from django.test import TestCase, skipUnlessDBFeature
 from django.utils import unittest
 from django.utils.datastructures import SortedDict
-from django.utils.py3 import next, text_type, PY3, n
+from django.utils.py3 import next, text_type, PY3, n, lrange, dictkeys, dictitems
 
 from .models import (Annotation, Article, Author, Celebrity, Child, Cover,
     Detail, DumbCategory, ExtraInfo, Fan, Item, LeafA, LoopX, LoopZ,
@@ -499,7 +499,7 @@ class Queries1Tests(BaseQuerysetTest):
         # normal. A normal dict would thus fail.)
         s = [('a', '%s'), ('b', '%s')]
         params = ['one', 'two']
-        if list({'a': 1, 'b': 2}.keys()) == ['a', 'b']:
+        if dictkeys({'a': 1, 'b': 2}) == ['a', 'b']:
             s.reverse()
             params.reverse()
 
@@ -804,7 +804,7 @@ class Queries1Tests(BaseQuerysetTest):
         qs = Tag.objects.values_list('id', flat=True).order_by('id')
         qs.query.bump_prefix()
         first = qs[0]
-        self.assertEqual(list(qs), list(range(first, first+5)))
+        self.assertEqual(list(qs), lrange(first, first+5))
 
     def test_ticket8439(self):
         # Complex combinations of conjunctions, disjunctions and nullable
@@ -1270,7 +1270,7 @@ class Queries5Tests(TestCase):
         # them in a values() query.
         dicts = qs.values('id', 'rank').order_by('id')
         self.assertEqual(
-            [list(d.items())[1] for d in dicts],
+            [dictitems(d)[1] for d in dicts],
             [('rank', 2), ('rank', 1), ('rank', 3)]
         )
 
