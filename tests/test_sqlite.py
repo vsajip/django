@@ -25,7 +25,6 @@ SECRET_KEY = "django_tests_secret_key"
 # To speed up tests under SQLite we use the MD5 hasher as the default one. 
 # This should not be needed under other databases, as the relative speedup
 # is only marginal there.
-#PASSWORD_HASHERS = (
-#    'django.contrib.auth.hashers.MD5PasswordHasher',
-#    'django.contrib.auth.hashers.SHA1PasswordHasher',
-#)
+PASSWORD_HASHERS = (
+    'django.contrib.auth.hashers.MD5PasswordHasher',
+)
