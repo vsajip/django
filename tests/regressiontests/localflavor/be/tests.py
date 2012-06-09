@@ -5,6 +5,7 @@ from django.contrib.localflavor.be.forms import (BEPostalCodeField,
 
 from django.test import SimpleTestCase
 
+
 class BELocalFlavorTests(SimpleTestCase):
     def test_BEPostalCodeField(self):
         error_format = ['Enter a valid postal code in the range and format 1XXX - 9XXX.']

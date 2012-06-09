@@ -172,11 +172,11 @@ class CNIDCardField(CharField):
         if len(value) != 18:
             return True
         checksum_index = sum(
-            list(map(
+            map(
                 lambda a,b:a*(ord(b)-ord('0')),
                 (7,9,10,5,8,4,2,1,6,3,7,9,10,5,8,4,2),
                 value[:17],
-            )),
+            ),
         ) % 11
         return '10X98765432'[checksum_index] == value[-1]
 

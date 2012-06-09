@@ -5,7 +5,6 @@ from django.contrib.localflavor.cz.forms import (CZPostalCodeField,
 
 from django.core.exceptions import ValidationError
 from django.test import SimpleTestCase
-from django.utils.py3 import text_type
 
 
 class CZLocalFlavorTests(SimpleTestCase):

@@ -112,7 +112,7 @@ class MXRFCField(RegexField):
     }
 
     def __init__(self, min_length=9, max_length=13, *args, **kwargs):
-        rfc_re = re.compile(r'^([A-Z&\xd1\xf1]{3}|[A-Z][AEIOU][A-Z]{2})%s([A-Z0-9]{2}[0-9A])?$' % DATE_RE,
+        rfc_re = re.compile(r'^([A-Z&Ññ]{3}|[A-Z][AEIOU][A-Z]{2})%s([A-Z0-9]{2}[0-9A])?$' % DATE_RE,
                             re.IGNORECASE)
         super(MXRFCField, self).__init__(rfc_re, min_length=min_length,
                                          max_length=max_length, *args, **kwargs)
@@ -135,7 +135,7 @@ class MXRFCField(RegexField):
         since the current algorithm to calculate it had not been created for
         the first RFCs ever in Mexico.
         """
-        rfc_without_homoclave_re = re.compile(r'^[A-Z&\xd1\xf1]{3,4}%s$' % DATE_RE,
+        rfc_without_homoclave_re = re.compile(r'^[A-Z&Ññ]{3,4}%s$' % DATE_RE,
                                               re.IGNORECASE)
         return not rfc_without_homoclave_re.match(rfc)
 
@@ -144,7 +144,7 @@ class MXRFCField(RegexField):
         More info about this procedure:
             www.sisi.org.mx/jspsi/documentos/2005/seguimiento/06101/0610100162005_065.doc
         """
-        chars = '0123456789ABCDEFGHIJKLMN&OPQRSTUVWXYZ-\xd1'
+        chars = '0123456789ABCDEFGHIJKLMN&OPQRSTUVWXYZ-Ñ'
         if len(rfc) == 11:
             rfc = '-' + rfc
 

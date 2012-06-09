@@ -19,7 +19,7 @@ from django.utils.translation import ugettext_lazy as _
 jmbg_re = re.compile(r'^(?P<dd>\d{2})(?P<mm>\d{2})(?P<yyy>\d{3})' + \
             r'(?P<rr>\d{2})(?P<bbb>\d{3})(?P<k>\d{1})$')
 oib_re = re.compile(r'^\d{11}$')
-plate_re = re.compile(r'^(?P<prefix>[A-Z\u010c\u0160\u017d]{2})' + \
+plate_re = re.compile(r'^(?P<prefix>[A-ZČŠŽ]{2})' + \
             r'(?P<number>\d{3,4})(?P<suffix>[ABCDEFGHIJKLMNOPRSTUVZ]{1,2})$')
 postal_code_re = re.compile(r'^\d{5}$')
 phone_re = re.compile(r'^(\+385|00385|0)(?P<prefix>\d{2})(?P<number>\d{6,7})$')

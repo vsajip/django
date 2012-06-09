@@ -87,7 +87,7 @@ class MKLocalFlavorTests(SimpleTestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors['id_number'],
             ['Identity card numbers must contain either 4 to 7 '
-               'digits or an uppercase letter and 7 digits.'])
+             'digits or an uppercase letter and 7 digits.'])
 
     def test_field_blank_option(self):
         """
@@ -185,7 +185,7 @@ class MKLocalFlavorTests(SimpleTestCase):
 
     def test_MKIdentityCardNumberField(self):
         error_invalid  = ['Identity card numbers must contain either 4 to 7 '
-                            'digits or an uppercase letter and 7 digits.']
+                          'digits or an uppercase letter and 7 digits.']
         valid = {
             'L0018077':'L0018077',
             'A0078315' : 'A0078315',
@@ -291,7 +291,7 @@ class MKLocalFlavorTests(SimpleTestCase):
         error_invalid = ['This field should contain exactly 13 digits.']
         error_checksum = ['The UMCN is not valid.']
         error_date =  ['The first 7 digits of the UMCN '
-                         'must represent a valid past date.']
+                       'must represent a valid past date.']
         valid = {
             '2402983450006': '2402983450006',
             '2803984430038': '2803984430038',

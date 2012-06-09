@@ -5,6 +5,7 @@ from django.contrib.localflavor.at.forms import (ATZipCodeField, ATStateSelect,
 
 from django.test import SimpleTestCase
 
+
 class ATLocalFlavorTests(SimpleTestCase):
     def test_ATStateSelect(self):
         f = ATStateSelect()

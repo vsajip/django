@@ -22,7 +22,7 @@ class MXLocalFlavorTests(SimpleTestCase):
     def test_get_display_methods(self):
         """Test that the get_*_display() methods are added to the model instances."""
         place = self.form.save()
-        self.assertEqual(place.get_state_display(), 'Michoac\xe1n')
+        self.assertEqual(place.get_state_display(), 'Michoacán')
 
     def test_errors(self):
         """Test that required MXFields throw appropriate errors."""
@@ -57,23 +57,23 @@ class MXLocalFlavorTests(SimpleTestCase):
 <option value="GUA">Guanajuato</option>
 <option value="HID">Hidalgo</option>
 <option value="JAL">Jalisco</option>
-<option value="MEX">Estado de M\xe9xico</option>
-<option value="MIC" selected="selected">Michoac\xe1n</option>
+<option value="MEX">Estado de México</option>
+<option value="MIC" selected="selected">Michoacán</option>
 <option value="MOR">Morelos</option>
 <option value="NAY">Nayarit</option>
-<option value="NLE">Nuevo Le\xf3n</option>
+<option value="NLE">Nuevo León</option>
 <option value="OAX">Oaxaca</option>
 <option value="PUE">Puebla</option>
-<option value="QUE">Quer\xe9taro</option>
+<option value="QUE">Querétaro</option>
 <option value="ROO">Quintana Roo</option>
 <option value="SIN">Sinaloa</option>
-<option value="SLP">San Luis Potos\xed</option>
+<option value="SLP">San Luis Potosí</option>
 <option value="SON">Sonora</option>
 <option value="TAB">Tabasco</option>
 <option value="TAM">Tamaulipas</option>
 <option value="TLA">Tlaxcala</option>
 <option value="VER">Veracruz</option>
-<option value="YUC">Yucat\xe1n</option>
+<option value="YUC">Yucatán</option>
 <option value="ZAC">Zacatecas</option>
 </select>"""
         self.assertHTMLEqual(text_type(self.form['state']), state_select_html)
@@ -95,23 +95,23 @@ class MXLocalFlavorTests(SimpleTestCase):
 <option value="GUA">Guanajuato</option>
 <option value="HID">Hidalgo</option>
 <option value="JAL">Jalisco</option>
-<option value="MEX">Estado de M\xe9xico</option>
-<option value="MIC" selected="selected">Michoac\xe1n</option>
+<option value="MEX">Estado de México</option>
+<option value="MIC" selected="selected">Michoacán</option>
 <option value="MOR">Morelos</option>
 <option value="NAY">Nayarit</option>
-<option value="NLE">Nuevo Le\xf3n</option>
+<option value="NLE">Nuevo León</option>
 <option value="OAX">Oaxaca</option>
 <option value="PUE">Puebla</option>
-<option value="QUE">Quer\xe9taro</option>
+<option value="QUE">Querétaro</option>
 <option value="ROO">Quintana Roo</option>
 <option value="SIN">Sinaloa</option>
-<option value="SLP">San Luis Potos\xed</option>
+<option value="SLP">San Luis Potosí</option>
 <option value="SON">Sonora</option>
 <option value="TAB">Tabasco</option>
 <option value="TAM">Tamaulipas</option>
 <option value="TLA">Tlaxcala</option>
 <option value="VER">Veracruz</option>
-<option value="YUC">Yucat\xe1n</option>
+<option value="YUC">Yucatán</option>
 <option value="ZAC">Zacatecas</option>
 </select>'''
         self.assertHTMLEqual(f.render('state', 'MIC'), out)
@@ -141,7 +141,7 @@ class MXLocalFlavorTests(SimpleTestCase):
             'eUcG751104rT0': 'EUCG751104RT0',
             'GME08100195A': 'GME08100195A',
             'AA&060524KX5': 'AA&060524KX5',
-            'CA\xd10708045P7': 'CA\xd10708045P7',
+            'CAÑ0708045P7': 'CAÑ0708045P7',
             'aaa000101aa9': 'AAA000101AA9',
         }
         invalid = {
@@ -162,7 +162,7 @@ class MXLocalFlavorTests(SimpleTestCase):
             'eUcG751104rT7': error_checksum,
             'GME081001955': error_checksum,
             'AA&060524KX9': error_checksum,
-            'CA\xd10708045P2': error_checksum,
+            'CAÑ0708045P2': error_checksum,
         }
         self.assertFieldOutput(MXRFCField, valid, invalid)
 

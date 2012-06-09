@@ -16,18 +16,18 @@ MUNICIPALITY_CHOICES = (
     ('hedmark', 'Hedmark'),
     ('hordaland', 'Hordaland'),
     ('janmayen', 'Jan Mayen'),
-    ('moreogromsdal', 'M\xf8re og Romsdal'),
-    ('nordtrondelag', 'Nord-Tr\xf8ndelag'),
+    ('moreogromsdal', 'Møre og Romsdal'),
+    ('nordtrondelag', 'Nord-Trøndelag'),
     ('nordland', 'Nordland'),
     ('oppland', 'Oppland'),
     ('oslo', 'Oslo'),
     ('rogaland', 'Rogaland'),
     ('sognogfjordane', 'Sogn og Fjordane'),
     ('svalbard', 'Svalbard'),
-    ('sortrondelag', 'S\xf8r-Tr\xf8ndelag'),
+    ('sortrondelag', 'Sør-Trøndelag'),
     ('telemark', 'Telemark'),
     ('troms', 'Troms'),
     ('vestagder', 'Vest-Agder'),
     ('vestfold', 'Vestfold'),
-    ('ostfold', '\xd8stfold')
+    ('ostfold', 'Østfold')
 )

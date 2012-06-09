@@ -13,26 +13,26 @@ class HRLocalFlavorTests(SimpleTestCase):
         f = HRCountySelect()
         out = '''<select name="county">
 <option value="GZG" selected="selected">Grad Zagreb</option>
-<option value="BB\u017d">Bjelovarsko-bilogorska \u017eupanija</option>
-<option value="BP\u017d">Brodsko-posavska \u017eupanija</option>
-<option value="DN\u017d">Dubrova\u010dko-neretvanska \u017eupanija</option>
-<option value="I\u017d">Istarska \u017eupanija</option>
-<option value="K\u017d">Karlova\u010dka \u017eupanija</option>
-<option value="KK\u017d">Koprivni\u010dko-kri\u017eeva\u010dka \u017eupanija</option>
-<option value="KZ\u017d">Krapinsko-zagorska \u017eupanija</option>
-<option value="LS\u017d">Li\u010dko-senjska \u017eupanija</option>
-<option value="M\u017d">Me\u0111imurska \u017eupanija</option>
-<option value="OB\u017d">Osje\u010dko-baranjska \u017eupanija</option>
-<option value="PS\u017d">Po\u017ee\u0161ko-slavonska \u017eupanija</option>
-<option value="PG\u017d">Primorsko-goranska \u017eupanija</option>
-<option value="SM\u017d">Sisa\u010dko-moslava\u010dka \u017eupanija</option>
-<option value="SD\u017d">Splitsko-dalmatinska \u017eupanija</option>
-<option value="\u0160K\u017d">\u0160ibensko-kninska \u017eupanija</option>
-<option value="V\u017d">Vara\u017edinska \u017eupanija</option>
-<option value="VP\u017d">Viroviti\u010dko-podravska \u017eupanija</option>
-<option value="VS\u017d">Vukovarsko-srijemska \u017eupanija</option>
-<option value="ZD\u017d">Zadarska \u017eupanija</option>
-<option value="ZG\u017d">Zagreba\u010dka \u017eupanija</option>
+<option value="BBŽ">Bjelovarsko-bilogorska županija</option>
+<option value="BPŽ">Brodsko-posavska županija</option>
+<option value="DNŽ">Dubrovačko-neretvanska županija</option>
+<option value="IŽ">Istarska županija</option>
+<option value="KŽ">Karlovačka županija</option>
+<option value="KKŽ">Koprivničko-križevačka županija</option>
+<option value="KZŽ">Krapinsko-zagorska županija</option>
+<option value="LSŽ">Ličko-senjska županija</option>
+<option value="MŽ">Međimurska županija</option>
+<option value="OBŽ">Osječko-baranjska županija</option>
+<option value="PSŽ">Požeško-slavonska županija</option>
+<option value="PGŽ">Primorsko-goranska županija</option>
+<option value="SMŽ">Sisačko-moslavačka županija</option>
+<option value="SDŽ">Splitsko-dalmatinska županija</option>
+<option value="ŠKŽ">Šibensko-kninska županija</option>
+<option value="VŽ">Varaždinska županija</option>
+<option value="VPŽ">Virovitičko-podravska županija</option>
+<option value="VSŽ">Vukovarsko-srijemska županija</option>
+<option value="ZDŽ">Zadarska županija</option>
+<option value="ZGŽ">Zagrebačka županija</option>
 </select>'''
         self.assertHTMLEqual(f.render('county', 'GZG'), out)
 
@@ -73,7 +73,7 @@ class HRLocalFlavorTests(SimpleTestCase):
         out = '''<select name="license">
 <option value="BJ" selected="selected">BJ</option>
 <option value="BM">BM</option>
-<option value="\u010cK">\u010cK</option>
+<option value="ČK">ČK</option>
 <option value="DA">DA</option>
 <option value="DE">DE</option>
 <option value="DJ">DJ</option>
@@ -84,27 +84,27 @@ class HRLocalFlavorTests(SimpleTestCase):
 <option value="KC">KC</option>
 <option value="KR">KR</option>
 <option value="KT">KT</option>
-<option value="K\u017d">K\u017d</option>
+<option value="KŽ">KŽ</option>
 <option value="MA">MA</option>
 <option value="NA">NA</option>
 <option value="NG">NG</option>
 <option value="OG">OG</option>
 <option value="OS">OS</option>
 <option value="PU">PU</option>
-<option value="P\u017d">P\u017d</option>
+<option value="PŽ">PŽ</option>
 <option value="RI">RI</option>
 <option value="SB">SB</option>
 <option value="SK">SK</option>
 <option value="SL">SL</option>
 <option value="ST">ST</option>
-<option value="\u0160I">\u0160I</option>
+<option value="ŠI">ŠI</option>
 <option value="VK">VK</option>
 <option value="VT">VT</option>
 <option value="VU">VU</option>
-<option value="V\u017d">V\u017d</option>
+<option value="VŽ">VŽ</option>
 <option value="ZD">ZD</option>
 <option value="ZG">ZG</option>
-<option value="\u017dU">\u017dU</option>
+<option value="ŽU">ŽU</option>
 </select>'''
         self.assertHTMLEqual(f.render('license', 'BJ'), out)
 

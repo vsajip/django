@@ -93,8 +93,8 @@ class ROLocalFlavorTests(SimpleTestCase):
         valid = {
             'CJ': 'CJ',
             'cj': 'CJ',
-            'Arge\u015f': 'AG',
-            'arge\u015f': 'AG',
+            'Argeş': 'AG',
+            'argeş': 'AG',
         }
         invalid = {
             'Arges': error_format,
