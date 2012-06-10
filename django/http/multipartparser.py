@@ -13,7 +13,7 @@ from django.core.exceptions import SuspiciousOperation
 from django.utils.datastructures import MultiValueDict
 from django.utils.encoding import force_unicode
 from django.utils.text import unescape_entities
-from django.utils.py3 import byte, next, PY3
+from django.utils.py3 import byte, next, PY3, valid_boundary
 from django.core.files.uploadhandler import StopUpload, SkipFile, StopFutureHandlers
 
 __all__ = ('MultiPartParser', 'MultiPartParserError', 'InputStreamExhausted')
@@ -30,13 +30,6 @@ class InputStreamExhausted(Exception):
 RAW = "raw"
 FILE = "file"
 FIELD = "field"
-
-if not PY3:
-    valid_boundary = cgi.valid_boundary
-else:
-    def valid_boundary(b):
-        # the cgi module in 3.1 insists on the boundary being a string
-        return cgi.valid_boundary(b.decode('ascii'))
 
 class MultiPartParser(object):
     """

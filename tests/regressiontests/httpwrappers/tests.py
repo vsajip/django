@@ -243,8 +243,7 @@ class HttpResponseTests(unittest.TestCase):
 
         # The response also converts unicode keys to strings.)
         r['test'] = 'testing key'
-        l = list(r.items())
-        l.sort()
+        l = sorted(r.items())
         self.assertEqual(l[1], ('test', 'testing key'))
 
         # It will also raise errors for keys with non-ascii data.

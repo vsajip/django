@@ -141,7 +141,7 @@ class CustomPKTests(TestCase):
 
     def test_unicode_pk(self):
         # Primary key may be unicode string
-        bus = Business.objects.create(name='ja\u017a\u0144')
+        bus = Business.objects.create(name='jaźń')
 
     def test_unique_pk(self):
         # The primary key must also obviously be unique, so trying to create a

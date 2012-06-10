@@ -5,7 +5,7 @@ import json
 from django.core import management
 from django.contrib.auth.models import User
 from django.test import TestCase
-from django.utils.py3 import StringIO, PY3
+from django.utils.py3 import StringIO, PY3, dictitems
 
 from .models import (Person, Group, Membership, UserMembership, Car, Driver,
     CarDriver)
@@ -157,7 +157,7 @@ class ThroughLoadDataTestCase(TestCase):
                 else:
                     for k in d:
                         d[k] = transform_dict(d[k])
-                    result = list(d.items())
+                    result = dictitems(d)
                 return result
 
             v1 = json.loads(v1)

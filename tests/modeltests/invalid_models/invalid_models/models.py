@@ -230,7 +230,7 @@ class UnicodeForeignKeys(models.Model):
 
     # In Python 3 this should become legal, but currently causes unicode errors
     # when adding the errors in core/management/validation.py
-    #bad = models.ForeignKey(u('★'))
+    #bad = models.ForeignKey('★')
 
 class PrimaryKeyNull(models.Model):
     my_pk_field = models.IntegerField(primary_key=True, null=True)

@@ -5,14 +5,14 @@ Sample usage:
 
 >>> from django.utils import feedgenerator
 >>> feed = feedgenerator.Rss201rev2Feed(
-...     title=u"Poynter E-Media Tidbits",
-...     link=u"http://www.poynter.org/column.asp?id=31",
-...     description=u"A group Weblog by the sharpest minds in online media/journalism/publishing.",
-...     language=u"en",
+...     title="Poynter E-Media Tidbits",
+...     link="http://www.poynter.org/column.asp?id=31",
+...     description="A group Weblog by the sharpest minds in online media/journalism/publishing.",
+...     language="en",
 ... )
 >>> feed.add_item(
 ...     title="Hello",
-...     link=u"http://www.holovaty.com/test/",
+...     link="http://www.holovaty.com/test/",
 ...     description="Testing."
 ... )
 >>> with open('test.rss', 'w') as fp:

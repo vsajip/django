@@ -9,9 +9,9 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.validators import ValidationError
 from django.db import connection
 from django.forms.models import model_to_dict
-from django.test import TestCase
-from django.utils.py3 import text_type
 from django.utils.unittest import skipUnless
+from django.test import TestCase
+from django.utils.py3 import text_type, dictkeys
 
 from .models import (Article, ArticleStatus, BetterWriter, BigInt, Book,
     Category, CommaSeparatedInteger, CustomFieldForExclusionModel, DerivedBook,
@@ -179,14 +179,14 @@ class PriceFormWithoutQuantity(forms.ModelForm):
 
 class ModelFormBaseTest(TestCase):
     def test_base_form(self):
-        self.assertEqual(list(BaseCategoryForm.base_fields.keys()),
+        self.assertEqual(dictkeys(BaseCategoryForm.base_fields),
                          ['name', 'slug', 'url'])
 
     def test_extra_fields(self):
         class ExtraFields(BaseCategoryForm):
             some_extra_field = forms.BooleanField()
 
-        self.assertEqual(list(ExtraFields.base_fields.keys()),
+        self.assertEqual(dictkeys(ExtraFields.base_fields),
                          ['name', 'slug', 'url', 'some_extra_field'])
 
     def test_replace_field(self):
@@ -215,7 +215,7 @@ class ModelFormBaseTest(TestCase):
                 model = Category
                 fields = ['url']
 
-        self.assertEqual(list(LimitFields.base_fields.keys()),
+        self.assertEqual(dictkeys(LimitFields.base_fields),
                          ['url'])
 
     def test_exclude_fields(self):
@@ -224,7 +224,7 @@ class ModelFormBaseTest(TestCase):
                 model = Category
                 exclude = ['url']
 
-        self.assertEqual(list(ExcludeFields.base_fields.keys()),
+        self.assertEqual(dictkeys(ExcludeFields.base_fields),
                          ['name', 'slug'])
 
     def test_confused_form(self):
@@ -237,7 +237,7 @@ class ModelFormBaseTest(TestCase):
                 fields = ['name', 'url']
                 exclude = ['url']
 
-        self.assertEqual(list(ConfusedForm.base_fields.keys()),
+        self.assertEqual(dictkeys(ConfusedForm.base_fields),
                          ['name'])
 
     def test_mixmodel_form(self):
@@ -254,13 +254,13 @@ class ModelFormBaseTest(TestCase):
             # overrides BaseCategoryForm.Meta.
 
         self.assertEqual(
-            list(MixModelForm.base_fields.keys()),
+            dictkeys(MixModelForm.base_fields),
             ['headline', 'slug', 'pub_date', 'writer', 'article', 'categories', 'status']
         )
 
     def test_article_form(self):
         self.assertEqual(
-            list(ArticleForm.base_fields.keys()),
+            dictkeys(ArticleForm.base_fields),
             ['headline', 'slug', 'pub_date', 'writer', 'article', 'categories', 'status']
         )
 
@@ -270,7 +270,7 @@ class ModelFormBaseTest(TestCase):
             pass
 
         self.assertEqual(
-            list(BadForm.base_fields.keys()),
+            dictkeys(BadForm.base_fields),
             ['headline', 'slug', 'pub_date', 'writer', 'article', 'categories', 'status']
         )
 
@@ -282,7 +282,7 @@ class ModelFormBaseTest(TestCase):
             """
             pass
 
-        self.assertEqual(list(SubCategoryForm.base_fields.keys()),
+        self.assertEqual(dictkeys(SubCategoryForm.base_fields),
                          ['name', 'slug', 'url'])
 
     def test_subclassmeta_form(self):
@@ -312,7 +312,7 @@ class ModelFormBaseTest(TestCase):
                 model = Category
                 fields = ['url', 'name']
 
-        self.assertEqual(list(OrderFields.base_fields.keys()),
+        self.assertEqual(dictkeys(OrderFields.base_fields),
                          ['url', 'name'])
         self.assertHTMLEqual(
             str(OrderFields()),
@@ -327,7 +327,7 @@ class ModelFormBaseTest(TestCase):
                 fields = ['slug', 'url', 'name']
                 exclude = ['url']
 
-        self.assertEqual(list(OrderFields2.base_fields.keys()),
+        self.assertEqual(dictkeys(OrderFields2.base_fields),
                          ['slug', 'name'])
 
 
@@ -1067,9 +1067,9 @@ class OldFormForXTests(TestCase):
 
         # OneToOneField ###############################################################
 
-        self.assertEqual(list(ImprovedArticleForm.base_fields.keys()), ['article'])
+        self.assertEqual(dictkeys(ImprovedArticleForm.base_fields), ['article'])
 
-        self.assertEqual(list(ImprovedArticleWithParentLinkForm.base_fields.keys()), [])
+        self.assertEqual(dictkeys(ImprovedArticleWithParentLinkForm.base_fields), [])
 
         bw = BetterWriter(name='Joe Better', score=10)
         bw.save()
@@ -1464,7 +1464,7 @@ class OldFormForXTests(TestCase):
                 model = Category
                 fields = ['description', 'url']
 
-        self.assertEqual(list(CategoryForm.base_fields.keys()),
+        self.assertEqual(dictkeys(CategoryForm.base_fields),
                          ['description', 'url'])
 
         self.assertHTMLEqual(text_type(CategoryForm()), '''<tr><th><label for="id_description">Description:</label></th><td><input type="text" name="description" id="id_description" /></td></tr>
@@ -1481,6 +1481,6 @@ class OldFormForXTests(TestCase):
         self.assertEqual([o.name for o in form.cleaned_data['items']], ['Core', 'Pear'])
 
     def test_model_field_that_returns_none_to_exclude_itself_with_explicit_fields(self):
-        self.assertEqual(list(CustomFieldForExclusionForm.base_fields.keys()), ['name'])
+        self.assertEqual(dictkeys(CustomFieldForExclusionForm.base_fields), ['name'])
         self.assertHTMLEqual(text_type(CustomFieldForExclusionForm()),
                          '''<tr><th><label for="id_name">Name:</label></th><td><input id="id_name" type="text" name="name" maxlength="10" /></td></tr>''')

@@ -392,7 +392,7 @@ def modelform_factory(model, form=ModelForm, fields=None, exclude=None,
     Meta = type(n('Meta'), parent, attrs)
 
     # Give this new form class a reasonable name.
-    class_name = model.__name__ + 'Form'
+    class_name = model.__name__ + n('Form')
 
     # Class attributes for the new form class.
     form_class_attrs = {

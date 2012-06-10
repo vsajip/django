@@ -409,9 +409,10 @@ class ModelTest(TestCase):
         error = None
         try:
             Article.objects.all()[0:-5]
-        except Exception as error:
-            self.assertTrue(isinstance(error, AssertionError))
-            self.assertEqual(str(error), "Negative indexing is not supported.")
+        except Exception as e:
+            error = e
+        self.assertTrue(isinstance(error, AssertionError))
+        self.assertEqual(str(error), "Negative indexing is not supported.")
 
         # An Article instance doesn't have access to the "objects" attribute.
         # That's only available on the class.

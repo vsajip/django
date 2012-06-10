@@ -105,6 +105,7 @@ if sys.version_info[0] < 3:
     n = lambda s: s.encode('utf-8')
     from HTMLParser import HTMLParseError
     import HTMLParser
+    from cgi import valid_boundary
 else:
     PY3 = True
     import builtins
@@ -192,6 +193,8 @@ else:
     n = lambda s: s
     from html.parser import HTMLParseError
     import html.parser as HTMLParser
-    
-def py3_prefix(s):
-    return s % { '_': upfx }
+    import cgi
+    def valid_boundary(b):
+        # the cgi module in 3.1 insists on the boundary being a string
+        return cgi.valid_boundary(b.decode('ascii'))
+

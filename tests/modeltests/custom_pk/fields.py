@@ -2,6 +2,7 @@ import random
 import string
 
 from django.db import models
+
 from django.utils.py3 import with_metaclass, text_type
 
 class MyWrapper(object):
