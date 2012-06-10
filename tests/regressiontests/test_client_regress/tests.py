@@ -18,6 +18,7 @@ from django.test.utils import ContextList, override_settings, str_prefix
 from django.template.response import SimpleTemplateResponse
 from django.http import HttpResponse
 
+
 @override_settings(
     TEMPLATE_DIRS=(os.path.join(os.path.dirname(__file__), 'templates'),)
 )

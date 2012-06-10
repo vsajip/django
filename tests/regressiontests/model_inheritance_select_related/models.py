@@ -2,7 +2,6 @@
 Regression tests for the interaction between model inheritance and
 select_related().
 """
-
 from __future__ import unicode_literals
 
 from django.db import models

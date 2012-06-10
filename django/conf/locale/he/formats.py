@@ -5,11 +5,11 @@ from __future__ import unicode_literals
 
 # The *_FORMAT strings use the Django date format syntax,
 # see http://docs.djangoproject.com/en/dev/ref/templates/builtins/#date
-DATE_FORMAT = 'j \u05d1F Y'
+DATE_FORMAT = 'j בF Y'
 TIME_FORMAT = 'H:i:s'
-DATETIME_FORMAT = 'j \u05d1F Y H:i:s'
+DATETIME_FORMAT = 'j בF Y H:i:s'
 YEAR_MONTH_FORMAT = 'F Y'
-MONTH_DAY_FORMAT = 'j \u05d1F'
+MONTH_DAY_FORMAT = 'j בF'
 SHORT_DATE_FORMAT = 'd/m/Y'
 SHORT_DATETIME_FORMAT = 'd/m/Y H:i:s'
 # FIRST_DAY_OF_WEEK = 

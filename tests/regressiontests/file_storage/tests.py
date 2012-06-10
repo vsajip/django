@@ -22,7 +22,6 @@ from django.core.files.uploadedfile import UploadedFile
 from django.test import SimpleTestCase
 from django.utils import unittest
 from django.utils.py3 import BytesIO
-
 from ..servers.tests import LiveServerBase
 
 # Try to import PIL in either of the two ways it can end up installed.

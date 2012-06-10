@@ -5,9 +5,9 @@ from __future__ import unicode_literals
 
 # The *_FORMAT strings use the Django date format syntax,
 # see http://docs.djangoproject.com/en/dev/ref/templates/builtins/#date
-DATE_FORMAT = r'\N\gà\y d \t\há\n\g n \n\u0103\m Y'
+DATE_FORMAT = r'\N\gà\y d \t\há\n\g n \nă\m Y'
 TIME_FORMAT = 'H:i:s'
-DATETIME_FORMAT = r'H:i:s \N\gà\y d \t\há\n\g n \n\u0103\m Y'
+DATETIME_FORMAT = r'H:i:s \N\gà\y d \t\há\n\g n \nă\m Y'
 YEAR_MONTH_FORMAT = 'F Y'
 MONTH_DAY_FORMAT = 'j F'
 SHORT_DATE_FORMAT = 'd-m-Y'

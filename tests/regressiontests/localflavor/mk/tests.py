@@ -3,7 +3,6 @@ from __future__ import absolute_import, unicode_literals
 from django.contrib.localflavor.mk.forms import (
     MKIdentityCardNumberField, MKMunicipalitySelect, UMCNField)
 from django.test import SimpleTestCase
-from django.utils.py3 import text_type
 
 from .forms import MKPersonForm
 
@@ -181,7 +180,7 @@ class MKLocalFlavorTests(SimpleTestCase):
 <option value="ST">\xc5\xa0tip</option>
 <option value="SO">\xc5\xa0uto Orizari</option>
 </select>""".decode('utf-8')
-        self.assertHTMLEqual(text_type(self.form['municipality']), municipality_select_html)
+        self.assertHTMLEqual(str(self.form['municipality']), municipality_select_html)
 
     def test_MKIdentityCardNumberField(self):
         error_invalid  = ['Identity card numbers must contain either 4 to 7 '

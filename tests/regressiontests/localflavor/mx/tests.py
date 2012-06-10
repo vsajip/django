@@ -4,7 +4,6 @@ from __future__ import absolute_import, unicode_literals
 from django.contrib.localflavor.mx.forms import (MXZipCodeField, MXRFCField,
     MXStateSelect, MXCURPField)
 from django.test import SimpleTestCase
-from django.utils.py3 import text_type
 
 from .forms import MXPersonProfileForm
 
@@ -76,7 +75,7 @@ class MXLocalFlavorTests(SimpleTestCase):
 <option value="YUC">Yucatán</option>
 <option value="ZAC">Zacatecas</option>
 </select>"""
-        self.assertHTMLEqual(text_type(self.form['state']), state_select_html)
+        self.assertHTMLEqual(str(self.form['state']), state_select_html)
 
     def test_MXStateSelect(self):
         f = MXStateSelect()
