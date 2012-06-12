@@ -48,6 +48,8 @@ def Deserializer(stream_or_string, **options):
     """
     Deserialize a stream or string of YAML data.
     """
+    if isinstance(stream_or_string, bytes):
+        stream_or_string = stream_or_string.decode('utf-8')
     if isinstance(stream_or_string, string_types):
         stream = StringIO(stream_or_string)
     else:

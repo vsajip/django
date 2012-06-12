@@ -5,7 +5,7 @@ import datetime
 import codecs
 from decimal import Decimal
 
-from django.utils.py3 import (bytes, integer_types, string_types,
+from django.utils.py3 import (integer_types, string_types,
                               text_type, quote, PY3)
 from django.utils.functional import Promise
 

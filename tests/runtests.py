@@ -7,7 +7,7 @@ import tempfile
 import warnings
 
 from django import contrib, get_version
-from django.utils.py3 import text_type, binary_type
+from django.utils.py3 import text_type
 
 # databrowse is deprecated, but we still want to run its tests
 warnings.filterwarnings('ignore', "The Databrowse contrib app is deprecated",
@@ -350,7 +350,7 @@ if __name__ == "__main__":
                                      stderr=subprocess.PIPE)
                 out, err = p.communicate()
             if p.returncode == 0:
-                if isinstance(out, binary_type):
+                if isinstance(out, bytes):
                     out = out.strip().decode('utf-8')
                 print('Django version: %s (%s)' % (dv, out))
         except subprocess.CalledProcessError:

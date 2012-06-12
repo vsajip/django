@@ -19,7 +19,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.core.management.color import color_style
 from django.core.wsgi import get_wsgi_application
 from django.utils.importlib import import_module
-from django.utils.py3 import (bytes, ThreadingMixIn, urljoin, url2pathname,
+from django.utils.py3 import (ThreadingMixIn, urljoin, url2pathname,
                               unquote, urljoin, PY3)
 
 __all__ = ['WSGIServer', 'WSGIRequestHandler']

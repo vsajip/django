@@ -20,7 +20,7 @@ from django.utils.text import capfirst
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import smart_unicode, force_unicode
-from django.utils.py3 import string_types, binary_type, next_name, dictkeys
+from django.utils.py3 import string_types, next_name, dictkeys
 from django.utils.ipv6 import clean_ipv6_address
 
 class NOT_PROVIDED:
@@ -691,7 +691,7 @@ class DateField(Field):
         if isinstance(value, datetime.date):
             return value
 
-        if isinstance(value, binary_type):
+        if isinstance(value, bytes):
             value = value.decode('utf-8')
 
         try:

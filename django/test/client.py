@@ -18,7 +18,7 @@ from django.utils.http import urlencode
 from django.utils.importlib import import_module
 from django.utils.itercompat import is_iterable
 from django.utils.py3 import (urlparse, urlsplit, string_types, unquote,
-                              reraise, binary_type, StringIO, BytesIO)
+                              reraise, StringIO, BytesIO)
 from django.db import close_connection
 from django.test.utils import ContextList
 
@@ -144,7 +144,7 @@ def encode_file(boundary, key, file):
     if content_type is None:
         content_type = 'application/octet-stream'
     filename = os.path.basename(file.name)
-    if isinstance(filename, binary_type):
+    if isinstance(filename, bytes):
         filename = filename.decode('utf-8')
     return [
         b'--' + boundary,

@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 
 from django.utils.encoding import force_unicode
 from django.utils.functional import lazy
-from django.utils.py3 import bytes, text_type
+from django.utils.py3 import text_type
 
 
 __all__ = [

@@ -82,7 +82,7 @@ from django.utils.datastructures import MultiValueDict, ImmutableList
 from django.utils.encoding import smart_str, smart_unicode, iri_to_uri, force_unicode
 from django.utils.http import cookie_date
 from django.utils import timezone
-from django.utils.py3 import bytes, text_type, binary_type
+from django.utils.py3 import text_type
 
 RESERVED_CHARS="!*'();:@&=+$,/?%#[]"
 
@@ -662,7 +662,7 @@ class HttpResponse(object):
         # like integers (why we need this, I have no idea ;-)
         if isinstance(chunk, text_type):
             chunk = chunk.encode(self._charset)
-        if not isinstance(chunk, binary_type):
+        if not isinstance(chunk, bytes):
             # django3: chunk could be any random object
             # (see test_iter_content), so if it's not
             # bytes at this point, we need to convert

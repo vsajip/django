@@ -15,7 +15,6 @@ import sys
 if sys.version_info[0] < 3:
     PY3 = False
     import __builtin__ as builtins
-    b = bytes = str
     def byte(n):
         return n
     def u(s):
@@ -35,7 +34,6 @@ if sys.version_info[0] < 3:
     lfilter = filter
     string_types = basestring,
     text_type = unicode
-    binary_type = str
     integer_types = int, long
     long_type = long
     items = lambda o: o.items
@@ -64,7 +62,8 @@ if sys.version_info[0] < 3:
         from cStringIO import StringIO
     except ImportError:
         StringIO = PyStringIO
-    BytesIO = StringIO
+    #BytesIO = StringIO
+    from io import BytesIO
     try:
         import cPickle as pickle
     except ImportError:
@@ -109,7 +108,6 @@ if sys.version_info[0] < 3:
 else:
     PY3 = True
     import builtins
-    bytes = builtins.bytes
     def b(s):
         if isinstance(s, str):
             try:
@@ -136,7 +134,6 @@ else:
     lfilter = lambda *args: list(filter(*args))
     string_types = str,
     text_type = str
-    binary_type = bytes
     integer_types = int,
     long_type = int
     items = lambda o: list(o.items)

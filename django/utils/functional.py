@@ -3,7 +3,7 @@ import operator
 from functools import wraps, update_wrapper
 import sys
 
-from django.utils.py3 import bytes, dictvalues, text_type, PY3, n
+from django.utils.py3 import dictvalues, text_type, PY3, n
 
 # You can't trivially replace this `functools.partial` because this binds to
 # classes and returns bound instances, whereas functools.partial (on CPython)
