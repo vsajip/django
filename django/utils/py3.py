@@ -57,6 +57,10 @@ if sys.version_info[0] < 3:
         from urlparse import parse_qsl
     except ImportError:
         from cgi import parse_qsl
+    # It's not worth trying to import StringIO from the io module on 2.x.
+    # io.StringIO expects to have Unicode written to it (it fails if you
+    # write str) and there are too many places (e.g. 2.x's stdlib json
+    # module) which write str to streams.
     from StringIO import StringIO as PyStringIO
     try:
         from cStringIO import StringIO
