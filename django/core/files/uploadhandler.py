@@ -4,11 +4,12 @@ Base file upload handler classes, and the built-in concrete subclasses
 
 from __future__ import unicode_literals
 
+from io import BytesIO
+
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.uploadedfile import TemporaryUploadedFile, InMemoryUploadedFile
 from django.utils import importlib
-from django.utils.py3 import BytesIO
 
 __all__ = ['UploadFileException','StopUpload', 'SkipFile', 'FileUploadHandler',
            'TemporaryFileUploadHandler', 'MemoryFileUploadHandler',

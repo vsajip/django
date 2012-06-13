@@ -1,10 +1,11 @@
 from __future__ import unicode_literals
 
+from io import BytesIO
 import os
 
 from django.utils.encoding import smart_str, smart_unicode
 from django.core.files.utils import FileProxyMixin
-from django.utils.py3 import PY3, BytesIO
+from django.utils.py3 import PY3
 
 class File(FileProxyMixin):
     DEFAULT_CHUNK_SIZE = 64 * 2**10

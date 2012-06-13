@@ -1,6 +1,8 @@
+from io import BytesIO
+
 from django.core.servers.basehttp import ServerHandler
 from django.utils.unittest import TestCase
-from django.utils.py3 import StringIO, BytesIO
+from django.utils.py3 import StringIO
 
 #
 # Tests for #9659: wsgi.file_wrapper in the builtin server.

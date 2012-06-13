@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+from io import BytesIO
 import re
 import unicodedata
 import warnings
@@ -8,7 +9,7 @@ from gzip import GzipFile
 from django.utils.encoding import force_unicode
 from django.utils.functional import allow_lazy, SimpleLazyObject
 from django.utils.translation import ugettext_lazy, ugettext as _, pgettext
-from django.utils.py3 import name2codepoint, BytesIO, text_type, next, unichr
+from django.utils.py3 import name2codepoint, text_type, next, unichr
 
 # Capitalizes the first letter of a string.
 capfirst = lambda x: x and force_unicode(x)[0].upper() + force_unicode(x)[1:]

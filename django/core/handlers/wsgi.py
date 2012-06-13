@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+from io import BytesIO
 import sys
 from threading import Lock
 
@@ -10,7 +11,7 @@ from django.core.urlresolvers import set_script_prefix
 from django.utils import datastructures
 from django.utils.encoding import force_unicode, iri_to_uri
 from django.utils.log import getLogger
-from django.utils.py3 import n, BytesIO
+from django.utils.py3 import n
 
 logger = getLogger('django.request')
 

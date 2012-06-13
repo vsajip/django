@@ -1,6 +1,7 @@
 from __future__ import absolute_import, unicode_literals
 
 import datetime
+from io import BytesIO
 import os
 import re
 import sys
@@ -10,7 +11,7 @@ import warnings
 from pprint import pformat
 from django.utils.py3 import (urlencode, quote, urljoin, cookies, next,
                               PY3, n, reraise, string_types, parse_qsl,
-                              StringIO, BytesIO, dictvalues)
+                              StringIO, dictvalues)
 
 # Some versions of Python 2.7 and later won't need this encoding bug fix:
 _cookie_encodes_correctly = cookies.SimpleCookie().value_encode(';') == (';', '"\\073"')

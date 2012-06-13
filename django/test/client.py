@@ -1,4 +1,5 @@
 import sys
+from io import BytesIO
 import os
 import re
 import mimetypes
@@ -18,7 +19,7 @@ from django.utils.http import urlencode
 from django.utils.importlib import import_module
 from django.utils.itercompat import is_iterable
 from django.utils.py3 import (urlparse, urlsplit, string_types, unquote,
-                              reraise, StringIO, BytesIO)
+                              reraise, StringIO)
 from django.db import close_connection
 from django.test.utils import ContextList
 

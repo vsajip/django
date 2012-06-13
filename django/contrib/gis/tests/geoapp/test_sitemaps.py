@@ -1,12 +1,12 @@
 from __future__ import absolute_import
 
+from io import BytesIO
 from xml.dom import minidom
 import zipfile
 
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.test import TestCase
-from django.utils.py3 import BytesIO
 
 from .models import City, Country
 

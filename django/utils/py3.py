@@ -62,8 +62,6 @@ if sys.version_info[0] < 3:
         from cStringIO import StringIO
     except ImportError:
         StringIO = PyStringIO
-    #BytesIO = StringIO
-    from io import BytesIO
     try:
         import cPickle as pickle
     except ImportError:
@@ -156,7 +154,7 @@ else:
                                 UnknownHandler, HTTPHandler, HTTPSHandler,
                                 HTTPDefaultErrorHandler, FTPHandler,
                                 HTTPErrorProcessor, urlretrieve)
-    from io import StringIO, BytesIO
+    from io import StringIO
     PyStringIO = StringIO
     import pickle
     izip = zip

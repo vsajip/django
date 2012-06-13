@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+from io import BytesIO
 import time
 import warnings
 from datetime import datetime, timedelta
@@ -10,7 +11,7 @@ from django.http import HttpRequest, HttpResponse, parse_cookie, build_request_r
 from django.test.utils import str_prefix
 from django.utils import unittest
 from django.utils.http import cookie_date
-from django.utils.py3 import StringIO, PyStringIO, BytesIO, n, dictkeys
+from django.utils.py3 import StringIO, PyStringIO, n, dictkeys
 from django.utils.timezone import utc
 
 

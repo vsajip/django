@@ -2,13 +2,14 @@
 Classes representing uploaded files.
 """
 
+from io import BytesIO
 import os
 
 from django.conf import settings
 from django.core.files.base import File
 from django.core.files import temp as tempfile
 from django.utils.encoding import smart_unicode
-from django.utils.py3 import BytesIO, n
+from django.utils.py3 import n
 
 __all__ = ('UploadedFile', 'TemporaryUploadedFile', 'InMemoryUploadedFile',
            'SimpleUploadedFile')

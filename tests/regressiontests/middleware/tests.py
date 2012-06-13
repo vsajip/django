@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import gzip
+from io import BytesIO
 import re
 import os
 import random
@@ -15,7 +16,7 @@ from django.middleware.http import ConditionalGetMiddleware
 from django.middleware.gzip import GZipMiddleware
 from django.test import TestCase, RequestFactory
 from django.test.utils import override_settings
-from django.utils.py3 import BytesIO, xrange
+from django.utils.py3 import xrange
 
 class CommonMiddlewareTest(TestCase):
     def setUp(self):

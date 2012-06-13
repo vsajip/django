@@ -6,6 +6,7 @@ from __future__ import absolute_import, unicode_literals
 
 import copy
 import datetime
+from io import BytesIO
 import os
 import re
 from decimal import Decimal, DecimalException
@@ -20,8 +21,8 @@ from django.forms.widgets import (TextInput, PasswordInput, HiddenInput,
 from django.utils import formats
 from django.utils.encoding import smart_unicode, force_unicode
 from django.utils.ipv6 import clean_ipv6_address
-from django.utils.py3 import (BytesIO, StringIO, text_type, string_types,
-                              urlsplit, urlunsplit)
+from django.utils.py3 import (StringIO, text_type, string_types, urlsplit,
+                              urlunsplit)
 from django.utils.translation import ugettext_lazy as _
 
 # Provide this import for backwards compatibility.
