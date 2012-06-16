@@ -147,7 +147,7 @@ def loads(s, key=None, salt='django.core.signing', serializer=JSONSerializer, ma
     data = b64_decode(base64d)
     if decompress:
         data = zlib.decompress(data)
-    if not isinstance(data, text_type):
+    if isinstance(data, bytes):
         data = data.decode('utf-8')
     return serializer().loads(data)
 
