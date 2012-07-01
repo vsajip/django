@@ -85,7 +85,7 @@ def return_json_file(request):
     if not PY3: kwargs['encoding'] = charset
     obj_json = json.dumps(obj_dict, **kwargs)
     response = HttpResponse(obj_json.encode(charset), status=200,
-                            mimetype='application/json; charset=%s' % charset)
+                            content_type='application/json; charset=%s' % charset)
     response['Content-Disposition'] = 'attachment; filename=testfile.json'
     return response
 

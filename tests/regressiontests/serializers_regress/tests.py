@@ -20,6 +20,7 @@ from django.core import serializers
 from django.core.serializers import SerializerDoesNotExist
 from django.core.serializers.base import DeserializationError
 from django.db import connection, models
+from django.http import HttpResponse
 from django.test import TestCase
 from django.utils.functional import curry
 from django.utils.py3 import StringIO, next
@@ -501,15 +502,18 @@ def streamTest(format, self):
     obj.save_base(raw=True)
 
     # Serialize the test database to a stream
-    stream = StringIO()
-    serializers.serialize(format, [obj], indent=2, stream=stream)
+    for stream in (StringIO(), HttpResponse()):
+        serializers.serialize(format, [obj], indent=2, stream=stream)
 
-    # Serialize normally for a comparison
-    string_data = serializers.serialize(format, [obj], indent=2)
+        # Serialize normally for a comparison
+        string_data = serializers.serialize(format, [obj], indent=2)
 
-    # Check that the two are the same
-    self.assertEqual(string_data, stream.getvalue())
-    stream.close()
+        # Check that the two are the same
+        if not isinstance(stream, HttpResponse):
+            self.assertEqual(string_data, stream.getvalue())
+        else:
+            self.assertEqual(string_data.encode('utf-8'), stream.content)
+        stream.close()
 
 for format in serializers.get_serializer_formats():
     setattr(SerializerTests, 'test_' + format + '_serializer', curry(serializerTest, format))
