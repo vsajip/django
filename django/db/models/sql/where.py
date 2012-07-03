@@ -136,10 +136,13 @@ class WhereNode(tree.Node):
         conn = ' %s ' % self.connector
         sql_string = conn.join(result)
         if sql_string:
-            if len(result) > 1:
-                sql_string = '(%s)' % sql_string
             if self.negated:
-                sql_string = 'NOT %s' % sql_string
+                # Some backends (Oracle at least) need parentheses
+                # around the inner SQL in the negated case, even if the
+                # inner SQL contains just a single expression.
+                sql_string = 'NOT (%s)' % sql_string
+            elif len(result) > 1:
+                sql_string = '(%s)' % sql_string
         return sql_string, result_params
 
     def make_atom(self, child, qn, connection):
