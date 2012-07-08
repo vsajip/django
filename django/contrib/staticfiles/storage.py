@@ -46,8 +46,8 @@ class StaticFilesStorage(FileSystemStorage):
 class CachedFilesMixin(object):
     patterns = (
         ("*.css", (
-            br"""(url\(['"]{0,1}\s*(.*?)["']{0,1}\))""",
-            br"""(@import\s*["']\s*(.*?)["'])""",
+            r"""(url\(['"]{0,1}\s*(.*?)["']{0,1}\))""",
+            r"""(@import\s*["']\s*(.*?)["'])""",
         )),
     )
 
@@ -152,7 +152,6 @@ class CachedFilesMixin(object):
             matched, url = matchobj.groups()
             # Completely ignore http(s) prefixed URLs,
             # fragments and data-uri URLs
-            if PY3: url = url.decode('utf-8')
             if url.startswith(('#', 'http:', 'https:', 'data:')):
                 return matched
             name_parts = name.split(os.sep)
@@ -178,7 +177,6 @@ class CachedFilesMixin(object):
             relative_url = '/'.join(url.split('/')[:-1] + file_name)
             # Return the hashed version to the file
             result = 'url("%s")' % unquote(relative_url)
-            if PY3: result = result.encode('utf-8')
             return result
         return converter
 
@@ -229,7 +227,7 @@ class CachedFilesMixin(object):
 
                 # ..to apply each replacement pattern to the content
                 if name in adjustable_paths:
-                    content = original_file.read()
+                    content = original_file.read().decode(settings.FILE_CHARSET)
                     converter = self.url_converter(name)
                     for patterns in self._patterns.values():
                         for pattern in patterns:

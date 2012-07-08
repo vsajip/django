@@ -9,7 +9,8 @@ from django.utils.safestring import SafeData, mark_safe
 from django.utils.encoding import smart_unicode, force_unicode
 from django.utils.functional import allow_lazy
 from django.utils.text import normalize_newlines
-from django.utils.py3 import text_type, n, urlsplit, urlunsplit, quote, PY3
+from django.utils.py3 import (text_type, n, urlsplit, urlunsplit, quote, PY3,
+                              iteritems)
 
 # Configuration for urlize() function.
 TRAILING_PUNCTUATION = ['.', ',', ':', ';']
@@ -33,11 +34,11 @@ try:
 except NameError:
     pass
 
-def escape(html):
+def escape(text):
     """
-    Returns the given HTML with ampersands, quotes and angle brackets encoded.
+    Returns the given text with ampersands, quotes and angle brackets encoded for use in HTML.
     """
-    return mark_safe(force_unicode(html).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;').replace("'", '&#39;'))
+    return mark_safe(force_unicode(text).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;').replace("'", '&#39;'))
 escape = allow_lazy(escape, text_type)
 
 _base_js_escapes = (
@@ -65,14 +66,45 @@ def escapejs(value):
     return value
 escapejs = allow_lazy(escapejs, text_type)
 
-def conditional_escape(html):
+def conditional_escape(text):
     """
     Similar to escape(), except that it doesn't operate on pre-escaped strings.
     """
-    if isinstance(html, SafeData):
-        return html
+    if isinstance(text, SafeData):
+        return text
     else:
-        return escape(html)
+        return escape(text)
+
+def format_html(format_string, *args, **kwargs):
+    """
+    Similar to str.format, but passes all arguments through conditional_escape,
+    and calls 'mark_safe' on the result. This function should be used instead
+    of str.format or % interpolation to build up small HTML fragments.
+    """
+    args_safe = map(conditional_escape, args)
+    kwargs_safe = dict([(k, conditional_escape(v)) for (k, v) in
+                        iteritems(kwargs)])
+    return mark_safe(format_string.format(*args_safe, **kwargs_safe))
+
+def format_html_join(sep, format_string, args_generator):
+    """
+    A wrapper format_html, for the common case of a group of arguments that need
+    to be formatted using the same format string, and then joined using
+    'sep'. 'sep' is also passed through conditional_escape.
+
+    'args_generator' should be an iterator that returns the sequence of 'args'
+    that will be passed to format_html.
+
+    Example:
+
+      format_html_join('\n', "<li>{0} {1}</li>", ((u.first_name, u.last_name)
+                                                  for u in users))
+
+    """
+    return mark_safe(conditional_escape(sep).join(
+            format_html(format_string, *tuple(args))
+            for args in args_generator))
+
 
 def linebreaks(value, autoescape=False):
     """Converts newlines into <p> and <br />s."""

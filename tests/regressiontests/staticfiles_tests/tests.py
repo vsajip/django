@@ -87,14 +87,16 @@ class BaseStaticFilesTestCase(object):
             template = loader.get_template_from_string(template)
         return template.render(Context(kwargs)).strip()
 
-    def static_template_snippet(self, path):
+    def static_template_snippet(self, path, asvar=False):
+        if asvar:
+            return "{%% load static from staticfiles %%}{%% static '%s' as var %%}{{ var }}" % path
         return "{%% load static from staticfiles %%}{%% static '%s' %%}" % path
 
-    def assertStaticRenders(self, path, result, **kwargs):
-        template = self.static_template_snippet(path)
+    def assertStaticRenders(self, path, result, asvar=False, **kwargs):
+        template = self.static_template_snippet(path, asvar)
         self.assertEqual(self.render_template(template, **kwargs), result)
 
-    def assertStaticRaises(self, exc, path, result, **kwargs):
+    def assertStaticRaises(self, exc, path, result, asvar=False, **kwargs):
         self.assertRaises(exc, self.assertStaticRenders, path, result, **kwargs)
 
 
@@ -368,6 +370,8 @@ class TestCollectionCachedStorage(BaseCollectionTestCase,
                                 "/static/does/not/exist.png")
         self.assertStaticRenders("test/file.txt",
                                  "/static/test/file.dad0999e4f8f.txt")
+        self.assertStaticRenders("test/file.txt",
+                                 "/static/test/file.dad0999e4f8f.txt", asvar=True)
         self.assertStaticRenders("cached/styles.css",
                                  "/static/cached/styles.93b1147e8552.css")
         self.assertStaticRenders("path/",
@@ -494,8 +498,9 @@ class TestCollectionCachedStorage(BaseCollectionTestCase,
         collectstatic_cmd = CollectstaticCommand()
         collectstatic_cmd.set_options(**collectstatic_args)
         stats = collectstatic_cmd.collect()
-        self.assertTrue(os.path.join('cached', 'css', 'window.css') in stats['post_processed'])
-        self.assertTrue(os.path.join('cached', 'css', 'img', 'window.png') in stats['unmodified'])
+        self.assertIn(os.path.join('cached', 'css', 'window.css'), stats['post_processed'])
+        self.assertIn(os.path.join('cached', 'css', 'img', 'window.png'), stats['unmodified'])
+        self.assertIn(os.path.join('test', 'nonascii.css'), stats['post_processed'])
 
     def test_cache_key_memcache_validation(self):
         """

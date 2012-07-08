@@ -1,7 +1,9 @@
+from __future__ import unicode_literals
+
 from django import forms
 from django.forms.util import flatatt
 from django.template import loader
-from django.utils.encoding import smart_str
+from django.utils.html import format_html, format_html_join
 from django.utils.http import int_to_base36
 from django.utils.py3 import iteritems
 from django.utils.safestring import mark_safe
@@ -26,17 +28,19 @@ class ReadOnlyPasswordHashWidget(forms.Widget):
             return "None"
 
         final_attrs = self.build_attrs(attrs)
-        encoded = smart_str(encoded)
+        encoded = encoded.encode('utf-8')
         try:
             hasher = identify_hasher(encoded)
         except ValueError:
-            summary = "<strong>Invalid password format or unknown hashing algorithm.</strong>"
+            summary = mark_safe("<strong>Invalid password format or unknown hashing algorithm.</strong>")
         else:
-            summary = ""
-            for key, value in iteritems(hasher.safe_summary(encoded)):
-                summary += "<strong>%(key)s</strong>: %(value)s " % {"key": ugettext(key), "value": value}
+            summary = format_html_join('',
+                                       "<strong>{0}</strong>: {1} ",
+                                       ((ugettext(key), value)
+                                        for key, value in hasher.safe_summary(encoded).items())
+                                       )
 
-        return mark_safe("<div%(attrs)s>%(summary)s</div>" % {"attrs": flatatt(final_attrs), "summary": summary})
+        return format_html("<div{0}>{1}</div>", flatatt(final_attrs), summary)
 
 
 class ReadOnlyPasswordHashField(forms.Field):
