@@ -6,9 +6,9 @@ from django.utils.py3 import execfile_, PY3
 class Command(NoArgsCommand):
     option_list = NoArgsCommand.option_list + (
         make_option('--plain', action='store_true', dest='plain',
-            help='Tells Django to use plain Python, not IPython.'),
+            help='Tells Django to use plain Python, not IPython or bpython.'),
     )
-    help = "Runs a Python interactive interpreter. Tries to use IPython, if it's available."
+    help = "Runs a Python interactive interpreter. Tries to use IPython or bpython, if one of them is available."
     shells = ['ipython', 'bpython']
     requires_model_validation = False
 
