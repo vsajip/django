@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 from __future__ import unicode_literals
 
 import copy
@@ -197,7 +198,7 @@ class QueryDictTests(unittest.TestCase):
         self.assertEqual(q == q1, True)
         q = QueryDict('a=b&c=d&a=1')
         q1 = pickle.loads(pickle.dumps(q, 2))
-        self.assertEqual(q == q1 , True)
+        self.assertEqual(q == q1, True)
 
     def test_update_from_querydict(self):
         """Regression test for #8278: QueryDict.update(QueryDict)"""
@@ -309,6 +310,17 @@ class HttpResponseTests(unittest.TestCase):
         #self.assertRaises(UnicodeEncodeError,
         #                  getattr, r, 'content')
         self.assertEqual(r.content, b'\xde\x9e')
+
+    def test_file_interface(self):
+        r = HttpResponse()
+        r.write(b"hello")
+        self.assertEqual(r.tell(), 5)
+        r.write("привет")
+        self.assertEqual(r.tell(), 17)
+
+        r = HttpResponse(['abc'])
+        self.assertRaises(Exception, r.write, 'def')
+
 
 class CookieTests(unittest.TestCase):
     def test_encode(self):
