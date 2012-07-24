@@ -3,7 +3,7 @@ from __future__ import absolute_import, unicode_literals
 from django import forms
 from django.core.exceptions import NON_FIELD_ERRORS
 from django.test import TestCase
-from django.utils.py3 import dictkeys
+from django.utils import six
 
 from . import ValidationTestCase
 from .models import (Author, Article, ModelToValidate,
@@ -80,7 +80,7 @@ class ModelFormsTests(TestCase):
             'pub_date': '2010-1-10 14:49:00'
         }
         form = ArticleForm(data)
-        self.assertEqual(dictkeys(form.errors), [])
+        self.assertEqual(six.dictkeys(form.errors), [])
         article = form.save(commit=False)
         article.author = self.author
         article.save()
@@ -96,7 +96,7 @@ class ModelFormsTests(TestCase):
         }
         article = Article(author_id=self.author.id)
         form = ArticleForm(data, instance=article)
-        self.assertEqual(dictkeys(form.errors), [])
+        self.assertEqual(six.dictkeys(form.errors), [])
         self.assertNotEqual(form.instance.pub_date, None)
         article = form.save()
 
@@ -109,7 +109,7 @@ class ModelFormsTests(TestCase):
         }
         article = Article(author_id=self.author.id)
         form = ArticleForm(data, instance=article)
-        self.assertEqual(dictkeys(form.errors), ['pub_date'])
+        self.assertEqual(six.dictkeys(form.errors), ['pub_date'])
 
 
 class GenericIPAddressFieldTests(ValidationTestCase):

@@ -1,17 +1,16 @@
 from __future__ import unicode_literals
 
 import re
+try:
+    from urllib.parse import urlsplit, urlunsplit
+except ImportError:     # Python 2
+    from urlparse import urlsplit, urlunsplit
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import smart_unicode
 from django.utils.ipv6 import is_valid_ipv6_address
-from django.utils.py3 import (string_types, urlsplit, urlunsplit, quote,
-                              #Request, OpenerDirector, UnknownHandler,
-                              #HTTPHandler, HTTPSHandler,
-                              #HTTPDefaultErrorHandler, FTPHandler, urllib2,
-                              #HTTPErrorProcessor,
-                              PY3, n, dictkeys)
+from django.utils import six
 
 # These values, if given to validate(), will trigger the self.required check.
 EMPTY_VALUES = (None, '', [], (), {})
@@ -23,7 +22,7 @@ EMPTY_VALUES = (None, '', [], (), {})
 
 def py3_string_conversion(s):
     # Convert byte s, if any, to str
-    if not isinstance(s, str) and PY3:
+    if not isinstance(s, str) and six.PY3:
         s = str(s, encoding='utf8')
     return s
 
@@ -43,7 +42,7 @@ class RegexValidator(object):
             self.code = code
 
         # Compile the regex if it was not passed pre-compiled.
-        if isinstance(self.regex, string_types):
+        if isinstance(self.regex, six.string_types):
             self.regex = re.compile(self.regex)
 
     def __call__(self, value):
@@ -158,7 +157,7 @@ def ip_address_validators(protocol, unpack_ipv4):
         return ip_address_validator_map[protocol.lower()]
     except KeyError:
         raise ValueError("The protocol '%s' is unknown. Supported: %s"
-                         % (protocol, dictkeys(ip_address_validator_map)))
+                         % (protocol, six.dictkeys(ip_address_validator_map)))
 
 comma_separated_int_list_re = re.compile('^[\d,]+$')
 validate_comma_separated_integer_list = RegexValidator(comma_separated_int_list_re, _('Enter only digits separated by commas.'), 'invalid')

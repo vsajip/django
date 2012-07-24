@@ -2,7 +2,8 @@
 A collection of utility routines and classes used by the spatial
 backends.
 """
-from django.utils.py3 import string_types, text_type
+
+from django.utils import six
 
 def gqn(val):
     """
@@ -10,8 +11,8 @@ def gqn(val):
     geometries (they use single rather than the double quotes of the
     backend quotename function).
     """
-    if isinstance(val, string_types):
-        if isinstance(val, text_type): val = val.encode('ascii')
+    if isinstance(val, six.string_types):
+        if isinstance(val, six.text_type): val = val.encode('ascii')
         return "'%s'" % val
     else:
         return str(val)

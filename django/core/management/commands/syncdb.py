@@ -9,7 +9,7 @@ from django.core.management.sql import custom_sql_for_model, emit_post_sync_sign
 from django.db import connections, router, transaction, models, DEFAULT_DB_ALIAS
 from django.utils.datastructures import SortedDict
 from django.utils.importlib import import_module
-from django.utils.py3 import lfilter
+from django.utils import six
 
 class Command(NoArgsCommand):
     option_list = NoArgsCommand.option_list + (
@@ -75,7 +75,7 @@ class Command(NoArgsCommand):
                 (opts.auto_created and converter(opts.auto_created._meta.db_table) in tables))
 
         manifest = SortedDict(
-            (app_name, lfilter(model_installed, model_list))
+            (app_name, six.lfilter(model_installed, model_list))
             for app_name, model_list in all_models
         )
 

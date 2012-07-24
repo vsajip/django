@@ -4,12 +4,13 @@ import time
 from threading import local
 
 from django.core.cache.backends.base import BaseCache, InvalidCacheBackendError
-from django.utils.py3 import string_types, lmap
+
+from django.utils import six
 
 class BaseMemcachedCache(BaseCache):
     def __init__(self, server, params, library, value_not_found_exception):
         super(BaseMemcachedCache, self).__init__(params)
-        if isinstance(server, string_types):
+        if isinstance(server, six.string_types):
             self._servers = server.split(';')
         else:
             self._servers = server
@@ -121,7 +122,7 @@ class BaseMemcachedCache(BaseCache):
 
     def delete_many(self, keys, version=None):
         l = lambda x: self.make_key(x, version=version)
-        self._cache.delete_multi(lmap(l, keys))
+        self._cache.delete_multi(six.lmap(l, keys))
 
     def clear(self):
         self._cache.flush_all()

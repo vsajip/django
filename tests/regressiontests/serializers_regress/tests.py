@@ -23,7 +23,8 @@ from django.db import connection, models
 from django.http import HttpResponse
 from django.test import TestCase
 from django.utils.functional import curry
-from django.utils.py3 import StringIO, next
+from django.utils import six
+from django.utils.six.moves import StringIO
 from django.utils.unittest import skipUnless
 
 from .models import (BooleanData, CharData, DateData, DateTimeData, EmailData,
@@ -490,7 +491,7 @@ def fieldsTest(format, self):
 
     # Serialize then deserialize the test database
     serialized_data = serializers.serialize(format, [obj], indent=2, fields=('field1','field3'))
-    result = next(serializers.deserialize(format, serialized_data))
+    result = six.advance_iterator(serializers.deserialize(format, serialized_data))
 
     # Check that the deserialized object contains data in only the serialized fields.
     self.assertEqual(result.object.field1, 'first')

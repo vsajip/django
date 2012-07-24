@@ -9,7 +9,7 @@ from django.conf import settings
 from django.core.files.base import File
 from django.core.files import temp as tempfile
 from django.utils.encoding import smart_unicode
-from django.utils.py3 import n
+from django.utils import six
 
 __all__ = ('UploadedFile', 'TemporaryUploadedFile', 'InMemoryUploadedFile',
            'SimpleUploadedFile')
@@ -31,7 +31,7 @@ class UploadedFile(File):
         self.charset = charset
 
     def __repr__(self):
-        return n("<%s: %s (%s)>" % (
+        return six.n("<%s: %s (%s)>" % (
             self.__class__.__name__, smart_unicode(self.name), self.content_type))
 
     def _get_name(self):

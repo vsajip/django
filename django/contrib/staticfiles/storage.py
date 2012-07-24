@@ -3,6 +3,11 @@ import hashlib
 import os
 import posixpath
 import re
+try:
+    from urllib.parse import unquote, urlsplit, urlunsplit, urldefrag
+except ImportError:     # Python 2
+    from urllib import unquote
+    from urlparse import urlsplit, urlunsplit, urldefrag
 
 from django.conf import settings
 from django.core.cache import (get_cache, InvalidCacheBackendError,
@@ -14,7 +19,6 @@ from django.utils.datastructures import SortedDict
 from django.utils.encoding import force_unicode, smart_str
 from django.utils.functional import LazyObject
 from django.utils.importlib import import_module
-from django.utils.py3 import unquote, urlsplit, urlunsplit, urldefrag, PY3
 
 from django.contrib.staticfiles.utils import check_settings, matches_patterns
 

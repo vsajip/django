@@ -4,6 +4,7 @@ Where possible, we try to use the system-native version and only fall back to
 these implementations if necessary.
 """
 
+from django.utils.six.moves import builtins
 import itertools
 import warnings
 

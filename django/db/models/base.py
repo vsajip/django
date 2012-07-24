@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import copy
 import sys
 from functools import update_wrapper
+from django.utils.six.moves import zip
 
 import django.db.models.manager     # Imported to register signal handler.
 from django.conf import settings
@@ -23,7 +24,8 @@ from django.db.models.loading import register_models, get_model
 from django.utils.translation import ugettext_lazy as _
 from django.utils.functional import curry
 from django.utils.encoding import smart_str, force_unicode
-from django.utils.py3 import izip, with_metaclass, text_type, PY3, n, dictkeys
+from django.utils import six
+from django.utils.six.moves import zip
 from django.utils.text import get_text_list, capfirst
 
 
@@ -33,7 +35,10 @@ class ModelBase(type):
     """
     def __new__(cls, name, bases, attrs):
         super_new = super(ModelBase, cls).__new__
-        parents = [b for b in bases if isinstance(b, ModelBase) and b.__name__ != '_DjangoBase']
+        # six.with_metaclass() inserts an extra class called 'NewBase' in the
+        # inheritance tree: Model -> NewBase -> object. Ignore this class.
+        parents = [b for b in bases if isinstance(b, ModelBase) and
+                not (b.__name__ == 'NewBase' and b.__mro__ == (b, object))]
         if not parents:
             # If this isn't a subclass of Model, don't do anything special.
             return super_new(cls, name, bases, attrs)
@@ -275,7 +280,7 @@ class ModelState(object):
         # This impacts validation only; it has no effect on the actual save.
         self.adding = True
 
-class Model(with_metaclass(ModelBase)):
+class Model(six.with_metaclass(ModelBase, object)):
     _deferred = False
 
     def __init__(self, *args, **kwargs):
@@ -299,11 +304,11 @@ class Model(with_metaclass(ModelBase)):
             # when an iter throws it. So if the first iter throws it, the second
             # is *not* consumed. We rely on this, so don't change the order
             # without changing the logic.
-            for val, field in izip(args, fields_iter):
+            for val, field in zip(args, fields_iter):
                 setattr(self, field.attname, val)
         else:
             # Slower, kwargs-ready version.
-            for val, field in izip(args, fields_iter):
+            for val, field in zip(args, fields_iter):
                 setattr(self, field.attname, val)
                 kwargs.pop(field.name, None)
                 # Maintain compatibility with existing calls.
@@ -360,30 +365,30 @@ class Model(with_metaclass(ModelBase)):
                 setattr(self, field.attname, val)
 
         if kwargs:
-            for prop in dictkeys(kwargs):
+            for prop in six.dictkeys(kwargs):
                 try:
                     if isinstance(getattr(self.__class__, prop), property):
                         setattr(self, prop, kwargs.pop(prop))
                 except AttributeError:
                     pass
             if kwargs:
-                raise TypeError("'%s' is an invalid keyword argument for this function" % dictkeys(kwargs)[0])
+                raise TypeError("'%s' is an invalid keyword argument for this function" % six.dictkeys(kwargs)[0])
         super(Model, self).__init__()
         signals.post_init.send(sender=self.__class__, instance=self)
 
     def __repr__(self):
         try:
-            u = text_type(self)
+            u = six.text_type(self)
         except (UnicodeEncodeError, UnicodeDecodeError):
             u = '[Bad Unicode data]'
-        if not PY3:
+        if not six.PY3:
             return smart_str('<%s: %s>' % (self.__class__.__name__, u))
         else:
             return '<%s: %s>' % (self.__class__.__name__, u)
 
     def __str__(self):
         if hasattr(self, '__unicode__'):
-            if not PY3:
+            if not six.PY3:
                 return force_unicode(self).encode('utf-8')
             return force_unicode(self)
         return '%s object' % self.__class__.__name__
@@ -738,7 +743,7 @@ class Model(with_metaclass(ModelBase)):
                 lookup_kwargs[str(field_name)] = lookup_value
 
             # some fields were skipped, no reason to do the check
-            if len(unique_check) != len(dictkeys(lookup_kwargs)):
+            if len(unique_check) != len(six.dictkeys(lookup_kwargs)):
                 continue
 
             qs = model_class._default_manager.filter(**lookup_kwargs)
@@ -793,8 +798,8 @@ class Model(with_metaclass(ModelBase)):
     def date_error_message(self, lookup_type, field, unique_for):
         opts = self._meta
         return _("%(field_name)s must be unique for %(date_field)s %(lookup)s.") % {
-            'field_name': text_type(capfirst(opts.get_field(field).verbose_name)),
-            'date_field': text_type(capfirst(opts.get_field(unique_for).verbose_name)),
+            'field_name': six.text_type(capfirst(opts.get_field(field).verbose_name)),
+            'date_field': six.text_type(capfirst(opts.get_field(unique_for).verbose_name)),
             'lookup': lookup_type,
         }
 
@@ -809,16 +814,16 @@ class Model(with_metaclass(ModelBase)):
             field_label = capfirst(field.verbose_name)
             # Insert the error into the error dict, very sneaky
             return field.error_messages['unique'] %  {
-                'model_name': text_type(model_name),
-                'field_label': text_type(field_label)
+                'model_name': six.text_type(model_name),
+                'field_label': six.text_type(field_label)
             }
         # unique_together
         else:
             field_labels = [capfirst(opts.get_field(f).verbose_name) for f in unique_check]
             field_labels = get_text_list(field_labels, _('and'))
             return _("%(model_name)s with this %(field_label)s already exists.") %  {
-                'model_name': text_type(model_name),
-                'field_label': text_type(field_labels)
+                'model_name': six.text_type(model_name),
+                'field_label': six.text_type(field_labels)
             }
 
     def full_clean(self, exclude=None):
@@ -878,6 +883,7 @@ class Model(with_metaclass(ModelBase)):
 
         if errors:
             raise ValidationError(errors)
+
 
 
 ############################################
@@ -950,7 +956,7 @@ def subclass_exception(name, parents, module, attached_to=None):
         class_dict['__reduce__'] = __reduce__
         class_dict['__setstate__'] = __setstate__
 
-    return type(n(name), parents, class_dict)
+    return type(six.n(name), parents, class_dict)
 
 def unpickle_inner_exception(klass, exception_name):
     # Get the exception class from the class it is attached to:

@@ -27,6 +27,7 @@ __init__(). For example, CharField has a max_length option.
 from __future__ import unicode_literals
 
 import datetime
+import pickle
 import re
 import os
 from decimal import Decimal
@@ -34,10 +35,11 @@ from decimal import Decimal
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.forms import *
 from django.test import SimpleTestCase
-from django.utils.py3 import string_types, pickle
+from django.utils import six
+
 
 def fix_os_paths(x):
-    if isinstance(x, string_types):
+    if isinstance(x, six.string_types):
         return x.replace('\\', '/')
     elif isinstance(x, tuple):
         return tuple(fix_os_paths(list(x)))

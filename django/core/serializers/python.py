@@ -9,7 +9,7 @@ from django.conf import settings
 from django.core.serializers import base
 from django.db import models, DEFAULT_DB_ALIAS
 from django.utils.encoding import smart_unicode, is_protected_type
-from django.utils.py3 import iteritems, string_types
+from django.utils import six
 
 class Serializer(base.Serializer):
     """
@@ -88,7 +88,7 @@ def Deserializer(object_list, **options):
         m2m_data = {}
 
         # Handle each field
-        for (field_name, field_value) in iteritems(d["fields"]):
+        for (field_name, field_value) in six.iteritems(d["fields"]):
             if isinstance(field_value, str):
                 field_value = smart_unicode(field_value, options.get("encoding", settings.DEFAULT_CHARSET), strings_only=True)
 
@@ -99,7 +99,7 @@ def Deserializer(object_list, **options):
                 if hasattr(field.rel.to._default_manager, 'get_by_natural_key'):
                     def m2m_convert(value):
                         # django3: On 3.x, strings have __iter__
-                        if hasattr(value, '__iter__') and not isinstance(value, string_types):
+                        if hasattr(value, '__iter__') and not isinstance(value, six.string_types):
                             return field.rel.to._default_manager.db_manager(db).get_by_natural_key(*value).pk
                         else:
                             return smart_unicode(field.rel.to._meta.pk.to_python(value))
@@ -112,7 +112,7 @@ def Deserializer(object_list, **options):
                 if field_value is not None:
                     if hasattr(field.rel.to._default_manager, 'get_by_natural_key'):
                         # django3: On 3.x, strings have __iter__
-                        if hasattr(field_value, '__iter__') and not isinstance(field_value, string_types):
+                        if hasattr(field_value, '__iter__') and not isinstance(field_value, six.string_types):
                             obj = field.rel.to._default_manager.db_manager(db).get_by_natural_key(*field_value)
                             value = getattr(obj, field.rel.field_name)
                             # If this is a natural foreign key to an object that

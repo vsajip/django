@@ -7,7 +7,7 @@ import sys
 
 from django.conf import settings
 from django.test import TestCase
-from django.utils.py3 import PY3
+from django.utils import six
 from django.utils.translation import override, activate, get_language
 from django.utils.text import javascript_quote
 
@@ -31,7 +31,7 @@ class I18NTests(TestCase):
         for lang_code in ['es', 'fr', 'ru']:
             activate(lang_code)
             catalog = gettext.translation('djangojs', locale_dir, [lang_code])
-            if PY3: 
+            if six.PY3: 
                 trans_txt = catalog.gettext('this is to be translated')
             else:
                 trans_txt = catalog.ugettext('this is to be translated')

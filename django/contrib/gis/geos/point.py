@@ -2,9 +2,8 @@ from ctypes import c_uint
 from django.contrib.gis.geos.error import GEOSException
 from django.contrib.gis.geos.geometry import GEOSGeometry
 from django.contrib.gis.geos import prototypes as capi
-from django.utils.py3 import integer_types, next, xrange
-
-NUMERIC_TYPES = integer_types + (float,)
+from django.utils import six
+from django.utils.six.moves import xrange
 
 class Point(GEOSGeometry):
     _minlength = 2
@@ -23,9 +22,9 @@ class Point(GEOSGeometry):
             # Here a tuple or list was passed in under the `x` parameter.
             ndim = len(x)
             coords = x
-        elif isinstance(x, NUMERIC_TYPES) and isinstance(y, NUMERIC_TYPES):
+        elif isinstance(x, six.integer_types + (float,)) and isinstance(y, six.integer_types + (float,)):
             # Here X, Y, and (optionally) Z were passed in individually, as parameters.
-            if isinstance(z, NUMERIC_TYPES):
+            if isinstance(z, six.integer_types + (float,)):
                 ndim = 3
                 coords = [x, y, z]
             else:

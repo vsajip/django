@@ -16,9 +16,9 @@ from django.utils.encoding import force_unicode, iri_to_uri
 from django.utils.html import (conditional_escape, escapejs, fix_ampersands,
     escape, urlize as urlize_impl, linebreaks, strip_tags)
 from django.utils.http import urlquote
-from django.utils.py3 import text_type, lmap
 from django.utils.text import Truncator, wrap, phone2numeric
 from django.utils.safestring import mark_safe, SafeData, mark_for_escaping
+from django.utils import six
 from django.utils.timesince import timesince, timeuntil
 from django.utils.translation import ugettext, ungettext
 from django.utils.text import normalize_newlines
@@ -177,7 +177,7 @@ def floatformat(text, arg=-1):
         # and `exponent` from `Decimal.as_tuple()` directly.
         sign, digits, exponent = d.quantize(exp, ROUND_HALF_UP,
             Context(prec=prec)).as_tuple()
-        digits = [text_type(digit) for digit in reversed(digits)]
+        digits = [six.text_type(digit) for digit in reversed(digits)]
         while len(digits) <= abs(exponent):
             digits.append('0')
         digits.insert(-exponent, '.')
@@ -201,7 +201,7 @@ def linenumbers(value, autoescape=None):
     lines = value.split('\n')
     # Find the maximum width of the line count, for use with zero padding
     # string format command
-    width = text_type(len(text_type(len(lines))))
+    width = six.text_type(len(six.text_type(len(lines))))
     if not autoescape or isinstance(value, SafeData):
         for i, line in enumerate(lines):
             lines[i] = ("%0" + width  + "d. %s") % (i + 1, line)
@@ -250,7 +250,7 @@ def stringformat(value, arg):
     of Python string formatting
     """
     try:
-        return ("%" + text_type(arg)) % value
+        return ("%" + six.text_type(arg)) % value
     except (ValueError, TypeError):
         return ""
 
@@ -521,7 +521,7 @@ def join(value, arg, autoescape=None):
     """
     Joins a list with a string, like Python's ``str.join(list)``.
     """
-    value = lmap(force_unicode, value)
+    value = six.lmap(force_unicode, value)
     if autoescape:
         value = [conditional_escape(v) for v in value]
     try:

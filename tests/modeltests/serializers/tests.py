@@ -9,8 +9,8 @@ from django.conf import settings
 from django.core import serializers
 from django.db import transaction, connection
 from django.test import TestCase, TransactionTestCase, Approximate
+from django.utils import six
 from django.utils import unittest
-from django.utils.py3 import StringIO, text_type, string_types, n
 
 from .models import (Category, Author, Article, AuthorProfile, Actor, Movie,
     Score, Player, Team)
@@ -117,7 +117,7 @@ class SerializersTestBase(object):
         new_headline = "Poker has no place on television"
         serial_str = serializers.serialize(self.serializer_name,
                                            Article.objects.all())
-        serial_str = n(serial_str.replace(old_headline, new_headline))
+        serial_str = six.n(serial_str.replace(old_headline, new_headline))
         models = list(serializers.deserialize(self.serializer_name, serial_str))
 
         # Prior to saving, old headline is in place
@@ -284,7 +284,7 @@ class SerializersTransactionTestBase(object):
 
 class XmlSerializerTestCase(SerializersTestBase, TestCase):
     serializer_name = "xml"
-    pkless_str = n("""<?xml version="1.0" encoding="utf-8"?>
+    pkless_str = six.n("""<?xml version="1.0" encoding="utf-8"?>
 <django-objects version="1.0">
     <object model="serializers.category">
         <field type="CharField" name="name">Reference</field>
@@ -295,7 +295,7 @@ class XmlSerializerTestCase(SerializersTestBase, TestCase):
     def _comparison_value(value):
         # The XML serializer handles everything as strings, so comparisons
         # need to be performed on the stringified value
-        return text_type(value)
+        return six.text_type(value)
 
     @staticmethod
     def _validate_output(serial_str):
@@ -330,7 +330,7 @@ class XmlSerializerTestCase(SerializersTestBase, TestCase):
 
 class XmlSerializerTransactionTestCase(SerializersTransactionTestBase, TransactionTestCase):
     serializer_name = "xml"
-    fwd_ref_str = n("""<?xml version="1.0" encoding="utf-8"?>
+    fwd_ref_str = six.n("""<?xml version="1.0" encoding="utf-8"?>
 <django-objects version="1.0">
     <object pk="1" model="serializers.article">
         <field to="serializers.author" name="author" rel="ManyToOneRel">1</field>
@@ -350,7 +350,7 @@ class XmlSerializerTransactionTestCase(SerializersTransactionTestBase, Transacti
 
 class JsonSerializerTestCase(SerializersTestBase, TestCase):
     serializer_name = "json"
-    pkless_str = n("""[{"pk": null, "model": "serializers.category", "fields": {"name": "Reference"}}]""")
+    pkless_str = six.n("""[{"pk": null, "model": "serializers.category", "fields": {"name": "Reference"}}]""")
 
     @staticmethod
     def _validate_output(serial_str):
@@ -380,7 +380,7 @@ class JsonSerializerTestCase(SerializersTestBase, TestCase):
 
 class JsonSerializerTransactionTestCase(SerializersTransactionTestBase, TransactionTestCase):
     serializer_name = "json"
-    fwd_ref_str = n("""[
+    fwd_ref_str = six.n("""[
     {
         "pk": 1,
         "model": "serializers.article",
@@ -413,7 +413,7 @@ except ImportError:
 else:
     class YamlSerializerTestCase(SerializersTestBase, TestCase):
         serializer_name = "yaml"
-        fwd_ref_str = n("""- fields:
+        fwd_ref_str = six.n("""- fields:
     headline: Forward references pose no problem
     pub_date: 2006-06-16 15:00:00
     categories: [1]
@@ -429,7 +429,7 @@ else:
   pk: 1
   model: serializers.author""")
 
-        pkless_str = n("""- fields:
+        pkless_str = six.n("""- fields:
     name: Reference
   pk: null
   model: serializers.category""")
@@ -461,7 +461,7 @@ else:
                     # yaml.safe_load will return non-string objects for some
                     # of the fields we are interested in, this ensures that
                     # everything comes back as a string
-                    if isinstance(field_value, string_types):
+                    if isinstance(field_value, six.string_types):
                         ret_list.append(field_value)
                     else:
                         ret_list.append(str(field_value))
@@ -469,7 +469,7 @@ else:
 
     class YamlSerializerTransactionTestCase(SerializersTransactionTestBase, TransactionTestCase):
         serializer_name = "yaml"
-        fwd_ref_str = n("""- fields:
+        fwd_ref_str = six.n("""- fields:
     headline: Forward references pose no problem
     pub_date: 2006-06-16 15:00:00
     categories: [1]

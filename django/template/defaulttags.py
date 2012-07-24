@@ -18,7 +18,7 @@ from django.utils.encoding import smart_str, smart_unicode, smart_text
 from django.utils.safestring import mark_safe
 from django.utils.html import format_html
 from django.utils import timezone
-from django.utils.py3 import next, iteritems, dictkeys
+from django.utils import six
 
 register = Library()
 
@@ -69,7 +69,7 @@ class CycleNode(Node):
             # First time the node is rendered in template
             context.render_context[self] = itertools_cycle(self.cyclevars)
         cycle_iter = context.render_context[self]
-        value = next(cycle_iter).resolve(context)
+        value = six.advance_iterator(cycle_iter).resolve(context)
         if self.variable_name:
             context[self.variable_name] = value
         if self.silent:
@@ -474,7 +474,7 @@ class WithNode(Node):
 
     def render(self, context):
         values = dict([(key, val.resolve(context)) for key, val in
-                       iteritems(self.extra_context)])
+                       six.iteritems(self.extra_context)])
         context.update(values)
         output = self.nodelist.render(context)
         context.pop()
@@ -1189,7 +1189,7 @@ def templatetag(parser, token):
     if tag not in TemplateTagNode.mapping:
         raise TemplateSyntaxError("Invalid templatetag argument: '%s'."
                                   " Must be one of: %s" %
-                                  (tag, dictkeys(TemplateTagNode.mapping)))
+                                  (tag, six.dictkeys(TemplateTagNode.mapping)))
     return TemplateTagNode(tag)
 
 @register.tag

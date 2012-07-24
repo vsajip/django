@@ -4,7 +4,7 @@ import json
 
 from django.db import models
 from django.utils.encoding import force_unicode
-from django.utils.py3 import text_type, string_types, with_metaclass, PY3
+from django.utils import six
 
 
 class Small(object):
@@ -19,12 +19,12 @@ class Small(object):
         return '%s%s' % (force_unicode(self.first), force_unicode(self.second))
 
     def __str__(self):
-        if PY3:
+        if six.PY3:
             return self.__unicode__()
         else:
-            return text_type(self).encode('utf-8')
+            return six.text_type(self).encode('utf-8')
 
-class SmallField(with_metaclass(models.SubfieldBase, models.Field)):
+class SmallField(six.with_metaclass(models.SubfieldBase, models.Field)):
     """
     Turns the "Small" class into a Django field. Because of the similarities
     with normal character fields and the fact that Small.__unicode__ does
@@ -44,7 +44,7 @@ class SmallField(with_metaclass(models.SubfieldBase, models.Field)):
         return Small(value[0], value[1])
 
     def get_db_prep_save(self, value, connection):
-        return text_type(value)
+        return six.text_type(value)
 
     def get_prep_lookup(self, lookup_type, value):
         if lookup_type == 'exact':
@@ -59,7 +59,7 @@ class SmallerField(SmallField):
     pass
 
 
-class JSONField(with_metaclass(models.SubfieldBase, models.TextField)):
+class JSONField(six.with_metaclass(models.SubfieldBase, models.TextField)):
 
     description = ("JSONField automatically serializes and desializes values to "
         "and from JSON.")
@@ -68,7 +68,7 @@ class JSONField(with_metaclass(models.SubfieldBase, models.TextField)):
         if not value:
             return None
 
-        if isinstance(value, string_types):
+        if isinstance(value, six.string_types):
             value = json.loads(value)
         return value
 

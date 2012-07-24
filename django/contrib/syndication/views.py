@@ -60,7 +60,7 @@ class Feed(object):
         except AttributeError:
             return default
         if callable(attr):
-            # Check func_code.co_argcount rather than try/excepting the
+            # Check __code__.co_argcount rather than try/excepting the
             # function and catching the TypeError, because something inside
             # the function may raise the TypeError. This technique is more
             # accurate.

@@ -5,7 +5,7 @@
 from django.contrib.gis.geos import *
 from django.contrib.gis.geos.error import GEOSIndexError
 from django.utils import unittest
-from django.utils.py3 import lrange, lmap
+from django.utils import six
 
 def getItem(o,i): return o[i]
 def delItem(o,i): del o[i]
@@ -58,8 +58,8 @@ class GEOSMutationTest(unittest.TestCase):
 
     def test02_PointExceptions(self):
         'Testing Point exceptions'
-        self.assertRaises(TypeError, Point, lrange(1))
-        self.assertRaises(TypeError, Point, lrange(4))
+        self.assertRaises(TypeError, Point, six.lrange(1))
+        self.assertRaises(TypeError, Point, six.lrange(4))
 
     def test03_PointApi(self):
         'Testing Point API'
@@ -113,14 +113,14 @@ class GEOSMutationTest(unittest.TestCase):
 
     def test06_Collection(self):
         'Testing Collection mutations'
-        for mp in (MultiPoint(*lmap(Point,((3,4),(-1,2),(5,-4),(2,8)))),
+        for mp in (MultiPoint(*six.lmap(Point,((3,4),(-1,2),(5,-4),(2,8)))),
                     fromstr('MULTIPOINT (3 4,-1 2,5 -4,2 8)')):
             self.assertEqual(mp._get_single_external(2), Point(5,-4), 'Collection _get_single_external')
 
-            mp._set_list(3, lmap(Point,((5,5),(3,-2),(8,1))))
+            mp._set_list(3, six.lmap(Point,((5,5),(3,-2),(8,1))))
             self.assertEqual(mp.coords, ((5.0,5.0),(3.0,-2.0),(8.0,1.0)), 'Collection _set_list')
 
-            lsa = MultiPoint(*lmap(Point,((5,5),(3,-2),(8,1))))
+            lsa = MultiPoint(*six.lmap(Point,((5,5),(3,-2),(8,1))))
             for f in geos_function_tests:
                 self.assertEqual(f(lsa), f(mp), 'MultiPoint ' + f.__name__)
 

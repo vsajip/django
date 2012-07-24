@@ -7,7 +7,7 @@ from django.forms import formsets, ValidationError
 from django.views.generic import TemplateView
 from django.utils.datastructures import SortedDict
 from django.utils.decorators import classonlymethod
-from django.utils.py3 import text_type, itervalues, iteritems, dictkeys
+from django.utils import six
 
 from django.contrib.formtools.wizard.storage import get_storage
 from django.contrib.formtools.wizard.storage.exceptions import NoFileStorageConfigured
@@ -44,7 +44,7 @@ class StepsHelper(object):
     @property
     def all(self):
         "Returns the names of all steps/forms."
-        return dictkeys(self._wizard.get_form_list())
+        return six.dictkeys(self._wizard.get_form_list())
 
     @property
     def count(self):
@@ -158,20 +158,20 @@ class WizardView(TemplateView):
             if isinstance(form, (list, tuple)):
                 # if the element is a tuple, add the tuple to the new created
                 # sorted dictionary.
-                init_form_list[text_type(form[0])] = form[1]
+                init_form_list[six.text_type(form[0])] = form[1]
             else:
-                # if not, add the form with a zero based counter as text_type
-                init_form_list[text_type(i)] = form
+                # if not, add the form with a zero based counter as unicode
+                init_form_list[six.text_type(i)] = form
 
         # walk through the new created list of forms
-        for form in itervalues(init_form_list):
+        for form in six.itervalues(init_form_list):
             if issubclass(form, formsets.BaseFormSet):
                 # if the element is based on BaseFormSet (FormSet/ModelFormSet)
                 # we need to override the form variable.
                 form = form.form
             # check if any form contains a FileField, if yes, we need a
             # file_storage added to the wizardview (by subclassing).
-            for field in itervalues(form.base_fields):
+            for field in six.itervalues(form.base_fields):
                 if (isinstance(field, forms.FileField) and
                         not hasattr(cls, 'file_storage')):
                     raise NoFileStorageConfigured
@@ -196,7 +196,7 @@ class WizardView(TemplateView):
         could use data from other (maybe previous forms).
         """
         form_list = SortedDict()
-        for form_key, form_class in iteritems(self.form_list):
+        for form_key, form_class in six.iteritems(self.form_list):
             # try to fetch the value from condition list, by default, the form
             # gets passed to the new list.
             condition = self.condition_dict.get(form_key, True)

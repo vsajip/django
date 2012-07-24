@@ -11,7 +11,7 @@ from django.contrib.formtools.wizard import FormWizard
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils import unittest
-from django.utils.py3 import PY3, n
+from django.utils import six
 
 from django.contrib.formtools.tests.wizard import *
 from django.contrib.formtools.tests.forms import *
@@ -166,8 +166,8 @@ class FormHmacTests(unittest.TestCase):
         leading/trailing whitespace so as to be friendly to broken browsers that
         submit it (usually in textareas).
         """
-        f1 = HashTestForm({n('name'): n('joe'), n('bio'): n('Nothing notable.')})
-        f2 = HashTestForm({n('name'): n('  joe'), n('bio'): n('Nothing notable.  ')})
+        f1 = HashTestForm({six.n('name'): six.n('joe'), six.n('bio'): six.n('Nothing notable.')})
+        f2 = HashTestForm({six.n('name'): six.n('  joe'), six.n('bio'): six.n('Nothing notable.  ')})
         hash1 = utils.form_hmac(f1)
         hash2 = utils.form_hmac(f2)
         self.assertEqual(hash1, hash2)
@@ -273,7 +273,7 @@ class WizardTests(TestCase):
                 "1-field": "test2",
                 "hash_0": "cd13b1db3e8f55174bc5745a1b1a53408d4fd1ca",
                 "wizard_step": "1"}
-        if PY3:
+        if six.PY3:
             data["hash_0"] = "9355d5dff22d49dbad58e46189982cec649f9f5b"
         response = self.client.post('/wizard1/', data)
         self.assertEqual(2, response.context['step0'])
@@ -300,7 +300,7 @@ class WizardTests(TestCase):
                 "1-field": "test2",
                 "hash_0": "cd13b1db3e8f55174bc5745a1b1a53408d4fd1ca",
                 "wizard_step": "1"}
-        if PY3:
+        if six.PY3:
             data["hash_0"] = "9355d5dff22d49dbad58e46189982cec649f9f5b"
         wizard(DummyRequest(POST=data))
         self.assertTrue(reached[0])
@@ -310,7 +310,7 @@ class WizardTests(TestCase):
                 "hash_0": "cd13b1db3e8f55174bc5745a1b1a53408d4fd1ca",
                 "hash_1": "1e6f6315da42e62f33a30640ec7e007ad3fbf1a1",
                 "wizard_step": "2"}
-        if PY3:
+        if six.PY3:
             data["hash_0"] = "9355d5dff22d49dbad58e46189982cec649f9f5b"
             data["hash_1"] = "c33142ef9d01b1beae238adf22c3c6c57328f51a"
         self.assertRaises(http.Http404, wizard, DummyRequest(POST=data))
@@ -335,7 +335,7 @@ class WizardTests(TestCase):
                 "1-field": "test2",
                 "hash_0": "cd13b1db3e8f55174bc5745a1b1a53408d4fd1ca",
                 "wizard_step": "1"}
-        if PY3:
+        if six.PY3:
             data["hash_0"] = "9355d5dff22d49dbad58e46189982cec649f9f5b"
         wizard(DummyRequest(POST=data))
         self.assertTrue(reached[0])
@@ -361,7 +361,7 @@ class WizardTests(TestCase):
                 "1-field": "test2",
                 "hash_0": "cd13b1db3e8f55174bc5745a1b1a53408d4fd1ca",
                 "wizard_step": "1"}
-        if PY3:
+        if six.PY3:
             data["hash_0"] = "9355d5dff22d49dbad58e46189982cec649f9f5b"
         wizard(DummyRequest(POST=data))
         self.assertTrue(reached[0])
@@ -389,7 +389,7 @@ class WizardTests(TestCase):
                 "1-field": "test2",
                 "hash_0": "cd13b1db3e8f55174bc5745a1b1a53408d4fd1ca",
                 "wizard_step": "1"}
-        if PY3:
+        if six.PY3:
             data["hash_0"] = "9355d5dff22d49dbad58e46189982cec649f9f5b"
         wizard(DummyRequest(POST=data))
         self.assertTrue(reached[0])

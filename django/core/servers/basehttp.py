@@ -11,6 +11,12 @@ import os
 import socket
 import sys
 import traceback
+try:
+    from urllib.parse import unquote, urljoin
+except ImportError:     # Python 2
+    from urllib import unquote
+    from urlparse import urljoin
+from django.utils.six.moves import socketserver
 from wsgiref import simple_server
 from wsgiref.util import FileWrapper   # for backwards compatibility
 
@@ -18,9 +24,8 @@ import django
 from django.core.exceptions import ImproperlyConfigured
 from django.core.management.color import color_style
 from django.core.wsgi import get_wsgi_application
+from django.utils import six
 from django.utils.importlib import import_module
-from django.utils.py3 import (ThreadingMixIn, urljoin, url2pathname,
-                              unquote, urljoin, PY3)
 
 __all__ = ['WSGIServer', 'WSGIRequestHandler']
 
@@ -150,7 +155,7 @@ class WSGIRequestHandler(simple_server.WSGIRequestHandler, object):
         if length:
             env['CONTENT_LENGTH'] = length
 
-        if not PY3:
+        if not six.PY3:
             headers = [h.split(':', 1) for h in self.headers.headers]
         else:
             # 3.x: .headers is gone; iterating over message itself
@@ -201,7 +206,7 @@ class WSGIRequestHandler(simple_server.WSGIRequestHandler, object):
 def run(addr, port, wsgi_handler, ipv6=False, threading=False):
     server_address = (addr, port)
     if threading:
-        httpd_cls = type('WSGIServer', (ThreadingMixIn, WSGIServer), {})
+        httpd_cls = type('WSGIServer', (socketserver.ThreadingMixIn, WSGIServer), {})
     else:
         httpd_cls = WSGIServer
     httpd = httpd_cls(server_address, WSGIRequestHandler, ipv6=ipv6)

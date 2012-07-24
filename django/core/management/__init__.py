@@ -7,8 +7,8 @@ import warnings
 
 from django.core.management.base import BaseCommand, CommandError, handle_default_options
 from django.core.management.color import color_style
+from django.utils import six
 from django.utils.importlib import import_module
-from django.utils.py3 import iteritems, dictkeys
 
 # For backwards compatibility: get_version() used to be in this module.
 from django import get_version
@@ -229,7 +229,7 @@ class ManagementUtility(object):
                 "Available subcommands:",
             ]
             commands_dict = collections.defaultdict(lambda: [])
-            for name, app in iteritems(get_commands()):
+            for name, app in six.iteritems(get_commands()):
                 if app == 'django.core':
                     app = 'django'
                 else:
@@ -295,7 +295,7 @@ class ManagementUtility(object):
         except IndexError:
             curr = ''
 
-        subcommands = dictkeys(get_commands()) + ['help']
+        subcommands = six.dictkeys(get_commands()) + ['help']
         options = [('--help', None)]
 
         # subcommand
@@ -325,7 +325,7 @@ class ManagementUtility(object):
                         subcommand_cls.option_list]
             # filter out previously specified options from available options
             prev_opts = [x.split('=')[0] for x in cwords[1:cword-1]]
-            options = [x_v for x_v in options if x_v[0] not in prev_opts]
+            options = [opt for opt in options if opt[0] not in prev_opts]
 
             # filter options by current input
             options = sorted([(k, v) for k, v in options if k.startswith(curr)])

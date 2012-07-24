@@ -12,7 +12,7 @@ from django.utils.encoding import smart_str
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.crypto import (
     pbkdf2, constant_time_compare, get_random_string)
-from django.utils.py3 import text_type
+from django.utils import six
 from django.utils.translation import ugettext_noop as _
 
 
@@ -396,13 +396,13 @@ class CryptPasswordHasher(BasePasswordHasher):
         crypt = self._load_library()
         assert len(salt) == 2
         #django3: crypt expects str, not bytes
-        if not isinstance(salt, text_type):
+        if not isinstance(salt, six.text_type):
             salt = salt.decode('utf-8')
-        if not isinstance(password, text_type):
+        if not isinstance(password, six.text_type):
             password = password.decode('utf-8')
         data = crypt.crypt(password, salt)
         # we don't need to store the salt, but Django used to do this
-        if not isinstance(data, text_type):
+        if not isinstance(data, six.text_type):
             data = data.decode('utf-8')
         return "%s$%s$%s" % (self.algorithm, '', data)
 
@@ -410,9 +410,9 @@ class CryptPasswordHasher(BasePasswordHasher):
         crypt = self._load_library()
         algorithm, salt, data = encoded.split(b'$', 2)
         assert algorithm.decode('utf-8') == self.algorithm
-        if not isinstance(data, text_type):
+        if not isinstance(data, six.text_type):
             data = data.decode('utf-8')
-        if not isinstance(password, text_type):
+        if not isinstance(password, six.text_type):
             password = password.decode('utf-8')
         return constant_time_compare(data, crypt.crypt(password, data))
 

@@ -21,14 +21,13 @@ except NotImplementedError:
     using_sysrandom = False
 
 from django.conf import settings
-from django.utils.py3 import PY3, text_type, xrange, reduce, long_type
+from django.utils import six
+from django.utils.six.moves import xrange, reduce
 
-_trans_5c = "".join([chr(x ^ 0x5C) for x in xrange(256)])
-_trans_36 = "".join([chr(x ^ 0x36) for x in xrange(256)])
 
-if PY3:
-    _trans_5c = _trans_5c.encode('latin-1')
-    _trans_36 = _trans_36.encode('latin-1')
+_trans_5c = bytearray([(x ^ 0x5C) for x in xrange(256)])
+_trans_36 = bytearray([(x ^ 0x36) for x in xrange(256)])
+
 
 def salted_hmac(key_salt, value, secret=None):
     """
@@ -49,7 +48,7 @@ def salted_hmac(key_salt, value, secret=None):
     # line is redundant and could be replaced by key = key_salt + secret, since
     # the hmac module does the same thing for keys longer than the block size.
     # However, we need to ensure that we *always* do this.
-    if isinstance(value, text_type): value = value.encode('utf-8')
+    if isinstance(value, six.text_type): value = value.encode('utf-8')
     return hmac.new(key, msg=value, digestmod=hashlib.sha1)
 
 
@@ -88,7 +87,7 @@ def constant_time_compare(val1, val2):
     if len(val1) != len(val2):
         return False
     result = 0
-    if PY3 and (type(val1) is type(val2) is bytes):
+    if six.PY3 and (type(val1) is type(val2) is bytes):
         for x, y in zip(val1, val2):
             result |= x ^ y
     else:
@@ -103,7 +102,7 @@ def _bin_to_long(x):
 
     This is a clever optimization for fast xor vector math
     """
-    return long_type(binascii.hexlify(x), 16)
+    return int(binascii.hexlify(x), 16)
 
 
 def _long_to_bin(x, hex_format_string):

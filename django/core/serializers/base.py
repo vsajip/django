@@ -4,7 +4,8 @@ Module for abstract serializer/unserializer base classes.
 
 from django.db import models
 from django.utils.encoding import smart_unicode
-from django.utils.py3 import StringIO, string_types
+from django.utils import six
+from django.utils.six.moves import StringIO
 
 class SerializerDoesNotExist(KeyError):
     """The requested serializer was not found."""
@@ -122,7 +123,7 @@ class Deserializer(object):
         Init this serializer given a stream or a string
         """
         self.options = options
-        if isinstance(stream_or_string, string_types):
+        if isinstance(stream_or_string, six.string_types):
             self.stream = StringIO(stream_or_string)
         else:
             self.stream = stream_or_string

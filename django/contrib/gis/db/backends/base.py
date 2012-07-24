@@ -4,7 +4,7 @@ Base/mixin classes for the spatial backend database operations and the
 """
 import re
 from django.contrib.gis import gdal
-from django.utils.py3 import text_type
+from django.utils import six
 
 class BaseSpatialOperations(object):
     """
@@ -89,7 +89,7 @@ class BaseSpatialOperations(object):
 
     # For quoting column values, rather than columns.
     def geo_quote_name(self, name):
-        if isinstance(name, text_type):
+        if isinstance(name, six.text_type):
             name = name.encode('ascii')
         return "'%s'" % name
 
@@ -331,6 +331,6 @@ class SpatialRefSysMixin(object):
         it will be 'pretty' OGC WKT.
         """
         try:
-            return text_type(self.srs)
+            return six.text_type(self.srs)
         except:
-            return text_type(self.wkt)
+            return six.text_type(self.wkt)

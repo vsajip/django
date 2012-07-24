@@ -11,7 +11,7 @@ from django.core.validators import EMPTY_VALUES
 from django.forms import ValidationError
 from django.forms.fields import Field, RegexField, Select, CharField
 from django.utils.encoding import smart_unicode
-from django.utils.py3 import xrange
+from django.utils.six.moves import xrange
 from django.utils.translation import ugettext_lazy as _
 
 
@@ -81,10 +81,10 @@ class TRIdentificationNumberField(Field):
             raise ValidationError(self.error_messages['invalid'])
         if int(value[0]) == 0:
             raise ValidationError(self.error_messages['invalid'])
-        chksum = (sum([int(value[i]) for i in xrange(0,9,2)])*7-
-                          sum([int(value[i]) for i in xrange(1,9,2)])) % 10
+        chksum = (sum([int(value[i]) for i in range(0, 9, 2)]) * 7 -
+                          sum([int(value[i]) for i in range(1, 9, 2)])) % 10
         if chksum != int(value[9]) or \
-           (sum([int(value[i]) for i in xrange(10)]) % 10) != int(value[10]):
+           (sum([int(value[i]) for i in range(10)]) % 10) != int(value[10]):
             raise ValidationError(self.error_messages['invalid'])
         return value
 

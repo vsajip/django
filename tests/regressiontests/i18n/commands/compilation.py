@@ -4,7 +4,7 @@ from django.core.management import call_command, CommandError
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils import translation
-from django.utils.py3 import StringIO
+from django.utils.six.moves import StringIO
 
 test_dir = os.path.abspath(os.path.dirname(__file__))
 

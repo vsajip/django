@@ -10,7 +10,7 @@ from django.forms.util import ErrorList
 from django.test import TestCase
 from django.utils import translation
 from django.utils.encoding import force_unicode, smart_unicode
-from django.utils.py3 import PY3
+from django.utils import six
 
 from .error_messages import AssertFormErrorsMixin
 
@@ -556,7 +556,7 @@ class FormsExtraTestCase(TestCase, AssertFormErrorsMixin):
         class Test:
             def __str__(self):
                result = 'ŠĐĆŽćžšđ'
-               if not PY3: result = result.encode('utf-8')
+               if not six.PY3: result = result.encode('utf-8')
                return result
 
         class TestU:

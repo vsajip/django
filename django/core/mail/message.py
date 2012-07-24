@@ -15,8 +15,10 @@ from email.utils import formatdate, getaddresses, formataddr, parseaddr
 from django.conf import settings
 from django.core.mail.utils import DNS_NAME
 from django.utils.encoding import smart_str, force_unicode
-
-from django.utils.py3 import StringIO, string_types, PY3
+from django.utils import six
+# We don't use the version from six.moves - that's StringIO.StringIO, and
+# some test fail with that on 2.x, but work with cStringIO.
+from django.utils.six import StringIO
 
 # Don't BASE64-encode UTF-8 messages so that we avoid unwanted attention from
 # some spam filters.
@@ -84,7 +86,7 @@ def forbid_multi_line_headers(name, val, encoding):
     try:
         val = val.encode('ascii')
         # django3: we want the value back in Unicode
-        if PY3: val = val.decode('ascii')
+        if six.PY3: val = val.decode('ascii')
     except UnicodeEncodeError:
         if name.lower() in ADDRESS_HEADERS:
             val = ', '.join(sanitize_address(addr, encoding)
@@ -93,7 +95,7 @@ def forbid_multi_line_headers(name, val, encoding):
             # django3: On 2.x str(Header(val, encoding)) -> a call to encode(),
             # but not on 3.x - leave it as is
             val = Header(val, encoding)
-            if not PY3: val = val.encode()
+            if not six.PY3: val = val.encode()
     else:
         if name.lower() == 'subject':
             val = Header(val)
@@ -101,13 +103,13 @@ def forbid_multi_line_headers(name, val, encoding):
 
 
 def sanitize_address(addr, encoding):
-    if isinstance(addr, string_types):
+    if isinstance(addr, six.string_types):
         addr = parseaddr(force_unicode(addr))
     nm, addr = addr
     nm = Header(nm, encoding).encode()
     try:
         addr = addr.encode('ascii')
-        if PY3: addr = addr.decode('ascii')
+        if six.PY3: addr = addr.decode('ascii')
     except UnicodeEncodeError:  # IDN
         if '@' in addr:
             localpart, domain = addr.split('@', 1)
@@ -117,7 +119,7 @@ def sanitize_address(addr, encoding):
             # django3: On 2.x str(Header(val, encoding)) -> a call to encode(),
             # but not on 3.x.
             addr = Header(addr, encoding)
-            if not PY3: addr = addr.encode()
+            if not six.PY3: addr = addr.encode()
     return formataddr((nm, addr))
 
 
@@ -188,17 +190,17 @@ class EmailMessage(object):
         necessary encoding conversions.
         """
         if to:
-            assert not isinstance(to, string_types), '"to" argument must be a list or tuple'
+            assert not isinstance(to, six.string_types), '"to" argument must be a list or tuple'
             self.to = list(to)
         else:
             self.to = []
         if cc:
-            assert not isinstance(cc, string_types), '"cc" argument must be a list or tuple'
+            assert not isinstance(cc, six.string_types), '"cc" argument must be a list or tuple'
             self.cc = list(cc)
         else:
             self.cc = []
         if bcc:
-            assert not isinstance(bcc, string_types), '"bcc" argument must be a list or tuple'
+            assert not isinstance(bcc, six.string_types), '"bcc" argument must be a list or tuple'
             self.bcc = list(bcc)
         else:
             self.bcc = []
@@ -217,7 +219,7 @@ class EmailMessage(object):
 
     def message(self):
         encoding = self.encoding or settings.DEFAULT_CHARSET
-        if PY3:
+        if six.PY3:
             body = self.body
         else:
             body = smart_str(self.body, encoding)
@@ -304,7 +306,7 @@ class EmailMessage(object):
         if basetype == 'text':
             encoding = self.encoding or settings.DEFAULT_CHARSET
             # django3: keep in Unicode for 3.x
-            if not PY3: content = smart_str(content, encoding)
+            if not six.PY3: content = smart_str(content, encoding)
             attachment = SafeMIMEText(content, subtype, encoding)
         else:
             # Encode non-text attachments with base64.
@@ -324,7 +326,7 @@ class EmailMessage(object):
                 mimetype = DEFAULT_ATTACHMENT_MIME_TYPE
         attachment = self._create_mime_attachment(content, mimetype)
         if filename:
-            if not PY3:
+            if not six.PY3:
                 try:
                     filename = filename.encode('ascii')
                 except UnicodeEncodeError:

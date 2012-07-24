@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from django.test import TestCase
-from django.utils.py3 import xrange
+from django.utils.six.moves import xrange
 
 from .models import Reporter, Article
 
@@ -89,7 +89,7 @@ class ManyToOneNullTests(TestCase):
 
     def test_clear_efficiency(self):
         r = Reporter.objects.create()
-        for _ in xrange(3):
+        for _ in range(3):
             r.article_set.create()
         with self.assertNumQueries(1):
             r.article_set.clear()

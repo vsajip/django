@@ -4,7 +4,8 @@ from threading import local
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.importlib import import_module
-from django.utils.py3 import string_types
+from django.utils import six
+
 
 DEFAULT_DB_ALIAS = 'default'
 
@@ -108,7 +109,7 @@ class ConnectionRouter(object):
     def __init__(self, routers):
         self.routers = []
         for r in routers:
-            if isinstance(r, string_types):
+            if isinstance(r, six.string_types):
                 try:
                     module_name, klass_name = r.rsplit('.', 1)
                     module = import_module(module_name)

@@ -12,8 +12,8 @@ from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
 from django.utils.datastructures import MultiValueDict
 from django.utils.encoding import force_unicode
+from django.utils import six
 from django.utils.text import unescape_entities
-from django.utils.py3 import byte, next, PY3, valid_boundary
 from django.core.files.uploadhandler import StopUpload, SkipFile, StopFutureHandlers
 
 __all__ = ('MultiPartParser', 'MultiPartParserError', 'InputStreamExhausted')
@@ -65,7 +65,7 @@ class MultiPartParser(object):
         content_type = content_type.encode('ascii')
         ctypes, opts = parse_header(content_type)
         boundary = opts.get('boundary')
-        if not boundary or not valid_boundary(boundary):
+        if not boundary or not six.valid_boundary(boundary):
             raise MultiPartParserError('Invalid boundary in multipart: %s' % boundary)
 
 
@@ -159,7 +159,7 @@ class MultiPartParser(object):
                         raw_data = field_stream.read()
                         try:
                             # django3: avoid str() on 3.x
-                            if not PY3:
+                            if not six.PY3:
                                 raw_data = str(raw_data)
                             data = base64.b64decode(raw_data)
                         except:
@@ -203,7 +203,7 @@ class MultiPartParser(object):
                                 # We only special-case base64 transfer encoding
                                 try:
                                     # django3: avoid str() on 3.x
-                                    if not PY3:
+                                    if not six.PY3:
                                         chunk = str(chunk)
                                     chunk = base64.b64decode(chunk)
                                 except Exception as e:
@@ -513,9 +513,9 @@ class BoundaryIter(object):
             end = index
             next = index + len(self._boundary)
             # backup over CRLF
-            if data[max(0,end-1)] == byte('\n'):
+            if data[max(0,end-1)] == six.byte('\n'):
                 end -= 1
-            if data[max(0,end-1)] == byte('\r'):
+            if data[max(0,end-1)] == six.byte('\r'):
                 end -= 1
             return end, next
 
@@ -610,7 +610,7 @@ def parse_header(line):
     """ Parse the header into a key-value. """
     plist = _parse_header_params(b';' + line)
     key = plist.pop(0).lower()
-    if PY3:
+    if six.PY3:
         # Assume all headers are ASCII, and decode into a string
         # XXX this might be too restrictive
         key = key.decode('ascii')
@@ -620,10 +620,10 @@ def parse_header(line):
         if i >= 0:
             name = p[:i].strip().lower()
             value = p[i+1:].strip()
-            if PY3:
+            if six.PY3:
                 # Make sure the parameter names are strings
                 name = name.decode('ascii')
-            if len(value) >= 2 and value[0] == value[-1] == byte('"'):
+            if len(value) >= 2 and value[0] == value[-1] == six.byte('"'):
                 value = value[1:-1]
                 value = value.replace(b'\\\\', b'\\').replace(b'\\"', b'"')
             pdict[name] = value

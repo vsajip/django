@@ -20,8 +20,8 @@ from django.db.backends.sqlite3.creation import DatabaseCreation
 from django.db.backends.sqlite3.introspection import DatabaseIntrospection
 from django.utils.dateparse import parse_date, parse_datetime, parse_time
 from django.utils.functional import cached_property
-from django.utils.py3 import reraise, text_type, n
 from django.utils.safestring import SafeString
+from django.utils import six
 from django.utils import timezone
 
 try:
@@ -54,15 +54,15 @@ def adapt_datetime_with_timezone_support(value):
             default_timezone = timezone.get_default_timezone()
             value = timezone.make_aware(value, default_timezone)
         value = value.astimezone(timezone.utc).replace(tzinfo=None)
-    return value.isoformat(n(" "))
+    return value.isoformat(six.n(" "))
 
-Database.register_converter(n("bool"), lambda s: s == b'1')
-Database.register_converter(n("time"), util.typecast_time)
-Database.register_converter(n("date"), util.typecast_date)
-Database.register_converter(n("datetime"), parse_datetime_with_timezone_support)
-Database.register_converter(n("timestamp"), parse_datetime_with_timezone_support)
-Database.register_converter(n("TIMESTAMP"), parse_datetime_with_timezone_support)
-Database.register_converter(n("decimal"), util.typecast_decimal)
+Database.register_converter(six.n("bool"), lambda s: s == b'1')
+Database.register_converter(six.n("time"), util.typecast_time)
+Database.register_converter(six.n("date"), util.typecast_date)
+Database.register_converter(six.n("datetime"), parse_datetime_with_timezone_support)
+Database.register_converter(six.n("timestamp"), parse_datetime_with_timezone_support)
+Database.register_converter(six.n("TIMESTAMP"), parse_datetime_with_timezone_support)
+Database.register_converter(six.n("decimal"), util.typecast_decimal)
 Database.register_adapter(datetime.datetime, adapt_datetime_with_timezone_support)
 Database.register_adapter(decimal.Decimal, util.rev_typecast_decimal)
 if Database.version_info >= (2, 4, 1):
@@ -177,7 +177,7 @@ class DatabaseOperations(BaseDatabaseOperations):
             else:
                 raise ValueError("SQLite backend does not support timezone-aware datetimes when USE_TZ is False.")
 
-        return text_type(value)
+        return six.text_type(value)
 
     def value_to_db_time(self, value):
         if value is None:
@@ -187,7 +187,7 @@ class DatabaseOperations(BaseDatabaseOperations):
         if timezone.is_aware(value):
             raise ValueError("SQLite backend does not support timezone-aware times.")
 
-        return text_type(value)
+        return six.text_type(value)
 
     def year_lookup_bounds(self, value):
         first = '%s-01-01'
@@ -349,18 +349,18 @@ class SQLiteCursorWrapper(Database.Cursor):
         try:
             return Database.Cursor.execute(self, query, params)
         except Database.IntegrityError as e:
-            reraise(utils.IntegrityError, utils.IntegrityError(*e.args), sys.exc_info()[2])
+            six.reraise(utils.IntegrityError, utils.IntegrityError(*tuple(e.args)), sys.exc_info()[2])
         except Database.DatabaseError as e:
-            reraise(utils.DatabaseError, utils.DatabaseError(*e.args), sys.exc_info()[2])
+            six.reraise(utils.DatabaseError, utils.DatabaseError(*tuple(e.args)), sys.exc_info()[2])
 
     def executemany(self, query, param_list):
         query = self.convert_query(query)
         try:
             return Database.Cursor.executemany(self, query, param_list)
         except Database.IntegrityError as e:
-            reraise(utils.IntegrityError, utils.IntegrityError(*e.args), sys.exc_info()[2])
+            six.reraise(utils.IntegrityError, utils.IntegrityError(*tuple(e.args)), sys.exc_info()[2])
         except Database.DatabaseError as e:
-            reraise(utils.DatabaseError, utils.DatabaseError(*e.args), sys.exc_info()[2])
+            six.reraise(utils.DatabaseError, utils.DatabaseError(*tuple(e.args)), sys.exc_info()[2])
 
     def convert_query(self, query):
         return FORMAT_QMARK_REGEX.sub('?', query).replace('%%','%')

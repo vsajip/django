@@ -7,7 +7,7 @@ from django.core import signals
 from django.utils.encoding import force_unicode
 from django.utils.importlib import import_module
 from django.utils.log import getLogger
-from django.utils.py3 import reraise
+from django.utils import six
 
 logger = getLogger('django.request')
 
@@ -233,7 +233,7 @@ class BaseHandler(object):
 
         # If Http500 handler is not installed, re-raise last exception
         if resolver.urlconf_module is None:
-            reraise(*exc_info)
+            six.reraise(*exc_info)
         # Return an HttpResponse that displays a friendly error message.
         callback, param_dict = resolver.resolve500()
         return callback(request, **param_dict)

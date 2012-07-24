@@ -7,7 +7,7 @@ import sys
 from django.conf import settings
 from django.core.management import ManagementUtility
 from django.utils import unittest
-from django.utils.py3 import StringIO
+from django.utils.six.moves import StringIO
 
 
 class BashCompletionTests(unittest.TestCase):

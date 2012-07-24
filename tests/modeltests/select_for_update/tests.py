@@ -9,7 +9,7 @@ from django.db.utils import ConnectionHandler, DEFAULT_DB_ALIAS, DatabaseError
 from django.test import (TransactionTestCase, skipIfDBFeature,
     skipUnlessDBFeature)
 from django.utils import unittest
-from django.utils.py3 import text_type
+from django.utils import six
 
 from .models import Person
 
@@ -81,7 +81,7 @@ class SelectForUpdateTests(TransactionTestCase):
         # contains the 'SELECT..FOR UPDATE' stanza.
         for_update_sql = tested_connection.ops.for_update_sql(nowait)
         sql = tested_connection.queries[-1]['sql']
-        if isinstance(sql, text_type): sql = sql.encode('utf-8')
+        if isinstance(sql, six.text_type): sql = sql.encode('utf-8')
         return bool(sql.find(for_update_sql.encode('utf-8')) > -1)
 
     def check_exc(self, exc):

@@ -13,7 +13,7 @@ import tempfile
 
 from django.core.files.storage import FileSystemStorage
 from django.db import models
-from django.utils.py3 import text_type
+from django.utils import six
 
 
 temp_storage_dir = tempfile.mkdtemp(dir=os.environ['DJANGO_TEST_TEMP_DIR'])
@@ -227,7 +227,7 @@ class BigInt(models.Model):
     biggie = models.BigIntegerField()
 
     def __unicode__(self):
-        return text_type(self.biggie)
+        return six.text_type(self.biggie)
 
 class MarkupField(models.CharField):
     def __init__(self, *args, **kwargs):

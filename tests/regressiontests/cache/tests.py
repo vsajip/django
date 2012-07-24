@@ -29,7 +29,7 @@ from django.utils import timezone, translation, unittest
 from django.utils.cache import (patch_vary_headers, get_cache_key,
     learn_cache_key, patch_cache_control, patch_response_headers)
 from django.utils.encoding import force_unicode
-from django.utils.py3 import n
+from django.utils import six
 from django.views.decorators.cache import cache_page
 
 from .models import Poll, expensive_calculation
@@ -769,7 +769,7 @@ class BaseCacheTests(object):
         response = HttpResponse()
         content = 'Testing cookie serialization.'
         response.content = content
-        response.set_cookie(n('foo'), 'bar')
+        response.set_cookie(six.n('foo'), 'bar')
 
         update_middleware.process_response(request, response)
 

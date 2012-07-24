@@ -6,7 +6,7 @@ import os
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.mail.backends.console import EmailBackend as ConsoleEmailBackend
-from django.utils.py3 import string_types
+from django.utils import six
 
 class EmailBackend(ConsoleEmailBackend):
     def __init__(self, *args, **kwargs):
@@ -16,7 +16,7 @@ class EmailBackend(ConsoleEmailBackend):
         else:
             self.file_path = getattr(settings, 'EMAIL_FILE_PATH',None)
         # Make sure self.file_path is a string.
-        if not isinstance(self.file_path, string_types):
+        if not isinstance(self.file_path, six.string_types):
             raise ImproperlyConfigured('Path for saving emails is invalid: %r' % self.file_path)
         self.file_path = os.path.abspath(self.file_path)
         # Make sure that self.file_path is an directory if it exists.

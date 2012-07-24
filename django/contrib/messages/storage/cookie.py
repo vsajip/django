@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib.messages.storage.base import BaseStorage, Message
 from django.http import SimpleCookie
 from django.utils.crypto import salted_hmac, constant_time_compare
-from django.utils.py3 import iteritems, text_type
+from django.utils import six
 
 class MessageEncoder(json.JSONEncoder):
     """
@@ -33,7 +33,7 @@ class MessageDecoder(json.JSONDecoder):
             return [self.process_messages(item) for item in obj]
         if isinstance(obj, dict):
             return dict([(key, self.process_messages(value))
-                         for key, value in iteritems(obj)])
+                         for key, value in six.iteritems(obj)])
         return obj
 
     def decode(self, s, **kwargs):
@@ -112,7 +112,7 @@ class CookieStorage(BaseStorage):
         SECRET_KEY, modified to make it unique for the present purpose.
         """
         key_salt = 'django.contrib.messages'
-        if isinstance(value, text_type): value = value.encode('utf-8')
+        if isinstance(value, six.text_type): value = value.encode('utf-8')
         return salted_hmac(key_salt, value).hexdigest()
 
     def _encode(self, messages, encode_empty=False):

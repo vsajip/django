@@ -3,8 +3,8 @@ from django.contrib.auth import models
 from django.contrib.auth.management.commands import changepassword
 from django.core.management import call_command
 from django.test import TestCase
-from django.utils.py3 import StringIO
-
+from django.utils import six
+from django.utils.six.moves import StringIO
 
 class MultiDBChangepasswordManagementCommandTestCase(TestCase):
     multi_db = True

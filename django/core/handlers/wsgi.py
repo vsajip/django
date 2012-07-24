@@ -11,7 +11,7 @@ from django.core.urlresolvers import set_script_prefix
 from django.utils import datastructures
 from django.utils.encoding import force_unicode, iri_to_uri
 from django.utils.log import getLogger
-from django.utils.py3 import n
+from django.utils import six
 
 logger = getLogger('django.request')
 
@@ -185,7 +185,7 @@ class WSGIRequest(http.HttpRequest):
 
     def _get_cookies(self):
         if not hasattr(self, '_cookies'):
-            self._cookies = http.parse_cookie(self.environ.get('HTTP_COOKIE', ''))
+            self._cookies = http.parse_cookie(self.environ.get('HTTP_COOKIE', six.n('')))
         return self._cookies
 
     def _set_cookies(self, cookies):
@@ -230,7 +230,7 @@ class WSGIHandler(base.BaseHandler):
                 logger.warning('Bad Request (UnicodeDecodeError)',
                     exc_info=sys.exc_info(),
                     extra={
-                        n('status_code'): 400,
+                        six.n('status_code'): 400,
                     }
                 )
                 response = http.HttpResponseBadRequest()
@@ -246,6 +246,6 @@ class WSGIHandler(base.BaseHandler):
         status = '%s %s' % (response.status_code, status_text)
         response_headers = [(str(k), str(v)) for k, v in response.items()]
         for c in response.cookies.values():
-            response_headers.append((n('Set-Cookie'), str(c.output(header=n('')))))
-        start_response(n(status), response_headers)
+            response_headers.append((six.n('Set-Cookie'), str(c.output(header=six.n('')))))
+        start_response(six.n(status), response_headers)
         return response

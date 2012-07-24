@@ -1,11 +1,11 @@
 from django.db.models.sql import compiler
-from django.utils.py3 import izip_longest, dictkeys
+from django.utils import six
 
 class SQLCompiler(compiler.SQLCompiler):
     def resolve_columns(self, row, fields=()):
         values = []
-        index_extra_select = len(dictkeys(self.query.extra_select))
-        for value, field in izip_longest(row[index_extra_select:], fields):
+        index_extra_select = len(six.dictkeys(self.query.extra_select))
+        for value, field in six.izip_longest(row[index_extra_select:], fields):
             if (field and field.get_internal_type() in ("BooleanField", "NullBooleanField") and
                 value in (0, 1)):
                 value = bool(value)

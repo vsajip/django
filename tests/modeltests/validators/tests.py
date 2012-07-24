@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from django.core.exceptions import ValidationError
 from django.core.validators import *
 from django.test.utils import str_prefix
-from django.utils.py3 import PY3, n
+from django.utils import six
 from django.utils.unittest import TestCase
 
 
@@ -192,13 +192,13 @@ class TestSimpleValidators(TestCase):
         self.assertEqual(repr(v), str_prefix("ValidationError([%(_)s'First Problem', %(_)s'Second Problem'])"))
 
     def test_message_dict(self):
-        v = ValidationError({n('first'): n('First Problem')})
+        v = ValidationError({six.n('first'): six.n('First Problem')})
         self.assertEqual(str(v), "{'first': 'First Problem'}")
         self.assertEqual(repr(v), "ValidationError({'first': 'First Problem'})")
 
 test_counter = 0
 for validator, value, expected in TEST_DATA:
-    if PY3 and value == '你好':
+    if six.PY3 and value == '你好':
         continue
     name, method = create_simple_test_method(validator, expected, value, test_counter)
     setattr(TestSimpleValidators, name, method)

@@ -23,8 +23,8 @@ from django.template.response import SimpleTemplateResponse, TemplateResponse
 from django.utils.decorators import method_decorator
 from django.utils.datastructures import SortedDict
 from django.utils.html import escape, escapejs
-from django.utils.py3 import with_metaclass, itervalues, dictkeys
 from django.utils.safestring import mark_safe
+from django.utils import six
 from django.utils.text import capfirst, get_text_list
 from django.utils.translation import ugettext as _
 from django.utils.translation import ungettext
@@ -58,7 +58,7 @@ FORMFIELD_FOR_DBFIELD_DEFAULTS = {
 
 csrf_protect_m = method_decorator(csrf_protect)
 
-class BaseModelAdmin(with_metaclass(forms.MediaDefiningClass)):
+class BaseModelAdmin(six.with_metaclass(forms.MediaDefiningClass)):
     """Functionality common to both ModelAdmin and InlineAdmin."""
 
     raw_id_fields = ()
@@ -425,7 +425,7 @@ class ModelAdmin(BaseModelAdmin):
         if self.declared_fieldsets:
             return self.declared_fieldsets
         form = self.get_form(request, obj)
-        fields = dictkeys(form.base_fields) + list(self.get_readonly_fields(request, obj))
+        fields = six.dictkeys(form.base_fields) + list(self.get_readonly_fields(request, obj))
         return [(None, {'fields': fields})]
 
     def get_form(self, request, obj=None, **kwargs):
@@ -608,7 +608,7 @@ class ModelAdmin(BaseModelAdmin):
         tuple (name, description).
         """
         choices = [] + default_choices
-        for func, name, description in itervalues(self.get_actions(request)):
+        for func, name, description in six.itervalues(self.get_actions(request)):
             choice = (name, description % model_format_dict(self.opts))
             choices.append(choice)
         return choices
@@ -998,7 +998,6 @@ class ModelAdmin(BaseModelAdmin):
             'title': _('Add %s') % force_unicode(opts.verbose_name),
             'adminform': adminForm,
             'is_popup': "_popup" in request.REQUEST,
-            'show_delete': False,
             'media': media,
             'inline_admin_formsets': inline_admin_formsets,
             'errors': helpers.AdminErrorList(form, formsets),
@@ -1416,7 +1415,7 @@ class InlineModelAdmin(BaseModelAdmin):
         if self.declared_fieldsets:
             return self.declared_fieldsets
         form = self.get_formset(request, obj).form
-        fields = dictkeys(form.base_fields) + list(self.get_readonly_fields(request, obj))
+        fields = six.dictkeys(form.base_fields) + list(self.get_readonly_fields(request, obj))
         return [(None, {'fields': fields})]
 
     def queryset(self, request):

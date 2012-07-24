@@ -1,7 +1,7 @@
 import sys
 import time
 from django.db.backends.creation import BaseDatabaseCreation
-from django.utils.py3 import raw_input
+from django.utils import six
 
 TEST_DATABASE_PREFIX = 'test_'
 PASSWORD = 'Im_a_lumberjack'
@@ -66,7 +66,7 @@ class DatabaseCreation(BaseDatabaseCreation):
             except Exception as e:
                 sys.stderr.write("Got an error creating the test database: %s\n" % e)
                 if not autoclobber:
-                    confirm = raw_input("It appears the test database, %s, already exists. Type 'yes' to delete it, or 'no' to cancel: " % TEST_NAME)
+                    confirm = six.raw_input("It appears the test database, %s, already exists. Type 'yes' to delete it, or 'no' to cancel: " % TEST_NAME)
                 if autoclobber or confirm == 'yes':
                     try:
                         if verbosity >= 1:
@@ -88,7 +88,7 @@ class DatabaseCreation(BaseDatabaseCreation):
             except Exception as e:
                 sys.stderr.write("Got an error creating the test user: %s\n" % e)
                 if not autoclobber:
-                    confirm = raw_input("It appears the test user, %s, already exists. Type 'yes' to delete it, or 'no' to cancel: " % TEST_USER)
+                    confirm = six.raw_input("It appears the test user, %s, already exists. Type 'yes' to delete it, or 'no' to cancel: " % TEST_USER)
                 if autoclobber or confirm == 'yes':
                     try:
                         if verbosity >= 1:

@@ -6,7 +6,7 @@ from django.contrib.messages.storage.cookie import (CookieStorage,
     MessageEncoder, MessageDecoder)
 from django.contrib.messages.storage.base import Message
 from django.test.utils import override_settings
-from django.utils.py3 import xrange
+from django.utils.six.moves import xrange
 
 
 def set_cookie_data(storage, messages, invalid=False, encode_empty=False):
@@ -124,7 +124,7 @@ class CookieTest(BaseTest):
             {
                 'message': Message(constants.INFO, 'Test message'),
                 'message_list': [Message(constants.INFO, 'message %s') \
-                                 for x in xrange(5)] + [{'another-message': \
+                                 for x in range(5)] + [{'another-message': \
                                  Message(constants.ERROR, 'error')}],
             },
             Message(constants.INFO, 'message %s'),

@@ -1,16 +1,18 @@
 import base64
 import time
 from datetime import datetime, timedelta
+try:
+    from django.utils.six.moves import cPickle as pickle
+except ImportError:
+    import pickle
 
 from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
 from django.utils.crypto import constant_time_compare
 from django.utils.crypto import get_random_string
 from django.utils.crypto import salted_hmac
+from django.utils import six
 from django.utils import timezone
-from django.utils.py3 import (pickle, long_type, text_type,
-                              iterkeys, itervalues, iteritems,
-                              dictkeys, dictvalues, dictitems)
 
 class CreateError(Exception):
     """
@@ -80,7 +82,7 @@ class SessionBase(object):
         return base64.encodestring(hash + b":" + pickled)
 
     def decode(self, session_data):
-        if isinstance(session_data, text_type): session_data = session_data.encode('utf-8')
+        if isinstance(session_data, six.text_type): session_data = session_data.encode('utf-8')
         encoded_data = base64.decodestring(session_data)
         try:
             # could produce ValueError if there is no ':'
@@ -103,22 +105,22 @@ class SessionBase(object):
         return key in self._session
 
     def keys(self):
-        return dictkeys(self._session)
+        return six.dictkeys(self._session)
 
     def values(self):
-        return dictvalues(self._session)
+        return six.dictvalues(self._session)
 
     def items(self):
-        return dictitems(self._session)
+        return six.dictitems(self._session)
 
     def iterkeys(self):
-        return iterkeys(self._session)
+        return six.iterkeys(self._session)
 
     def itervalues(self):
-        return itervalues(self._session)
+        return six.itervalues(self._session)
 
     def iteritems(self):
-        return iteritems(self._session)
+        return six.iteritems(self._session)
 
     def clear(self):
         # To avoid unnecessary persistent storage accesses, we set up the

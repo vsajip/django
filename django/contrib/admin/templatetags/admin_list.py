@@ -18,7 +18,7 @@ from django.utils.encoding import smart_unicode, force_unicode
 from django.template import Library
 from django.template.loader import get_template
 from django.template.context import Context
-from django.utils.py3 import lrange, dictkeys
+from django.utils import six
 
 register = Library()
 
@@ -56,7 +56,7 @@ def pagination(cl):
         # If there are 10 or fewer pages, display links to every page.
         # Otherwise, do some fancy
         if paginator.num_pages <= 10:
-            page_range = lrange(paginator.num_pages)
+            page_range = six.lrange(paginator.num_pages)
         else:
             # Insert "smart" pagination links, so that there are always ON_ENDS
             # links at either end of the list of pages, and there are always
@@ -126,7 +126,7 @@ def result_headers(cl):
         if i in ordering_field_columns:
             sorted = True
             order_type = ordering_field_columns.get(i).lower()
-            sort_priority = dictkeys(ordering_field_columns).index(i) + 1
+            sort_priority = six.dictkeys(ordering_field_columns).index(i) + 1
             th_classes.append('sorted %sending' % order_type)
             new_order_type = {'asc': 'desc', 'desc': 'asc'}[order_type]
 

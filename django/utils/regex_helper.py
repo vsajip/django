@@ -7,7 +7,7 @@ should be good enough for a large class of URLS, however.
 """
 from __future__ import unicode_literals
 
-from django.utils.py3 import next, string_types, lzip
+from django.utils import six
 
 # Mapping of an escape character to a representative of that class. So, e.g.,
 # "\w" is replaced by "x" in a reverse URL. A value of None means to ignore
@@ -80,7 +80,7 @@ def normalize(pattern):
     try:
         ch, escaped = next(pattern_iter)
     except StopIteration:
-        return lzip([''],  [[]])
+        return six.lzip([''],  [[]])
 
     try:
         while True:
@@ -193,9 +193,9 @@ def normalize(pattern):
         pass
     except NotImplementedError:
         # A case of using the disjunctive form. No results for you!
-        return lzip([''],  [[]])
+        return six.lzip([''],  [[]])
 
-    return lzip(*flatten_result(result))
+    return six.lzip(*flatten_result(result))
 
 def next_char(input_iter):
     """
@@ -304,7 +304,7 @@ def flatten_result(source):
     result_args = [[]]
     pos = last = 0
     for pos, elt in enumerate(source):
-        if isinstance(elt, string_types):
+        if isinstance(elt, six.string_types):
             continue
         piece = ''.join(source[last:pos])
         if isinstance(elt, Group):

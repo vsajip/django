@@ -7,8 +7,9 @@ from django.contrib.gis.geos import (GEOSException, GEOSIndexError, GEOSGeometry
 from django.contrib.gis.geos.base import gdal, numpy, GEOSBase
 from django.contrib.gis.geos.libgeos import GEOS_PREPARE
 from django.contrib.gis.geometry.test_data import TestDataMixin
-from django.utils.py3 import StringIO, xrange, pickle, string_types, PY3
 
+from django.utils import six
+from django.utils.six.moves import xrange
 from django.utils import unittest
 
 
@@ -951,6 +952,8 @@ class GEOSTest(unittest.TestCase, TestDataMixin):
     def test_pickle(self):
         "Testing pickling and unpickling support."
         # Using both pickle and cPickle -- just 'cause.
+        from django.utils.six.moves import cPickle
+        import pickle
 
         # Creating a list of test geometries for pickling,
         # and setting the SRID on some of them.
@@ -963,10 +966,6 @@ class GEOSTest(unittest.TestCase, TestDataMixin):
 
         # The SRID won't be exported in GEOS 3.0 release candidates.
         no_srid = self.null_srid == -1
-        if PY3:
-            cPickle = pickle
-        else:
-            import cPickle
         for geom in tgeoms:
             s1, s2 = cPickle.dumps(geom), pickle.dumps(geom)
             g1, g2 = cPickle.loads(s1), pickle.loads(s2)
@@ -1007,7 +1006,7 @@ class GEOSTest(unittest.TestCase, TestDataMixin):
 
         g = GEOSGeometry("POINT(0 0)")
         self.assertTrue(g.valid)
-        self.assertTrue(isinstance(g.valid_reason, string_types))
+        self.assertTrue(isinstance(g.valid_reason, six.string_types))
         self.assertEqual(g.valid_reason, "Valid Geometry")
 
         print("\nBEGIN - expecting GEOS_NOTICE; safe to ignore.\n")
@@ -1015,7 +1014,7 @@ class GEOSTest(unittest.TestCase, TestDataMixin):
         g = GEOSGeometry("LINESTRING(0 0, 0 0)")
 
         self.assertTrue(not g.valid)
-        self.assertTrue(isinstance(g.valid_reason, string_types))
+        self.assertTrue(isinstance(g.valid_reason, six.string_types))
         self.assertTrue(g.valid_reason.startswith("Too few points in geometry component"))
 
         print("\nEND - expecting GEOS_NOTICE; safe to ignore.\n")

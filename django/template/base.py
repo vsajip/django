@@ -18,8 +18,8 @@ from django.utils.safestring import (SafeData, EscapeData, mark_safe,
 from django.utils.formats import localize
 from django.utils.html import escape
 from django.utils.module_loading import module_has_submodule
+from django.utils import six
 from django.utils.timezone import template_localtime
-from django.utils.py3 import text_type, next, string_types, n, dictitems
 
 
 TOKEN_TEXT = 0
@@ -86,7 +86,7 @@ class VariableDoesNotExist(Exception):
         self.params = params
 
     def __str__(self):
-        return text_type(self).encode('utf-8')
+        return six.text_type(self).encode('utf-8')
 
     def __unicode__(self):
         return self.msg % tuple([force_unicode(p, errors='replace')
@@ -228,7 +228,7 @@ class Lexer(object):
         else:
             token = Token(TOKEN_TEXT, token_string)
         token.lineno = self.lineno
-        self.lineno += token_string.count(n('\n'))
+        self.lineno += token_string.count(six.n('\n'))
         return token
 
 class Parser(object):
@@ -961,7 +961,7 @@ def parse_bits(parser, bits, params, varargs, varkw, defaults,
         kwarg = token_kwargs([bit], parser)
         if kwarg:
             # The kwarg was successfully extracted
-            param, value = dictitems(kwarg)[0]
+            param, value = six.dictitems(kwarg)[0]
             if param not in params and varkw is None:
                 # An unexpected keyword argument was supplied
                 raise TemplateSyntaxError(
@@ -1189,7 +1189,7 @@ class Library(object):
                         from django.template.loader import get_template, select_template
                         if isinstance(file_name, Template):
                             t = file_name
-                        elif not isinstance(file_name, string_types) and is_iterable(file_name):
+                        elif not isinstance(file_name, six.string_types) and is_iterable(file_name):
                             t = select_template(file_name)
                         else:
                             t = get_template(file_name)

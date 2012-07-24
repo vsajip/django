@@ -7,7 +7,7 @@
 
 import datetime
 import re
-from django.utils.py3 import iteritems, text_type
+from django.utils import six
 from django.utils.timezone import utc
 from django.utils.tzinfo import FixedOffset
 
@@ -33,10 +33,10 @@ def parse_date(value):
     Raises ValueError if the input is well formatted but not a valid date.
     Returns None if the input isn't well formatted.
     """
-    if isinstance(value, text_type): value = value.encode('utf-8')
+    if isinstance(value, six.text_type): value = value.encode('utf-8')
     match = date_re.match(value)
     if match:
-        kw = dict((k, int(v)) for k, v in iteritems(match.groupdict()))
+        kw = dict((k, int(v)) for k, v in six.iteritems(match.groupdict()))
         return datetime.date(**kw)
 
 def parse_time(value):
@@ -50,13 +50,13 @@ def parse_time(value):
     Returns None if the input isn't well formatted, in particular if it
     contains an offset.
     """
-    if isinstance(value, text_type): value = value.encode('utf-8')
+    if isinstance(value, six.text_type): value = value.encode('utf-8')
     match = time_re.match(value)
     if match:
         kw = match.groupdict()
         if kw['microsecond']:
             kw['microsecond'] = kw['microsecond'].ljust(6, b'0')
-        kw = dict((k, int(v)) for k, v in iteritems(kw) if v is not None)
+        kw = dict((k, int(v)) for k, v in six.iteritems(kw) if v is not None)
         return datetime.time(**kw)
 
 def parse_datetime(value):
@@ -70,7 +70,7 @@ def parse_datetime(value):
     Raises ValueError if the input is well formatted but not a valid datetime.
     Returns None if the input isn't well formatted.
     """
-    if isinstance(value, text_type): value = value.encode('utf-8')
+    if isinstance(value, six.text_type): value = value.encode('utf-8')
     match = datetime_re.match(value)
     if match:
         kw = match.groupdict()
@@ -84,6 +84,6 @@ def parse_datetime(value):
             if tzinfo[0] == b'-'[0]:
                 offset = -offset
             tzinfo = FixedOffset(offset)
-        kw = dict((k, int(v)) for k, v in iteritems(kw) if v is not None)
+        kw = dict((k, int(v)) for k, v in six.iteritems(kw) if v is not None)
         kw['tzinfo'] = tzinfo
         return datetime.datetime(**kw)

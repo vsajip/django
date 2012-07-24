@@ -6,10 +6,14 @@ from __future__ import absolute_import, unicode_literals
 
 import copy
 import datetime
-from io import BytesIO
 import os
 import re
+try:
+    from urllib.parse import urlsplit, urlunsplit
+except ImportError:     # Python 2
+    from urlparse import urlsplit, urlunsplit
 from decimal import Decimal, DecimalException
+from io import BytesIO
 
 from django.core import validators
 from django.core.exceptions import ValidationError
@@ -21,8 +25,7 @@ from django.forms.widgets import (TextInput, PasswordInput, HiddenInput,
 from django.utils import formats
 from django.utils.encoding import smart_unicode, force_unicode
 from django.utils.ipv6 import clean_ipv6_address
-from django.utils.py3 import (StringIO, text_type, string_types, urlsplit,
-                              urlunsplit)
+from django.utils import six
 from django.utils.translation import ugettext_lazy as _
 
 # Provide this import for backwards compatibility.
@@ -331,10 +334,10 @@ class BaseTemporalField(Field):
     def to_python(self, value):
         # Try to coerce the value to unicode.
         unicode_value = force_unicode(value, strings_only=True)
-        if isinstance(unicode_value, text_type):
+        if isinstance(unicode_value, six.text_type):
             value = unicode_value.strip()
         # If unicode, try to strptime against each input format.
-        if isinstance(value, text_type):
+        if isinstance(value, six.text_type):
             for format in self.input_formats:
                 try:
                     return self.strptime(value, format)
@@ -446,7 +449,7 @@ class RegexField(CharField):
         return self._regex
 
     def _set_regex(self, regex):
-        if isinstance(regex, string_types):
+        if isinstance(regex, six.string_types):
             regex = re.compile(regex, re.UNICODE)
         self._regex = regex
         if hasattr(self, '_regex_validator') and self._regex_validator in self.validators:
@@ -595,13 +598,13 @@ class URLField(CharField):
 
         def split_url(url):
             """
-            Returns a list of url parts via ``urlsplit`` (or raises a
+            Returns a list of url parts via ``urlparse.urlsplit`` (or raises a
             ``ValidationError`` exception for certain).
             """
             try:
                 return list(urlsplit(url))
             except ValueError:
-                # urlsplit can raise a ValueError with some
+                # urlparse.urlsplit can raise a ValueError with some
                 # misformatted URLs.
                 raise ValidationError(self.error_messages['invalid'])
 
@@ -634,7 +637,7 @@ class BooleanField(Field):
         # will submit for False. Also check for '0', since this is what
         # RadioSelect will provide. Because bool("True") == bool('1') == True,
         # we don't need to handle that explicitly.
-        if isinstance(value, string_types) and value.lower() in ('false', '0'):
+        if isinstance(value, six.string_types) and value.lower() in ('false', '0'):
             value = False
         else:
             value = bool(value)

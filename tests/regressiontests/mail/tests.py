@@ -18,11 +18,12 @@ from django.core.mail.message import BadHeaderError
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils.translation import ugettext_lazy
-from django.utils.py3 import StringIO, PY3, text_type, n
+from django.utils import six
+from django.utils.six.moves import StringIO
 
 def _get_message_item(msg, key):
     result = msg[key]
-    if PY3 and not isinstance(result, text_type):
+    if six.PY3 and not isinstance(result, six.text_type):
         # convert Headers to strings
         result = result.encode()
     return result
@@ -85,7 +86,7 @@ class MailTests(TestCase):
         """
         email = EmailMessage('Long subject lines that get wrapped should use a space continuation character to get expected behavior in Outlook and Thunderbird', 'Content', 'from@example.com', ['to@example.com'])
         message = email.message()
-        if not PY3:
+        if not six.PY3:
             expected = 'Long subject lines that get wrapped should use a space continuation\n character to get expected behavior in Outlook and Thunderbird'
         else:            
             expected = 'Long subject lines that get wrapped should use a space continuation character\n to get expected behavior in Outlook and Thunderbird'
@@ -202,7 +203,7 @@ class MailTests(TestCase):
         msg.attach_alternative(html_content, "text/html")
         msg.attach("an attachment.pdf", b"%PDF-1.4.%...", mimetype="application/pdf")
         msg_str = msg.message().as_string()
-        message = email.message_from_string(n(msg_str))
+        message = email.message_from_string(six.n(msg_str))
         self.assertTrue(message.is_multipart())
         self.assertEqual(message.get_content_type(), 'multipart/mixed')
         self.assertEqual(message.get_default_type(), 'text/plain')
@@ -319,13 +320,13 @@ class MailTests(TestCase):
         # Shouldn't use quoted printable, should detect it can represent content with 8 bit data
         msg = EmailMessage('Subject', 'Body with latin characters: àáä.', 'bounce@example.com', ['to@example.com'], headers={'From': 'from@example.com'})
         s = msg.message().as_string()
-        self.assertFalse(n('Content-Transfer-Encoding: quoted-printable') in s)
-        self.assertTrue(n('Content-Transfer-Encoding: 8bit') in s)
+        self.assertFalse(six.n('Content-Transfer-Encoding: quoted-printable') in s)
+        self.assertTrue(six.n('Content-Transfer-Encoding: 8bit') in s)
 
         msg = EmailMessage('Subject', 'Body with non latin characters: А Б В Г Д Е Ж Ѕ З И І К Л М Н О П.', 'bounce@example.com', ['to@example.com'], headers={'From': 'from@example.com'})
         s = msg.message().as_string()
-        self.assertFalse(n('Content-Transfer-Encoding: quoted-printable') in s)
-        self.assertTrue(n('Content-Transfer-Encoding: 8bit') in s)
+        self.assertFalse(six.n('Content-Transfer-Encoding: quoted-printable') in s)
+        self.assertTrue(six.n('Content-Transfer-Encoding: 8bit') in s)
 
 
 class BaseEmailBackendTests(object):
@@ -532,7 +533,7 @@ class FileBackendTests(BaseEmailBackendTests, TestCase):
         for filename in os.listdir(self.tmp_dir):
             with open(os.path.join(self.tmp_dir, filename), 'r') as fp:
                 session = fp.read().split('\n' + ('-' * 79) + '\n')
-            messages.extend(email.message_from_string(n(m)) for m in session if m)
+            messages.extend(email.message_from_string(six.n(m)) for m in session if m)
         return messages
 
     def test_file_sessions(self):
@@ -584,7 +585,7 @@ class ConsoleBackendTests(BaseEmailBackendTests, TestCase):
     def get_mailbox_content(self):
         messages = self.stream.getvalue().split('\n' + ('-' * 79) + '\n')
         # django3: message needs to be native string
-        return [email.message_from_string(n(m)) for m in messages if m]
+        return [email.message_from_string(six.n(m)) for m in messages if m]
 
     def test_console_stream_kwarg(self):
         """
@@ -611,8 +612,8 @@ class FakeSMTPServer(smtpd.SMTPServer, threading.Thread):
         self.sink_lock = threading.Lock()
 
     def process_message(self, peer, mailfrom, rcpttos, data):
-        m = email.message_from_string(n(data))
-        if not PY3:
+        m = email.message_from_string(six.n(data))
+        if not six.PY3:
             maddr = email.Utils.parseaddr(m.get('from'))[1]
         else:
             maddr = email.utils.parseaddr(m.get('from'))[1]

@@ -7,6 +7,10 @@ import re
 import sys
 from copy import copy
 from functools import wraps
+try:
+    from urllib.parse import urlsplit, urlunsplit
+except ImportError:     # Python 2
+    from urlparse import urlsplit, urlunsplit
 from xml.dom.minidom import parseString, Node
 import select
 import socket
@@ -37,7 +41,7 @@ from django.test.utils import (get_warnings_state, restore_warnings_state,
 from django.test.utils import ContextList
 from django.utils import unittest as ut2
 from django.utils.encoding import smart_str, force_unicode
-from django.utils.py3 import urlsplit, urlunsplit, text_type, PY3, lmap
+from django.utils import six
 from django.utils.unittest.util import safe_repr
 from django.views.static import serve
 
@@ -421,8 +425,8 @@ class SimpleTestCase(ut2.TestCase):
             standardMsg = '%s != %s' % (
                 safe_repr(dom1, True), safe_repr(dom2, True))
             diff = ('\n' + '\n'.join(difflib.ndiff(
-                           text_type(dom1).splitlines(),
-                           text_type(dom2).splitlines())))
+                           six.text_type(dom1).splitlines(),
+                           six.text_type(dom2).splitlines())))
             standardMsg = self._truncateMessage(standardMsg, diff)
             self.fail(self._formatMessage(msg, standardMsg))
 
@@ -622,7 +626,7 @@ class TransactionTestCase(SimpleTestCase):
         if not html:
             btext = smart_str(text, response._charset)
         else:
-            if PY3 and not isinstance(content, text_type):
+            if six.PY3 and not isinstance(content, six.text_type):
                 content = content.decode(response._charset)
             content = assert_and_parse_html(self, content, None,
                 "Response's content is not valid HTML:")
@@ -660,7 +664,7 @@ class TransactionTestCase(SimpleTestCase):
         btext = smart_str(text, response._charset)
         content = response.content
         if html:
-            if PY3 and not isinstance(content, text_type):
+            if six.PY3 and not isinstance(content, six.text_type):
                 content = content.decode(response._charset)
             content = assert_and_parse_html(self, content, None,
                 'Response\'s content is not valid HTML:')
@@ -774,7 +778,7 @@ class TransactionTestCase(SimpleTestCase):
     def assertQuerysetEqual(self, qs, values, transform=repr, ordered=True):
         if not ordered:
             return self.assertEqual(set(map(transform, qs)), set(values))
-        return self.assertEqual(lmap(transform, qs), values)
+        return self.assertEqual(six.lmap(transform, qs), values)
 
     def assertNumQueries(self, num, func=None, *args, **kwargs):
         using = kwargs.pop("using", DEFAULT_DB_ALIAS)
@@ -1117,7 +1121,7 @@ class LiveServerTestCase(TransactionTestCase):
             host, port_ranges = specified_address.split(':')
             for port_range in port_ranges.split(','):
                 # A port range can be of either form: '8000' or '8000-8010'.
-                extremes = lmap(int, port_range.split('-'))
+                extremes = six.lmap(int, port_range.split('-'))
                 assert len(extremes) in [1, 2]
                 if len(extremes) == 1:
                     # Port range of the form '8000'
@@ -1148,4 +1152,11 @@ class LiveServerTestCase(TransactionTestCase):
         if hasattr(cls, 'server_thread'):
             # Terminate the live server's thread
             cls.server_thread.join()
+
+        # Restore sqlite connections' non-sharability
+        for conn in connections.all():
+            if (conn.settings_dict['ENGINE'] == 'django.db.backends.sqlite3'
+                and conn.settings_dict['NAME'] == ':memory:'):
+                conn.allow_thread_sharing = False
+
         super(LiveServerTestCase, cls).tearDownClass()

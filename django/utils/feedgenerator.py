@@ -24,10 +24,14 @@ http://web.archive.org/web/20110718035220/http://diveintomark.org/archives/2004/
 from __future__ import unicode_literals
 
 import datetime
+try:
+    from urllib.parse import urlparse
+except ImportError:     # Python 2
+    from urlparse import urlparse
 from django.utils.xmlutils import SimplerXMLGenerator
 from django.utils.encoding import force_unicode, iri_to_uri
 from django.utils import datetime_safe
-from django.utils.py3 import urlparse, StringIO
+from django.utils.six.moves import StringIO
 from django.utils.timezone import is_aware
 
 def rfc2822_date(date):

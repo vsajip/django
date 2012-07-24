@@ -3,7 +3,7 @@ from optparse import make_option
 
 from django.core.management.base import NoArgsCommand, CommandError
 from django.db import connections, DEFAULT_DB_ALIAS
-from django.utils.py3 import text_type
+from django.utils import six
 
 class Command(NoArgsCommand):
     help = "Introspects the database tables in the given database and outputs a Django model module."
@@ -116,7 +116,7 @@ class Command(NoArgsCommand):
 
                 if att_name[0].isdigit():
                     att_name = 'number_%s' % att_name
-                    extra_params['db_column'] = text_type(column_name)
+                    extra_params['db_column'] = six.text_type(column_name)
                     comment_notes.append("Field renamed because it wasn't a "
                         "valid Python identifier.")
 

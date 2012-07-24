@@ -7,8 +7,8 @@ except ImportError:
 
 from django.template import Node
 from django.template import TemplateSyntaxError, Library
+from django.utils import six
 from django.utils import timezone
-from django.utils.py3 import string_types
 
 register = Library()
 
@@ -65,7 +65,7 @@ def do_timezone(value, arg):
     # Obtain a tzinfo instance
     if isinstance(arg, tzinfo):
         tz = arg
-    elif isinstance(arg, string_types) and pytz is not None:
+    elif isinstance(arg, six.string_types) and pytz is not None:
         try:
             tz = pytz.timezone(arg)
         except pytz.UnknownTimeZoneError:

@@ -1,5 +1,4 @@
 from django.core.management.base import NoArgsCommand
-from django.utils.py3 import dictkeys
 
 def module_to_dict(module, omittable=lambda k: k.startswith('_')):
     "Converts a module namespace to a Python dictionary. Used by get_settings_diff."
@@ -23,9 +22,7 @@ class Command(NoArgsCommand):
         default_settings = module_to_dict(global_settings)
 
         output = []
-        keys = dictkeys(user_settings)
-        keys.sort()
-        for key in keys:
+        for key in sorted(user_settings.keys()):
             if key not in default_settings:
                 output.append("%s = %s  ###" % (key, user_settings[key]))
             elif user_settings[key] != default_settings[key]:

@@ -3,7 +3,7 @@ import sys
 
 from django.core.management.validation import get_validation_errors
 from django.db.models.loading import cache, load_app
-from django.utils.py3 import StringIO
+from django.utils.six.moves import StringIO
 
 from django.utils import unittest
 

@@ -18,8 +18,8 @@ from django.utils.formats import (get_format, date_format, time_format,
     number_format)
 from django.utils.importlib import import_module
 from django.utils.numberformat import format as nformat
-from django.utils.py3 import text_type, long_type, PY3, n
 from django.utils.safestring import mark_safe, SafeString, SafeUnicode
+from django.utils import six
 from django.utils.translation import (ugettext, ugettext_lazy, activate,
     deactivate, gettext_lazy, pgettext, npgettext, to_locale,
     get_language_info, get_language, get_language_from_request)
@@ -75,16 +75,16 @@ class TranslationTests(TestCase):
         s2 = gettext_lazy('Add %(name)s')
         s3 = gettext_lazy('Add %(name)s')
         self.assertEqual(True, s2 == s3)
-        if not PY3: # bytes != str in 3.x, though str == unicode in 2.x
+        if not six.PY3: # bytes != str in 3.x, though str == unicode in 2.x
             self.assertEqual(True, s == s2)
         s4 = ugettext_lazy('Some other string')
         self.assertEqual(False, s == s4)
 
     def test_lazy_pickle(self):
         s1 = ugettext_lazy("test")
-        self.assertEqual(text_type(s1), "test")
+        self.assertEqual(six.text_type(s1), "test")
         s2 = pickle.loads(pickle.dumps(s1))
-        self.assertEqual(text_type(s2), "test")
+        self.assertEqual(six.text_type(s2), "test")
 
     def test_pgettext(self):
         # Reset translation catalog to include other/locale/de
@@ -223,23 +223,23 @@ class TranslationTests(TestCase):
 
     def test_string_concat(self):
         """
-        unicode(string_concat(...)) should not raise a TypeError - #4796
+        six.text_type(string_concat(...)) should not raise a TypeError - #4796
         """
         import django.utils.translation
-        self.assertEqual('django', text_type(django.utils.translation.string_concat("dja", "ngo")))
+        self.assertEqual('django', six.text_type(django.utils.translation.string_concat("dja", "ngo")))
 
     def test_safe_status(self):
         """
         Translating a string requiring no auto-escaping shouldn't change the "safe" status.
         """
-        s = mark_safe(n('Password'))
-        if PY3:
+        s = mark_safe(six.n('Password'))
+        if six.PY3:
             self.assertEqual(SafeUnicode, type(s))
         else:
             self.assertEqual(SafeString, type(s))
         with translation.override('de', deactivate=True):
             self.assertEqual(SafeUnicode, type(ugettext(s)))
-        if PY3:
+        if six.PY3:
             self.assertEqual('aPassword', SafeUnicode('a') + s)
             self.assertEqual('Passworda', s + SafeUnicode('a'))
         else:
@@ -318,7 +318,7 @@ class FormattingTests(TestCase):
         self.d = datetime.date(2009, 12, 31)
         self.dt = datetime.datetime(2009, 12, 31, 20, 50)
         self.t = datetime.time(10, 15, 48)
-        self.l = long_type(10000)
+        self.l = 10000 if six.PY3 else long(10000)
         self.ctxt = Context({
             'n': self.n,
             't': self.t,

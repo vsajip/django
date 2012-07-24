@@ -3,7 +3,7 @@ import operator
 from functools import wraps, update_wrapper
 import sys
 
-from django.utils.py3 import dictvalues, text_type, PY3, n
+from django.utils import six
 
 # You can't trivially replace this `functools.partial` because this binds to
 # classes and returns bound instances, whereas functools.partial (on CPython)
@@ -94,11 +94,11 @@ def lazy(func, *resultclasses):
                             continue
                         setattr(cls, k, meth)
             cls._delegate_str = bytes in resultclasses
-            cls._delegate_unicode = text_type in resultclasses
+            cls._delegate_unicode = six.text_type in resultclasses
             assert not (cls._delegate_str and cls._delegate_unicode), "Cannot call lazy() with both str and unicode return types."
             if cls._delegate_unicode:
                 cls.__unicode__ = cls.__unicode_cast
-                if PY3:
+                if six.PY3:
                     __proxy__.__str__ = __proxy__.__unicode_cast
             elif cls._delegate_str:
                 cls.__str__ = cls.__str_cast
@@ -150,9 +150,9 @@ def lazy(func, *resultclasses):
 
         def __mod__(self, rhs):
             if self._delegate_str:
-                return n(self) % rhs
+                return six.n(self) % rhs
             elif self._delegate_unicode:
-                return text_type(self) % rhs
+                return six.text_type(self) % rhs
             else:
                 raise AssertionError('__mod__ not supported for non-string types')
 
@@ -182,7 +182,7 @@ def allow_lazy(func, *resultclasses):
     """
     @wraps(func)
     def wrapper(*args, **kwargs):
-        for arg in list(args) + dictvalues(kwargs):
+        for arg in list(args) + six.dictvalues(kwargs):
             if isinstance(arg, Promise):
                 break
         else:
@@ -263,7 +263,7 @@ class SimpleLazyObject(LazyObject):
         self._wrapped = self._setupfunc()
 
     __str__ = new_method_proxy(str)
-    __unicode__ = new_method_proxy(text_type)
+    __unicode__ = new_method_proxy(six.text_type)
 
     def __deepcopy__(self, memo):
         if self._wrapped is empty:

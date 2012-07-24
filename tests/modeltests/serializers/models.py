@@ -10,8 +10,8 @@ from __future__ import unicode_literals
 from decimal import Decimal
 
 from django.db import models
+from django.utils import six
 
-from django.utils.py3 import with_metaclass, text_type
 
 class Category(models.Model):
     name = models.CharField(max_length=20)
@@ -94,13 +94,13 @@ class Team(object):
         return "%s" % self.title
 
 
-class TeamField(with_metaclass(models.SubfieldBase, models.CharField)):
+class TeamField(six.with_metaclass(models.SubfieldBase, models.CharField)):
 
     def __init__(self):
         super(TeamField, self).__init__(max_length=100)
 
     def get_db_prep_save(self, value, connection):
-        return text_type(value.title)
+        return six.text_type(value.title)
 
     def to_python(self, value):
         if isinstance(value, Team):

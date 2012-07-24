@@ -3,7 +3,7 @@ from __future__ import absolute_import, unicode_literals
 
 from django.db import transaction, IntegrityError
 from django.test import TestCase, skipIfDBFeature
-from django.utils.py3 import text_type
+from django.utils import six
 
 from .models import Employee, Business, Bar, Foo
 
@@ -17,7 +17,7 @@ class CustomPKTests(TestCase):
             Employee.objects.all(), [
                 "Dan Jones",
             ],
-            text_type
+            six.text_type
         )
 
         fran = Employee.objects.create(
@@ -28,7 +28,7 @@ class CustomPKTests(TestCase):
                 "Fran Bones",
                 "Dan Jones",
             ],
-            text_type
+            six.text_type
         )
 
         self.assertEqual(Employee.objects.get(pk=123), dan)
@@ -46,7 +46,7 @@ class CustomPKTests(TestCase):
                 "Fran Bones",
                 "Dan Jones",
             ],
-            text_type
+            six.text_type
         )
         # The primary key can be accessed via the pk property on the model.
         e = Employee.objects.get(pk=123)
@@ -64,7 +64,7 @@ class CustomPKTests(TestCase):
                 "Dan Jones",
                 "Fran Jones",
             ],
-            text_type
+            six.text_type
         )
 
         emps = Employee.objects.in_bulk([123, 456])
@@ -77,7 +77,7 @@ class CustomPKTests(TestCase):
                 "Dan Jones",
                 "Fran Jones",
             ],
-            text_type
+            six.text_type
         )
         self.assertQuerysetEqual(
             fran.business_set.all(), [
@@ -109,14 +109,14 @@ class CustomPKTests(TestCase):
                 "Dan Jones",
                 "Fran Jones",
             ],
-            text_type,
+            six.text_type,
         )
         self.assertQuerysetEqual(
             Employee.objects.filter(business__pk="Sears"), [
                 "Dan Jones",
                 "Fran Jones",
             ],
-            text_type,
+            six.text_type,
         )
 
         self.assertQuerysetEqual(

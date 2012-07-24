@@ -39,9 +39,9 @@ __all__ = ['A', 'Area', 'D', 'Distance']
 from decimal import Decimal
 
 from django.utils.functional import total_ordering
-from django.utils.py3 import iteritems, dictitems, integer_types, string_types
+from django.utils import six
 
-NUMERIC_TYPES = integer_types + (float, Decimal)
+NUMERIC_TYPES = six.integer_types + (float, Decimal)
 AREA_PREFIX = "sq_"
 
 def pretty_name(obj):
@@ -58,7 +58,7 @@ class MeasureBase(object):
     def __init__(self, default_unit=None, **kwargs):
         value, self._default_unit = self.default_units(kwargs)
         setattr(self, self.STANDARD_UNIT, value)
-        if default_unit and isinstance(default_unit, string_types):
+        if default_unit and isinstance(default_unit, six.string_types):
             self._default_unit = default_unit
 
     def _get_standard(self):
@@ -182,7 +182,7 @@ class MeasureBase(object):
         """
         val = 0.0
         default_unit = self.STANDARD_UNIT
-        for unit, value in iteritems(kwargs):
+        for unit, value in six.iteritems(kwargs):
             if not isinstance(value, float): value = float(value)
             if unit in self.UNITS:
                 val += self.UNITS[unit] * value
@@ -314,9 +314,9 @@ class Distance(MeasureBase):
 class Area(MeasureBase):
     STANDARD_UNIT = AREA_PREFIX + Distance.STANDARD_UNIT
     # Getting the square units values and the alias dictionary.
-    UNITS = dict([('%s%s' % (AREA_PREFIX, k), v ** 2) for k, v in dictitems(Distance.UNITS)])
-    ALIAS = dict([(k, '%s%s' % (AREA_PREFIX, v)) for k, v in dictitems(Distance.ALIAS)])
-    LALIAS = dict([(k.lower(), v) for k, v in dictitems(ALIAS)])
+    UNITS = dict([('%s%s' % (AREA_PREFIX, k), v ** 2) for k, v in six.dictitems(Distance.UNITS)])
+    ALIAS = dict([(k, '%s%s' % (AREA_PREFIX, v)) for k, v in six.dictitems(Distance.ALIAS)])
+    LALIAS = dict([(k.lower(), v) for k, v in six.dictitems(ALIAS)])
 
     def __div__(self, other):
         if isinstance(other, NUMERIC_TYPES):

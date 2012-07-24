@@ -30,7 +30,10 @@
 
 import os, sys, time, signal
 
-from django.utils.py3 import thread, dictvalues
+try:
+    import thread
+except ImportError:
+    from django.utils.six.moves import _dummy_thread as thread
 
 # This import does nothing, but it's necessary to avoid some race conditions
 # in the threading module. See http://code.djangoproject.com/ticket/2330 .
@@ -44,6 +47,8 @@ try:
 except ImportError:
     termios = None
 
+from django.utils import six
+
 RUN_RELOADER = True
 
 _mtimes = {}
@@ -51,7 +56,7 @@ _win = (sys.platform == "win32")
 
 def code_changed():
     global _mtimes, _win
-    for filename in [v for v in [getattr(m, "__file__", None) for m in dictvalues(sys.modules)] if v]:
+    for filename in [v for v in [getattr(m, "__file__", None) for m in six.dictvalues(sys.modules)] if v]:
         if filename.endswith(".pyc") or filename.endswith(".pyo"):
             filename = filename[:-1]
         if filename.endswith("$py.class"):

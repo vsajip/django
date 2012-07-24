@@ -17,7 +17,7 @@ from django.db import connection
 from django.test.simple import DjangoTestSuiteRunner
 from django.utils import unittest
 from django.test import LiveServerTestCase
-from django.utils.py3 import PY3
+from django.utils import six
 
 test_dir = os.path.dirname(os.path.dirname(__file__))
 
@@ -165,7 +165,7 @@ class AdminScriptTestCase(unittest.TestCase):
 
     def assertOutput(self, stream, msg):
         "Utility assertion: assert that the given message exists in the output"
-        if PY3: 
+        if six.PY3: 
             stream = str(stream, encoding='utf8')
         self.assertTrue(msg in stream, "'%s' does not match actual output text '%s'" % (msg, stream))
 

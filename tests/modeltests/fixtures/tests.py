@@ -4,7 +4,7 @@ from django.contrib.sites.models import Site
 from django.core import management
 from django.db import connection, IntegrityError
 from django.test import TestCase, TransactionTestCase, skipUnlessDBFeature
-from django.utils.py3 import StringIO
+from django.utils.six.moves import StringIO
 
 from .models import Article, Book, Spy, Tag, Visa
 

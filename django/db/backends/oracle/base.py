@@ -10,8 +10,7 @@ import decimal
 import sys
 import warnings
 
-from django.utils.py3 import (long_type, next, string_types, reraise,
-                              text_type)
+from django.utils import six
 
 def _setup_environment(environ):
     import platform
@@ -55,6 +54,7 @@ from django.db.backends.oracle.client import DatabaseClient
 from django.db.backends.oracle.creation import DatabaseCreation
 from django.db.backends.oracle.introspection import DatabaseIntrospection
 from django.utils.encoding import smart_str, force_unicode
+from django.utils import six
 from django.utils import timezone
 
 DatabaseError = Database.DatabaseError
@@ -210,7 +210,7 @@ WHEN (new.%(col_name)s IS NULL)
         return "DROP SEQUENCE %s;" % self.quote_name(self._get_sequence_name(table))
 
     def fetch_returned_insert_id(self, cursor):
-        return long_type(cursor._insert_id_var.getvalue())
+        return int(cursor._insert_id_var.getvalue())
 
     def field_cast_sql(self, db_type):
         if db_type and db_type.endswith('LOB'):
@@ -356,13 +356,13 @@ WHEN (new.%(col_name)s IS NULL)
             else:
                 raise ValueError("Oracle backend does not support timezone-aware datetimes when USE_TZ is False.")
 
-        return text_type(value)
+        return six.text_type(value)
 
     def value_to_db_time(self, value):
         if value is None:
             return None
 
-        if isinstance(value, string_types):
+        if isinstance(value, six.string_types):
             return datetime.datetime.strptime(value, '%H:%M:%S')
 
         # Oracle doesn't support tz-aware times
@@ -551,8 +551,8 @@ class DatabaseWrapper(BaseDatabaseWrapper):
             except Database.IntegrityError as e:
                 # In case cx_Oracle implements (now or in a future version)
                 # raising this specific exception
-                reraise(utils.IntegrityError, utils.IntegrityError(*e[1].args), e[2])
-            except Database.DatabaseError:
+                six.reraise(utils.IntegrityError, utils.IntegrityError(*tuple(e.args)), sys.exc_info()[2])
+            except Database.DatabaseError as e:
                 # cx_Oracle 5.0.4 raises a cx_Oracle.DatabaseError exception
                 # with the following attributes and values:
                 #  code = 2091
@@ -560,12 +560,11 @@ class DatabaseWrapper(BaseDatabaseWrapper):
                 #            'ORA-02291: integrity constraint (TEST_DJANGOTEST.SYS
                 #               _C00102056) violated - parent key not found'
                 # We convert that particular case to our IntegrityError exception
-                e = sys.exc_info()
-                x = e[1].args[0]
+                x = e.args[0]
                 if hasattr(x, 'code') and hasattr(x, 'message') \
                    and x.code == 2091 and 'ORA-02291' in x.message:
-                    reraise(utils.IntegrityError, utils.IntegrityError(*e[1].args), e[2])
-                reraise(utils.DatabaseError, utils.DatabaseError(*e[1].args), e[2])
+                    six.reraise(utils.IntegrityError, utils.IntegrityError(*tuple(e.args)), sys.exc_info()[2])
+                six.reraise(utils.DatabaseError, utils.DatabaseError(*tuple(e.args)), sys.exc_info()[2])
 
 
 class OracleParam(object):
@@ -595,14 +594,10 @@ class OracleParam(object):
         else:
             self.smart_str = convert_unicode(param, cursor.charset,
                                              strings_only)
-        # bools need to be converted to ints for Python 3, because cx_Oracle
-        # won't accept them (OCI-22026 DatabaseError).
-        if isinstance(self.smart_str, bool):
-            self.smart_str = int(self.smart_str)
         if hasattr(param, 'input_size'):
             # If parameter has `input_size` attribute, use that.
             self.input_size = param.input_size
-        elif isinstance(param, string_types) and len(param) > 4000:
+        elif isinstance(param, six.string_types) and len(param) > 4000:
             # Mark any string param greater than 4000 characters as a CLOB.
             self.input_size = Database.CLOB
         else:
@@ -694,16 +689,13 @@ class FormatStylePlaceholderCursor(object):
         self._guess_input_sizes([params])
         try:
             return self.cursor.execute(query, self._param_generator(params))
-        except Database.IntegrityError:
-            e = sys.exc_info()
-            reraise(utils.IntegrityError, utils.IntegrityError(*e[1].args), e[2])
-        except Database.DatabaseError:
-            e = sys.exc_info()
-            x = e[1]
+        except Database.IntegrityError as e:
+            six.reraise(utils.IntegrityError, utils.IntegrityError(*tuple(e.args)), sys.exc_info()[2])
+        except Database.DatabaseError as e:
             # cx_Oracle <= 4.4.0 wrongly raises a DatabaseError for ORA-01400.
-            if hasattr(x.args[0], 'code') and x.args[0].code == 1400 and not isinstance(x, IntegrityError):
-                reraise(utils.IntegrityError, utils.IntegrityError(*x.args), e[2])
-            reraise(utils.DatabaseError, utils.DatabaseError(*x.args), e[2])
+            if hasattr(e.args[0], 'code') and e.args[0].code == 1400 and not isinstance(e, IntegrityError):
+                six.reraise(utils.IntegrityError, utils.IntegrityError(*tuple(e.args)), sys.exc_info()[2])
+            six.reraise(utils.DatabaseError, utils.DatabaseError(*tuple(e.args)), sys.exc_info()[2])
 
     def executemany(self, query, params=None):
         # cx_Oracle doesn't support iterators, convert them to lists
@@ -726,16 +718,13 @@ class FormatStylePlaceholderCursor(object):
         try:
             return self.cursor.executemany(query,
                                 [self._param_generator(p) for p in formatted])
-        except Database.IntegrityError:
-            e = sys.exc_info()
-            reraise(utils.IntegrityError, utils.IntegrityError(*e[1].args), e[2])
-        except Database.DatabaseError:
-            e = sys.exc_info()
-            x = e[1]
+        except Database.IntegrityError as e:
+            six.reraise(utils.IntegrityError, utils.IntegrityError(*tuple(e.args)), sys.exc_info()[2])
+        except Database.DatabaseError as e:
             # cx_Oracle <= 4.4.0 wrongly raises a DatabaseError for ORA-01400.
-            if hasattr(x.args[0], 'code') and x.args[0].code == 1400 and not isinstance(x, IntegrityError):
-                reraise(utils.IntegrityError, utils.IntegrityError(*x.args), e[2])
-            reraise(utils.DatabaseError, utils.DatabaseError(*x.args), e[2])
+            if hasattr(e.args[0], 'code') and e.args[0].code == 1400 and not isinstance(e, IntegrityError):
+                six.reraise(utils.IntegrityError, utils.IntegrityError(*tuple(e.args)), sys.exc_info()[2])
+            six.reraise(utils.DatabaseError, utils.DatabaseError(*tuple(e.args)), sys.exc_info()[2])
 
     def fetchone(self):
         row = self.cursor.fetchone()
@@ -837,7 +826,7 @@ def to_unicode(s):
     Convert strings to Unicode objects (and return all other data types
     unchanged).
     """
-    if isinstance(s, string_types):
+    if isinstance(s, six.string_types):
         return force_unicode(s)
     return s
 

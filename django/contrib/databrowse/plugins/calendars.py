@@ -10,7 +10,7 @@ from django.utils.text import capfirst
 from django.utils.encoding import force_unicode
 from django.views.generic import dates
 from django.utils import datetime_safe
-from django.utils.py3 import dictvalues
+from django.utils import six
 
 class DateViewMixin(object):
     allow_empty = False
@@ -96,7 +96,7 @@ class CalendarPlugin(DatabrowsePlugin):
 
     def homepage_view(self, request):
         easy_model = EasyModel(self.site, self.model)
-        field_list = dictvalues(self.fields)
+        field_list = six.dictvalues(self.fields)
         field_list.sort(key=lambda k:k.verbose_name)
         return render_to_response('databrowse/calendar_homepage.html', {
                 'root_url': self.site.root_url,

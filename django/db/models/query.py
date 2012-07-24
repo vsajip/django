@@ -14,8 +14,7 @@ from django.db.models.query_utils import (Q, select_related_descend,
 from django.db.models.deletion import Collector
 from django.db.models import sql
 from django.utils.functional import partition
-from django.utils.py3 import (next, integer_types, iteritems, n, reraise,
-                              dictkeys)
+from django.utils import six
 
 # Used to control how many objects are worked with at once in some cases (e.g.
 # when deleting objects).
@@ -172,7 +171,7 @@ class QuerySet(object):
         """
         Retrieves an item or slice from the set of results.
         """
-        if not isinstance(k, (slice,) + integer_types):
+        if not isinstance(k, (slice,) + six.integer_types):
             raise TypeError
         assert ((not isinstance(k, slice) and (k >= 0))
                 or (isinstance(k, slice) and (k.start is None or k.start >= 0)
@@ -248,8 +247,8 @@ class QuerySet(object):
             requested = None
         max_depth = self.query.max_depth
 
-        extra_select = dictkeys(self.query.extra_select)
-        aggregate_select = dictkeys(self.query.aggregate_select)
+        extra_select = six.dictkeys(self.query.extra_select)
+        aggregate_select = six.dictkeys(self.query.aggregate_select)
 
         only_load = self.query.get_loaded_field_names()
         if not fill_cache:
@@ -474,7 +473,7 @@ class QuerySet(object):
                     return self.get(**lookup), False
                 except self.model.DoesNotExist:
                     # Re-raise the IntegrityError with its original traceback.
-                    reraise(*exc_info)
+                    six.reraise(*exc_info)
 
     def latest(self, field_name=None):
         """
@@ -596,7 +595,7 @@ class QuerySet(object):
         flat = kwargs.pop('flat', False)
         if kwargs:
             raise TypeError('Unexpected keyword arguments to values_list: %s'
-                    % (dictkeys(kwargs),))
+                    % (six.dictkeys(kwargs),))
         if flat and len(fields) > 1:
             raise TypeError("'flat' is not valid when values_list is called with more than one field.")
         return self._clone(klass=ValuesListQuerySet, setup=True, flat=flat,
@@ -696,7 +695,7 @@ class QuerySet(object):
         depth = kwargs.pop('depth', 0)
         if kwargs:
             raise TypeError('Unexpected keyword arguments to select_related: %s'
-                    % (dictkeys(kwargs),))
+                    % (six.dictkeys(kwargs),))
         obj = self._clone()
         if fields:
             if depth:
@@ -754,7 +753,7 @@ class QuerySet(object):
 
         obj = self._clone()
 
-        obj._setup_aggregate_query(dictkeys(kwargs))
+        obj._setup_aggregate_query(six.dictkeys(kwargs))
 
         # Add the aggregates to the query
         for (alias, aggregate_expr) in kwargs.items():
@@ -969,9 +968,9 @@ class ValuesQuerySet(QuerySet):
 
     def iterator(self):
         # Purge any extra columns that haven't been explicitly asked for
-        extra_names = dictkeys(self.query.extra_select)
+        extra_names = six.dictkeys(self.query.extra_select)
         field_names = self.field_names
-        aggregate_names = dictkeys(self.query.aggregate_select)
+        aggregate_names = six.dictkeys(self.query.aggregate_select)
 
         names = extra_names + field_names + aggregate_names
 
@@ -1100,9 +1099,9 @@ class ValuesListQuerySet(ValuesQuerySet):
             # When extra(select=...) or an annotation is involved, the extra
             # cols are always at the start of the row, and we need to reorder
             # the fields to match the order in self._fields.
-            extra_names = dictkeys(self.query.extra_select)
+            extra_names = six.dictkeys(self.query.extra_select)
             field_names = self.field_names
-            aggregate_names = dictkeys(self.query.aggregate_select)
+            aggregate_names = six.dictkeys(self.query.aggregate_select)
 
             names = extra_names + field_names + aggregate_names
 
@@ -1530,7 +1529,7 @@ class RawQuerySet(object):
             # Associate fields to values
             if skip:
                 model_init_kwargs = {}
-                for attname, pos in iteritems(model_init_field_names):
+                for attname, pos in six.iteritems(model_init_field_names):
                     model_init_kwargs[attname] = values[pos]
                 instance = model_cls(**model_init_kwargs)
             else:
@@ -1546,7 +1545,7 @@ class RawQuerySet(object):
             yield instance
 
     def __repr__(self):
-        return "<RawQuerySet: %r>" % n(self.raw_query % tuple(self.params))
+        return "<RawQuerySet: %r>" % six.n(self.raw_query % tuple(self.params))
 
     def __getitem__(self, k):
         return list(self)[k]

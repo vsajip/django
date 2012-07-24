@@ -43,7 +43,7 @@ from django.utils import baseconv
 from django.utils.crypto import constant_time_compare, salted_hmac
 from django.utils.encoding import force_unicode, smart_str
 from django.utils.importlib import import_module
-from django.utils.py3 import PY3, text_type
+from django.utils import six
 
 class BadSignature(Exception):
     """
@@ -115,7 +115,7 @@ def dumps(obj, key=None, salt='django.core.signing', serializer=JSONSerializer, 
     application without good cause is a security risk.
     """
     data = serializer().dumps(obj)
-    if isinstance(data, text_type):
+    if isinstance(data, six.text_type):
         data = data.encode('utf-8')
 
     # Flag for if it's been compressed or not
@@ -163,7 +163,7 @@ class Signer(object):
         return base64_hmac(self.salt + 'signer', value, self.key)
 
     def sign(self, value):
-        if not PY3:
+        if not six.PY3:
             value = smart_str(value)
             return '%s%s%s' % (value, self.sep, self.signature(value))
         else:
@@ -185,7 +185,7 @@ class TimestampSigner(Signer):
         return baseconv.base62.encode(int(time.time()))
 
     def sign(self, value):
-        if PY3:
+        if six.PY3:
             value = '%s%s%s' % (value, self.sep, self.timestamp())
         else:
             value = smart_str('%s%s%s' % (value, self.sep, self.timestamp()))

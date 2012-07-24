@@ -14,8 +14,8 @@ from django.db.backends.postgresql_psycopg2.creation import DatabaseCreation
 from django.db.backends.postgresql_psycopg2.version import get_version
 from django.db.backends.postgresql_psycopg2.introspection import DatabaseIntrospection
 from django.utils.log import getLogger
-from django.utils.py3 import reraise
 from django.utils.safestring import SafeUnicode, SafeString
+from django.utils import six
 from django.utils.timezone import utc
 
 try:
@@ -51,22 +51,18 @@ class CursorWrapper(object):
     def execute(self, query, args=None):
         try:
             return self.cursor.execute(query, args)
-        except Database.IntegrityError:
-            e = sys.exc_info()
-            reraise(utils.IntegrityError, utils.IntegrityError(*e[1].args), e[2])
-        except Database.DatabaseError:
-            e = sys.exc_info()
-            reraise(utils.DatabaseError, utils.DatabaseError(*e[1].args), e[2])
+        except Database.IntegrityError as e:
+            six.reraise(utils.IntegrityError, utils.IntegrityError(*tuple(e.args)), sys.exc_info()[2])
+        except Database.DatabaseError as e:
+            six.reraise(utils.DatabaseError, utils.DatabaseError(*tuple(e.args)), sys.exc_info()[2])
 
     def executemany(self, query, args):
         try:
             return self.cursor.executemany(query, args)
-        except Database.IntegrityError:
-            e = sys.exc_info()
-            reraise(utils.IntegrityError, utils.IntegrityError(*e[1].args), e[2])
-        except Database.DatabaseError:
-            e = sys.exc_info()
-            reraise(utils.DatabaseError, utils.DatabaseError(*e[1].args), e[2])
+        except Database.IntegrityError as e:
+            six.reraise(utils.IntegrityError, utils.IntegrityError(*tuple(e.args)), sys.exc_info()[2])
+        except Database.DatabaseError as e:
+            six.reraise(utils.DatabaseError, utils.DatabaseError(*tuple(e.args)), sys.exc_info()[2])
 
     def __getattr__(self, attr):
         if attr in self.__dict__:
@@ -240,6 +236,5 @@ class DatabaseWrapper(BaseDatabaseWrapper):
         if self.connection is not None:
             try:
                 return self.connection.commit()
-            except Database.IntegrityError:
-                e = sys.exc_info()
-                reraise(utils.IntegrityError, utils.IntegrityError(*e[1].args), e[2])
+            except Database.IntegrityError as e:
+                six.reraise(utils.IntegrityError, utils.IntegrityError(*tuple(e.args)), sys.exc_info()[2])

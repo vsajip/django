@@ -20,8 +20,8 @@ from django.utils.text import capfirst
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import smart_unicode, force_unicode
-from django.utils.py3 import string_types, next_name, dictkeys
 from django.utils.ipv6 import clean_ipv6_address
+from django.utils import six
 
 class NOT_PROVIDED:
     pass
@@ -488,7 +488,7 @@ class Field(object):
             # Many of the subclass-specific formfield arguments (min_value,
             # max_value) don't apply for choice fields, so be sure to only pass
             # the values that TypedChoiceField will understand.
-            for k in dictkeys(kwargs):
+            for k in six.dictkeys(kwargs):
                 if k not in ('coerce', 'empty_value', 'choices', 'required',
                              'widget', 'label', 'initial', 'help_text',
                              'error_messages', 'show_hidden_initial'):
@@ -628,7 +628,7 @@ class CharField(Field):
         return "CharField"
 
     def to_python(self, value):
-        if isinstance(value, string_types) or value is None:
+        if isinstance(value, six.string_types) or value is None:
             return value
         return smart_unicode(value)
 
@@ -870,7 +870,7 @@ class DecimalField(Field):
             raise exceptions.ValidationError(msg)
 
     def _format(self, value):
-        if isinstance(value, string_types) or value is None:
+        if isinstance(value, six.string_types) or value is None:
             return value
         else:
             return self.format_number(value)
@@ -1191,7 +1191,7 @@ class TextField(Field):
         return "TextField"
 
     def get_prep_value(self, value):
-        if isinstance(value, string_types) or value is None:
+        if isinstance(value, six.string_types) or value is None:
             return value
         return smart_unicode(value)
 

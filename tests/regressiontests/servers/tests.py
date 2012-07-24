@@ -2,12 +2,15 @@
 Tests for django.core.servers.
 """
 import os
+try:
+    from urllib.request import urlopen, HTTPError
+except ImportError:     # Python 2
+    from urllib2 import urlopen, HTTPError
 
 from django.core.exceptions import ImproperlyConfigured
 from django.test import LiveServerTestCase
 from django.core.servers.basehttp import WSGIServerException
 from django.test.utils import override_settings
-from django.utils.py3 import urllib2
 
 from .models import Person
 
@@ -39,7 +42,7 @@ class LiveServerBase(LiveServerTestCase):
         super(LiveServerBase, cls).tearDownClass()
 
     def urlopen(self, url):
-        return urllib2.urlopen(self.live_server_url + url)
+        return urlopen(self.live_server_url + url)
 
 
 class LiveServerAddress(LiveServerBase):
@@ -102,7 +105,7 @@ class LiveServerViews(LiveServerBase):
         """
         try:
             self.urlopen('/')
-        except urllib2.HTTPError as err:
+        except HTTPError as err:
             self.assertEqual(err.code, 404, 'Expected 404 response')
         else:
             self.fail('Expected 404 response')

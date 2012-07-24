@@ -7,7 +7,7 @@ from django.http import HttpResponse, HttpRequest, HttpResponseNotAllowed
 from django.middleware.clickjacking import XFrameOptionsMiddleware
 from django.utils.decorators import method_decorator
 from django.utils.functional import allow_lazy, lazy, memoize
-from django.utils.py3 import PY3
+from django.utils import six
 from django.utils.unittest import TestCase
 from django.views.decorators.cache import cache_page, never_cache, cache_control
 from django.views.decorators.clickjacking import xframe_options_deny, xframe_options_sameorigin, xframe_options_exempt
@@ -221,7 +221,7 @@ class MethodDecoratorTests(TestCase):
         self.assertEqual(getattr(Test.method, 'myattr2', False), True)
 
         self.assertEqual(Test.method.__doc__, 'A method')
-        if PY3:
+        if six.PY3:
             self.assertEqual(Test.method.__name__, 'method')
         else:
             self.assertEqual(Test.method.__func__.__name__, 'method')

@@ -11,17 +11,18 @@ from django.http import HttpRequest, HttpResponse, parse_cookie, build_request_r
 from django.test.utils import str_prefix
 from django.utils import unittest
 from django.utils.http import cookie_date
-from django.utils.py3 import StringIO, PyStringIO, n, dictkeys
+from django.utils import six
+from django.utils.six.moves import StringIO
 from django.utils.timezone import utc
 
 
 class RequestsTests(unittest.TestCase):
     def test_httprequest(self):
         request = HttpRequest()
-        self.assertEqual(dictkeys(request.GET), [])
-        self.assertEqual(dictkeys(request.POST), [])
-        self.assertEqual(dictkeys(request.COOKIES), [])
-        self.assertEqual(dictkeys(request.META), [])
+        self.assertEqual(six.dictkeys(request.GET), [])
+        self.assertEqual(six.dictkeys(request.POST), [])
+        self.assertEqual(six.dictkeys(request.COOKIES), [])
+        self.assertEqual(six.dictkeys(request.META), [])
 
     def test_httprequest_repr(self):
         request = HttpRequest()
@@ -37,9 +38,9 @@ class RequestsTests(unittest.TestCase):
 
     def test_wsgirequest(self):
         request = WSGIRequest({'PATH_INFO': 'bogus', 'REQUEST_METHOD': 'bogus', 'wsgi.input': StringIO('')})
-        self.assertEqual(dictkeys(request.GET), [])
-        self.assertEqual(dictkeys(request.POST), [])
-        self.assertEqual(dictkeys(request.COOKIES), [])
+        self.assertEqual(six.dictkeys(request.GET), [])
+        self.assertEqual(six.dictkeys(request.POST), [])
+        self.assertEqual(six.dictkeys(request.COOKIES), [])
         self.assertEqual(set(request.META.keys()), set(['PATH_INFO', 'REQUEST_METHOD', 'SCRIPT_NAME', 'wsgi.input']))
         self.assertEqual(request.META['PATH_INFO'], 'bogus')
         self.assertEqual(request.META['REQUEST_METHOD'], 'bogus')
@@ -169,7 +170,7 @@ class RequestsTests(unittest.TestCase):
         # which guarantees that there will be a time difference.
         expires = datetime.utcnow() + timedelta(seconds=10)
         time.sleep(0.001)
-        response.set_cookie(n('datetime'), expires=expires)
+        response.set_cookie(six.n('datetime'), expires=expires)
         datetime_cookie = response.cookies['datetime']
         self.assertEqual(datetime_cookie['max-age'], 10)
 
@@ -178,28 +179,28 @@ class RequestsTests(unittest.TestCase):
         response = HttpResponse()
         expires = (datetime.utcnow() + timedelta(seconds=10)).replace(tzinfo=utc)
         time.sleep(0.001)
-        response.set_cookie(n('datetime'), expires=expires)
+        response.set_cookie(six.n('datetime'), expires=expires)
         datetime_cookie = response.cookies['datetime']
         self.assertEqual(datetime_cookie['max-age'], 10)
 
     def test_far_expiration(self):
         "Cookie will expire when an distant expiration time is provided"
         response = HttpResponse()
-        response.set_cookie(n('datetime'), expires=datetime(2028, 1, 1, 4, 5, 6))
+        response.set_cookie(six.n('datetime'), expires=datetime(2028, 1, 1, 4, 5, 6))
         datetime_cookie = response.cookies['datetime']
         self.assertEqual(datetime_cookie['expires'], 'Sat, 01-Jan-2028 04:05:06 GMT')
 
     def test_max_age_expiration(self):
         "Cookie will expire if max_age is provided"
         response = HttpResponse()
-        response.set_cookie(n('max_age'), max_age=10)
+        response.set_cookie(six.n('max_age'), max_age=10)
         max_age_cookie = response.cookies['max_age']
         self.assertEqual(max_age_cookie['max-age'], 10)
         self.assertEqual(max_age_cookie['expires'], cookie_date(time.time()+10))
 
     def test_httponly_cookie(self):
         response = HttpResponse()
-        response.set_cookie(n('example'), httponly=True)
+        response.set_cookie(six.n('example'), httponly=True)
         example_cookie = response.cookies['example']
         # A compat cookie may be in use -- check that it has worked
         # both as an output string, and using the cookie attributes
@@ -409,7 +410,7 @@ class RequestsTests(unittest.TestCase):
         If wsgi.input.read() raises an exception while trying to read() the
         POST, the exception should be identifiable (not a generic IOError).
         """
-        class ExplodingStringIO(PyStringIO):
+        class ExplodingStringIO(StringIO):
             def read(self, len=0):
                 raise IOError("kaboom!")
 

@@ -6,7 +6,8 @@ from django.db import models
 from django.db.models.fields import FieldDoesNotExist
 from django.utils.datastructures import SortedDict
 from django.utils.encoding import force_unicode, smart_str
-from django.utils.py3 import reduce, dictkeys
+from django.utils import six
+from django.utils.six.moves import reduce
 from django.utils.translation import ugettext, ugettext_lazy
 from django.utils.http import urlencode
 
@@ -148,7 +149,7 @@ class ChangeList(object):
         if remove is None: remove = []
         p = self.params.copy()
         for r in remove:
-            for k in dictkeys(p):
+            for k in six.dictkeys(p):
                 if k.startswith(r):
                     del p[k]
         for k, v in new_params.items():

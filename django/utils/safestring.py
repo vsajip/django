@@ -5,7 +5,7 @@ that the producer of the string has already turned characters that should not
 be interpreted by the HTML engine (e.g. '<') into the appropriate entities.
 """
 from django.utils.functional import curry, Promise
-from django.utils.py3 import text_type
+from django.utils import six
 
 class EscapeData(object):
     pass
@@ -16,7 +16,7 @@ class EscapeString(bytes, EscapeData):
     """
     pass
 
-class EscapeUnicode(text_type, EscapeData):
+class EscapeUnicode(six.text_type, EscapeData):
     """
     A unicode object that should be HTML-escaped when output.
     """
@@ -41,7 +41,7 @@ class SafeString(bytes, SafeData):
         elif isinstance(rhs, SafeString):
             return SafeString(t)
         return t
-        
+
     def _proxy_method(self, *args, **kwargs):
         """
         Wrap a call to a normal unicode method up so that we return safe
@@ -55,9 +55,9 @@ class SafeString(bytes, SafeData):
         else:
             return SafeUnicode(data)
 
-    decode = curry(_proxy_method, method = bytes.decode)
+    decode = curry(_proxy_method, method=bytes.decode)
 
-class SafeUnicode(text_type, SafeData):
+class SafeUnicode(six.text_type, SafeData):
     """
     A unicode subclass that has been specifically marked as "safe" for HTML
     output purposes.
@@ -71,7 +71,7 @@ class SafeUnicode(text_type, SafeData):
         if isinstance(rhs, SafeData):
             return SafeUnicode(t)
         return t
-    
+
     def _proxy_method(self, *args, **kwargs):
         """
         Wrap a call to a normal unicode method up so that we return safe
@@ -85,7 +85,7 @@ class SafeUnicode(text_type, SafeData):
         else:
             return SafeUnicode(data)
 
-    encode = curry(_proxy_method, method = text_type.encode)
+    encode = curry(_proxy_method, method=six.text_type.encode)
 
 def mark_safe(s):
     """
@@ -98,7 +98,7 @@ def mark_safe(s):
         return s
     if isinstance(s, bytes) or (isinstance(s, Promise) and s._delegate_str):
         return SafeString(s)
-    if isinstance(s, (text_type, Promise)):
+    if isinstance(s, (six.text_type, Promise)):
         return SafeUnicode(s)
     return SafeString(str(s).encode('utf-8'))
 
@@ -114,7 +114,7 @@ def mark_for_escaping(s):
         return s
     if isinstance(s, bytes) or (isinstance(s, Promise) and s._delegate_str):
         return EscapeString(s)
-    if isinstance(s, (text_type, Promise)):
+    if isinstance(s, (six.text_type, Promise)):
         return EscapeUnicode(s)
     return EscapeString(str(s))
 

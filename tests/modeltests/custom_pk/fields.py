@@ -2,8 +2,8 @@ import random
 import string
 
 from django.db import models
+from django.utils import six
 
-from django.utils.py3 import with_metaclass, text_type
 
 class MyWrapper(object):
     def __init__(self, value):
@@ -22,7 +22,7 @@ class MyWrapper(object):
             return self.value == other.value
         return self.value == other
 
-class MyAutoField(with_metaclass(models.SubfieldBase, models.CharField)):
+class MyAutoField(six.with_metaclass(models.SubfieldBase, models.CharField)):
 
     def __init__(self, *args, **kwargs):
         kwargs['max_length'] = 10
@@ -46,12 +46,12 @@ class MyAutoField(with_metaclass(models.SubfieldBase, models.CharField)):
         if not value:
             return
         if isinstance(value, MyWrapper):
-            return text_type(value)
+            return six.text_type(value)
         return value
 
     def get_db_prep_value(self, value, connection, prepared=False):
         if not value:
             return
         if isinstance(value, MyWrapper):
-            return text_type(value)
+            return six.text_type(value)
         return value

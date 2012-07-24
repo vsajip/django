@@ -6,7 +6,8 @@ import shutil
 
 from django.core import management
 from django.test import TestCase
-from django.utils.py3 import StringIO, PY3
+from django.utils import six
+from django.utils.six.moves import StringIO
 
 LOCALE='de'
 
@@ -191,7 +192,7 @@ class IgnoredExtractorTests(ExtractorTests):
             ignore_patterns=[pattern1], stdout=stdout)
         data = stdout.getvalue()
         # django3: output is slightly different for PY3, not sure why yet
-        if not PY3:
+        if not six.PY3:
             self.assertTrue("ignoring directory ignore_dir" in data)
         else:
             self.assertTrue("ignoring file ignored.html in ./ignore_dir" in data)

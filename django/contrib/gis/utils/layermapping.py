@@ -17,7 +17,7 @@ from django.contrib.gis.gdal.field import (
     OFTDate, OFTDateTime, OFTInteger, OFTReal, OFTString, OFTTime)
 from django.db import models, transaction
 from django.contrib.localflavor.us.models import USStateField
-from django.utils.py3 import string_types, text_type, lrange
+from django.utils import six
 
 # LayerMapping exceptions.
 class LayerMapError(Exception): pass
@@ -75,7 +75,7 @@ class LayerMapping(object):
         argument usage.
         """
         # Getting the DataSource and the associated Layer.
-        if isinstance(data, string_types):
+        if isinstance(data, six.string_types):
             self.ds = DataSource(data)
         else:
             self.ds = data
@@ -250,7 +250,7 @@ class LayerMapping(object):
             sr = source_srs
         elif isinstance(source_srs, self.spatial_backend.spatial_ref_sys()):
             sr = source_srs.srs
-        elif isinstance(source_srs, (int, string_types)):
+        elif isinstance(source_srs, (int, six.string_types)):
             sr = SpatialReference(source_srs)
         else:
             # Otherwise just pulling the SpatialReference from the layer
@@ -267,7 +267,7 @@ class LayerMapping(object):
             # List of fields to determine uniqueness with
             for attr in unique:
                 if not attr in self.mapping: raise ValueError
-        elif isinstance(unique, string_types):
+        elif isinstance(unique, six.string_types):
             # Only a single field passed in.
             if unique not in self.mapping: raise ValueError
         else:
@@ -313,7 +313,7 @@ class LayerMapping(object):
         will construct and return the uniqueness keyword arguments -- a subset
         of the feature kwargs.
         """
-        if isinstance(self.unique, string_types):
+        if isinstance(self.unique, six.string_types):
             return {self.unique : kwargs[self.unique]}
         else:
             return dict((fld, kwargs[fld]) for fld in self.unique)
@@ -330,7 +330,7 @@ class LayerMapping(object):
             if self.encoding:
                 # The encoding for OGR data sources may be specified here
                 # (e.g., 'cp437' for Census Bureau boundary files).
-                val = text_type(ogr_field.value, self.encoding)
+                val = six.text_type(ogr_field.value, self.encoding)
             else:
                 val = ogr_field.value
                 if model_field.max_length and len(val) > model_field.max_length:
@@ -582,7 +582,7 @@ class LayerMapping(object):
             if default_range:
                 raise LayerMapError('The `step` keyword may not be used in conjunction with the `fid_range` keyword.')
             beg, num_feat, num_saved = (0, 0, 0)
-            indices = lrange(step, nfeat, step)
+            indices = six.lrange(step, nfeat, step)
             n_i = len(indices)
 
             for i, end in enumerate(indices):

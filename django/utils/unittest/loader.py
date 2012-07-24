@@ -9,7 +9,7 @@ import unittest
 
 from fnmatch import fnmatch
 
-from django.utils.py3 import lmap, lfilter
+from django.utils import six
 from django.utils.unittest import case, suite
 
 try:
@@ -74,7 +74,7 @@ class TestLoader(unittest.TestLoader):
         testCaseNames = self.getTestCaseNames(testCaseClass)
         if not testCaseNames and hasattr(testCaseClass, 'runTest'):
             testCaseNames = ['runTest']
-        loaded_suite = self.suiteClass(lmap(testCaseClass, testCaseNames))
+        loaded_suite = self.suiteClass(six.lmap(testCaseClass, testCaseNames))
         return loaded_suite
 
     def loadTestsFromModule(self, module, use_load_tests=True):
@@ -156,7 +156,7 @@ class TestLoader(unittest.TestLoader):
                          prefix=self.testMethodPrefix):
             return attrname.startswith(prefix) and \
                 hasattr(getattr(testCaseClass, attrname), '__call__')
-        testFnNames = lfilter(isTestMethod, dir(testCaseClass))
+        testFnNames = six.lfilter(isTestMethod, dir(testCaseClass))
         if self.sortTestMethodsUsing:
             testFnNames.sort(key=_CmpToKey(self.sortTestMethodsUsing))
         return testFnNames

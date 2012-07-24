@@ -1,8 +1,8 @@
-from django.test import TestCase
-from django.utils.py3 import StringIO
-from django.utils.unittest import skipUnless
 from django.contrib.auth.models import User, AnonymousUser
 from django.core.management import call_command
+from django.test import TestCase
+from django.utils.six import StringIO
+from django.utils.unittest import skipUnless
 
 try:
     import crypt as crypt_module

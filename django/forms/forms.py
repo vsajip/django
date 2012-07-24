@@ -13,8 +13,8 @@ from django.forms.widgets import Media, media_property, TextInput, Textarea
 from django.utils.datastructures import SortedDict
 from django.utils.html import conditional_escape, format_html
 from django.utils.encoding import StrAndUnicode, smart_unicode, force_unicode
-from django.utils.py3 import text_type, with_metaclass, dictitems
 from django.utils.safestring import mark_safe
+from django.utils import six
 
 
 __all__ = ('BaseForm', 'Form')
@@ -38,7 +38,7 @@ def get_declared_fields(bases, attrs, with_base_fields=True):
     used. The distinction is useful in ModelForm subclassing.
     Also integrates any additional media definitions
     """
-    fields = [(field_name, attrs.pop(field_name)) for field_name, obj in dictitems(attrs) if isinstance(obj, Field)]
+    fields = [(field_name, attrs.pop(field_name)) for field_name, obj in six.dictitems(attrs) if isinstance(obj, Field)]
     fields.sort(key=lambda x: x[1].creation_counter)
 
     # If this class is subclassing another Form, add that Form's fields.
@@ -47,11 +47,11 @@ def get_declared_fields(bases, attrs, with_base_fields=True):
     if with_base_fields:
         for base in bases[::-1]:
             if hasattr(base, 'base_fields'):
-                fields = dictitems(base.base_fields) + fields
+                fields = six.dictitems(base.base_fields) + fields
     else:
         for base in bases[::-1]:
             if hasattr(base, 'declared_fields'):
-                fields = dictitems(base.declared_fields) + fields
+                fields = six.dictitems(base.declared_fields) + fields
 
     return SortedDict(fields)
 
@@ -151,7 +151,7 @@ class BaseForm(StrAndUnicode):
             if bf.is_hidden:
                 if bf_errors:
                     top_errors.extend(['(Hidden field %s) %s' % (name, force_unicode(e)) for e in bf_errors])
-                hidden_fields.append(text_type(bf))
+                hidden_fields.append(six.text_type(bf))
             else:
                 # Create a 'class="..."' atribute if the row should have any
                 # CSS classes applied.
@@ -181,7 +181,7 @@ class BaseForm(StrAndUnicode):
                 output.append(normal_row % {
                     'errors': force_unicode(bf_errors),
                     'label': force_unicode(label),
-                    'field': text_type(bf),
+                    'field': six.text_type(bf),
                     'help_text': help_text,
                     'html_class_attr': html_class_attr
                 })
@@ -381,14 +381,13 @@ class BaseForm(StrAndUnicode):
         """
         return [field for field in self if not field.is_hidden]
 
-class Form(with_metaclass(DeclarativeFieldsMetaclass, BaseForm)):
+class Form(six.with_metaclass(DeclarativeFieldsMetaclass, BaseForm)):
     "A collection of Fields, plus their associated data."
     # This is a separate class from BaseForm in order to abstract the way
     # self.fields is specified. This class (Form) is the one that does the
     # fancy metaclass stuff purely for the semantic sugar -- it allows one
     # to define a form using declarative syntax.
     # BaseForm itself has no way of designating self.fields.
-    pass
 
 class BoundField(StrAndUnicode):
     "A Field plus data"

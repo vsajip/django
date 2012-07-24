@@ -7,7 +7,7 @@ from optparse import make_option
 from django.core.files.storage import FileSystemStorage
 from django.core.management.base import CommandError, NoArgsCommand
 from django.utils.encoding import smart_str, smart_unicode
-from django.utils.py3 import raw_input, PY3
+from django.utils import six
 from django.utils.datastructures import SortedDict
 
 from django.contrib.staticfiles import finders, storage
@@ -149,7 +149,7 @@ class Command(NoArgsCommand):
             clear_display = 'This will overwrite existing files!'
 
         if self.interactive:
-            confirm = raw_input("""
+            confirm = six.raw_input("""
 You have requested to collect static files at the destination
 location as specified in your settings%s
 
@@ -181,7 +181,7 @@ Type 'yes' to continue, or 'no' to cancel: """
                                    ', %s post-processed'
                                    % post_processed_count or ''),
             }
-            if not PY3:
+            if not six.PY3:
                 summary = smart_str(summary)
             self.stdout.write(summary)
 

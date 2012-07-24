@@ -7,7 +7,7 @@ from __future__ import absolute_import, unicode_literals
 from django.contrib.localflavor.ro.ro_counties import COUNTIES_CHOICES
 from django.core.validators import EMPTY_VALUES
 from django.forms import ValidationError, Field, RegexField, Select
-from django.utils.py3 import next
+from django.utils import six
 from django.utils.translation import ugettext_lazy as _
 
 
@@ -40,7 +40,7 @@ class ROCIFField(RegexField):
         key_iter = iter(key)
         checksum = 0
         for digit in value[1:]:
-            checksum += int(digit) * int(next(key_iter))
+            checksum += int(digit) * int(six.advance_iterator(key_iter))
         checksum = checksum * 10 % 11
         if checksum == 10:
             checksum = 0
@@ -80,7 +80,7 @@ class ROCNPField(RegexField):
         checksum = 0
         value_iter = iter(value)
         for digit in key:
-            checksum += int(digit) * int(next(value_iter))
+            checksum += int(digit) * int(six.advance_iterator(value_iter))
         checksum %= 11
         if checksum == 10:
             checksum = 1

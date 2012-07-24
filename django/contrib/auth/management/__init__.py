@@ -9,7 +9,7 @@ import unicodedata
 from django.contrib.auth import models as auth_app
 from django.db.models import get_models, signals
 from django.contrib.auth.models import User
-from django.utils.py3 import raw_input, iteritems, PY3
+from django.utils import six
 
 def _get_permission_codename(action, opts):
     return '%s_%s' % (action, opts.object_name.lower())
@@ -66,10 +66,10 @@ def create_superuser(app, created_models, verbosity, db, **kwargs):
         msg = ("\nYou just installed Django's auth system, which means you "
             "don't have any superusers defined.\nWould you like to create one "
             "now? (yes/no): ")
-        confirm = raw_input(msg)
+        confirm = six.raw_input(msg)
         while 1:
             if confirm not in ('yes', 'no'):
-                confirm = raw_input('Please enter either "yes" or "no": ')
+                confirm = six.raw_input('Please enter either "yes" or "no": ')
                 continue
             if confirm == 'yes':
                 call_command("createsuperuser", interactive=True, database=db)
@@ -83,7 +83,7 @@ def get_system_username():
     :returns: The username as a unicode string, or an empty string if the
         username could not be determined.
     """
-    if PY3:
+    if six.PY3:
         return getpass.getuser()
     try:
         return getpass.getuser().decode(locale.getdefaultlocale()[1])

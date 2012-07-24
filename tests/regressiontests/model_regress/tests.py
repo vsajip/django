@@ -5,8 +5,8 @@ from operator import attrgetter
 
 from django.core.exceptions import ValidationError
 from django.test import TestCase, skipUnlessDBFeature
+from django.utils import six
 from django.utils import tzinfo
-from django.utils.py3 import text_type, PY3
 
 from .models import (Worker, Article, Party, Event, Department,
     BrokenUnicodeMethod, NonAutoPK, Model1, Model2, Model3)
@@ -39,7 +39,7 @@ class ModelTests(TestCase):
         # Empty strings should be returned as Unicode
         a = Article.objects.get(pk=a.pk)
         self.assertEqual(a.misc_data, '')
-        self.assertIs(type(a.misc_data), text_type)
+        self.assertIs(type(a.misc_data), six.text_type)
 
     def test_long_textfield(self):
         # TextFields can hold more than 4000 characters (this was broken in
@@ -139,12 +139,12 @@ class ModelTests(TestCase):
         # Check Department and Worker (non-default PK type)
         d = Department.objects.create(id=10, name="IT")
         w = Worker.objects.create(department=d, name="Full-time")
-        self.assertEqual(text_type(w), "Full-time")
+        self.assertEqual(six.text_type(w), "Full-time")
 
     def test_broken_unicode(self):
         # Models with broken unicode methods should still have a printable repr
         b = BrokenUnicodeMethod.objects.create(name="Jerry")
-        if PY3:
+        if six.PY3:
             self.assertEqual(repr(b), "<BrokenUnicodeMethod: N\xe1zov: Jerry>")
         else:
             self.assertEqual(repr(b), "<BrokenUnicodeMethod: [Bad Unicode data]>")

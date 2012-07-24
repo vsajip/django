@@ -4,13 +4,17 @@ from __future__ import unicode_literals
 
 import re
 import string
+try:
+    from urllib.parse import quote, urlsplit, urlunsplit
+except ImportError:     # Python 2
+    from urllib import quote
+    from urlparse import urlsplit, urlunsplit
 
 from django.utils.safestring import SafeData, mark_safe
 from django.utils.encoding import smart_unicode, force_unicode
 from django.utils.functional import allow_lazy
+from django.utils import six
 from django.utils.text import normalize_newlines
-from django.utils.py3 import (text_type, n, urlsplit, urlunsplit, quote, PY3,
-                              iteritems)
 
 # Configuration for urlize() function.
 TRAILING_PUNCTUATION = ['.', ',', ':', ';']
@@ -39,7 +43,7 @@ def escape(text):
     Returns the given text with ampersands, quotes and angle brackets encoded for use in HTML.
     """
     return mark_safe(force_unicode(text).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;').replace("'", '&#39;'))
-escape = allow_lazy(escape, text_type)
+escape = allow_lazy(escape, six.text_type)
 
 _base_js_escapes = (
     ('\\', '\\u005C'),
@@ -64,7 +68,7 @@ def escapejs(value):
     for bad, good in _js_escapes:
         value = mark_safe(force_unicode(value).replace(bad, good))
     return value
-escapejs = allow_lazy(escapejs, text_type)
+escapejs = allow_lazy(escapejs, six.text_type)
 
 def conditional_escape(text):
     """
@@ -83,7 +87,7 @@ def format_html(format_string, *args, **kwargs):
     """
     args_safe = map(conditional_escape, args)
     kwargs_safe = dict([(k, conditional_escape(v)) for (k, v) in
-                        iteritems(kwargs)])
+                        six.iteritems(kwargs)])
     return mark_safe(format_string.format(*args_safe, **kwargs_safe))
 
 def format_html_join(sep, format_string, args_generator):
@@ -115,7 +119,7 @@ def linebreaks(value, autoescape=False):
     else:
         paras = ['<p>%s</p>' % p.replace('\n', '<br />') for p in paras]
     return '\n\n'.join(paras)
-linebreaks = allow_lazy(linebreaks, text_type)
+linebreaks = allow_lazy(linebreaks, six.text_type)
 
 def strip_tags(value):
     """Returns the given HTML with all tags stripped."""
@@ -125,17 +129,17 @@ strip_tags = allow_lazy(strip_tags)
 def strip_spaces_between_tags(value):
     """Returns the given HTML with spaces between tags removed."""
     return re.sub(r'>\s+<', '><', force_unicode(value))
-strip_spaces_between_tags = allow_lazy(strip_spaces_between_tags, text_type)
+strip_spaces_between_tags = allow_lazy(strip_spaces_between_tags, six.text_type)
 
 def strip_entities(value):
     """Returns the given HTML with all entities (&something;) stripped."""
     return re.sub(r'&(?:\w+|#\d+);', '', force_unicode(value))
-strip_entities = allow_lazy(strip_entities, text_type)
+strip_entities = allow_lazy(strip_entities, six.text_type)
 
 def fix_ampersands(value):
     """Returns the given HTML with all unencoded ampersands encoded correctly."""
     return unencoded_ampersands_re.sub('&amp;', force_unicode(value))
-fix_ampersands = allow_lazy(fix_ampersands, text_type)
+fix_ampersands = allow_lazy(fix_ampersands, six.text_type)
 
 def smart_urlquote(url):
     "Quotes a URL if it isn't already quoted."
@@ -144,7 +148,7 @@ def smart_urlquote(url):
     try:
         netloc = netloc.encode('idna') # IDN -> ACE
         # django3: need netloc to be str in PY3
-        if PY3: netloc = netloc.decode('utf-8')
+        if six.PY3: netloc = netloc.decode('utf-8')
     except UnicodeError: # invalid domain part
         pass
     else:
@@ -154,7 +158,7 @@ def smart_urlquote(url):
     # contains a % not followed by two hexadecimal digits. See #9655.
     if '%' not in url or unquoted_percents_re.search(url):
         # See http://bugs.python.org/issue2637
-        url = quote(n(smart_unicode(url)), safe=n('!*\'();:@&=+$,/?#[]~'))
+        url = quote(six.n(smart_unicode(url)), safe=six.n('!*\'();:@&=+$,/?#[]~'))
 
     return force_unicode(url)
 
@@ -211,7 +215,7 @@ def urlize(text, trim_url_limit=None, nofollow=False, autoescape=False):
                 except UnicodeError:
                     continue
                 # django3: need domain to be str in PY3
-                if PY3:
+                if six.PY3:
                     domain = domain.decode('utf-8')
                 url = 'mailto:%s@%s' % (local, domain)
                 nofollow_attr = ''
@@ -234,7 +238,7 @@ def urlize(text, trim_url_limit=None, nofollow=False, autoescape=False):
         elif autoescape:
             words[i] = escape(word)
     return ''.join(words)
-urlize = allow_lazy(urlize, text_type)
+urlize = allow_lazy(urlize, six.text_type)
 
 def clean_html(text):
     """
@@ -268,4 +272,4 @@ def clean_html(text):
     # of the text.
     text = trailing_empty_content_re.sub('', text)
     return text
-clean_html = allow_lazy(clean_html, text_type)
+clean_html = allow_lazy(clean_html, six.text_type)

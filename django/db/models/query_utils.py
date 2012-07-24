@@ -10,7 +10,7 @@ from __future__ import unicode_literals
 from django.db.backends import util
 from django.utils import tree
 
-from django.utils.py3 import dictitems
+from django.utils import six
 
 class InvalidQuery(Exception):
     """
@@ -41,7 +41,7 @@ class Q(tree.Node):
     default = AND
 
     def __init__(self, *args, **kwargs):
-        super(Q, self).__init__(children=list(args) + dictitems(kwargs))
+        super(Q, self).__init__(children=list(args) + six.dictitems(kwargs))
 
     def _combine(self, other, conn):
         if not isinstance(other, Q):

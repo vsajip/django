@@ -15,7 +15,7 @@ from django.core.urlresolvers import get_callable
 from django.utils.cache import patch_vary_headers
 from django.utils.http import same_origin
 from django.utils.log import getLogger
-from django.utils.py3 import long_type, text_type, PY3
+from django.utils import six
 from django.utils.crypto import constant_time_compare, get_random_string
 
 logger = getLogger('django.request')
@@ -57,13 +57,13 @@ def _sanitize_token(token):
     # of the post processing middleware.
     if len(token) > CSRF_KEY_LENGTH:
         return _get_new_csrf_key()
-    if isinstance(token, text_type):
+    if isinstance(token, six.text_type):
         token = token.encode('ascii', 'ignore')
     token = re.sub(b'[^a-zA-Z0-9]+', b'', token)
     if token == b"":
         # In case the cookie has been truncated to nothing at some point.
         return _get_new_csrf_key()
-    if PY3:
+    if six.PY3:
         token = token.decode('ascii') 
     return token
 

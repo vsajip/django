@@ -15,7 +15,7 @@ from django.db.models.sql.datastructures import EmptyResultSet
 from django.test import TestCase, skipUnlessDBFeature
 from django.utils import unittest
 from django.utils.datastructures import SortedDict
-from django.utils.py3 import next, text_type, PY3, n, lrange, dictkeys, dictitems
+from django.utils import six
 
 from .models import (Annotation, Article, Author, Celebrity, Child, Cover,
     Detail, DumbCategory, ExtraInfo, Fan, Item, LeafA, LoopX, LoopZ,
@@ -501,7 +501,7 @@ class Queries1Tests(BaseQuerysetTest):
         # normal. A normal dict would thus fail.)
         s = [('a', '%s'), ('b', '%s')]
         params = ['one', 'two']
-        if dictkeys({'a': 1, 'b': 2}) == ['a', 'b']:
+        if six.dictkeys({'a': 1, 'b': 2}) == ['a', 'b']:
             s.reverse()
             params.reverse()
 
@@ -806,7 +806,7 @@ class Queries1Tests(BaseQuerysetTest):
         qs = Tag.objects.values_list('id', flat=True).order_by('id')
         qs.query.bump_prefix()
         first = qs[0]
-        self.assertEqual(list(qs), lrange(first, first+5))
+        self.assertEqual(list(qs), six.lrange(first, first+5))
 
     def test_ticket8439(self):
         # Complex combinations of conjunctions, disjunctions and nullable
@@ -1272,7 +1272,7 @@ class Queries5Tests(TestCase):
         # them in a values() query.
         dicts = qs.values('id', 'rank').order_by('id')
         self.assertEqual(
-            [dictitems(d)[1] for d in dicts],
+            [six.dictitems(d)[1] for d in dicts],
             [('rank', 2), ('rank', 1), ('rank', 3)]
         )
 
@@ -1469,12 +1469,12 @@ class Queries6Tests(TestCase):
         # Test that parallel iterators work.
         qs = Tag.objects.all()
         i1, i2 = iter(qs), iter(qs)
-        self.assertEqual(repr(next(i1)), '<Tag: t1>')
-        self.assertEqual(repr(next(i1)), '<Tag: t2>')
-        self.assertEqual(repr(next(i2)), '<Tag: t1>')
-        self.assertEqual(repr(next(i2)), '<Tag: t2>')
-        self.assertEqual(repr(next(i2)), '<Tag: t3>')
-        self.assertEqual(repr(next(i1)), '<Tag: t3>')
+        self.assertEqual(repr(six.advance_iterator(i1)), '<Tag: t1>')
+        self.assertEqual(repr(six.advance_iterator(i1)), '<Tag: t2>')
+        self.assertEqual(repr(six.advance_iterator(i2)), '<Tag: t1>')
+        self.assertEqual(repr(six.advance_iterator(i2)), '<Tag: t2>')
+        self.assertEqual(repr(six.advance_iterator(i2)), '<Tag: t3>')
+        self.assertEqual(repr(six.advance_iterator(i1)), '<Tag: t3>')
 
         qs = X.objects.all()
         self.assertEqual(bool(qs), False)
@@ -1543,7 +1543,7 @@ class RawQueriesTests(TestCase):
 
     def test_ticket14729(self):
         # Test representation of raw query with one or few parameters passed as list
-        query = n("SELECT * FROM queries_note WHERE note = %s")
+        query = six.n("SELECT * FROM queries_note WHERE note = %s")
         params = ['n1']
         qs = Note.objects.raw(query, params=params)
         self.assertEqual(repr(qs), "<RawQuerySet: 'SELECT * FROM queries_note WHERE note = n1'>")
@@ -1602,7 +1602,7 @@ class ExistsSql(TestCase):
         sql = connection.queries[-1]['sql']
         # django3: added different test depending on type of sql
         # (varies according to backend)
-        if isinstance(sql, text_type):
+        if isinstance(sql, six.text_type):
             self.assertTrue("id" not in sql and "name" not in sql)
         else:
             self.assertTrue(b"id" not in sql and b"name" not in sql)

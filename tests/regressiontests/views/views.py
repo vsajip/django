@@ -11,7 +11,7 @@ from django.views.debug import technical_500_response, SafeExceptionReporterFilt
 from django.views.decorators.debug import (sensitive_post_parameters,
                                            sensitive_variables)
 from django.utils.log import getLogger
-from django.utils.py3 import dictitems
+from django.utils import six
 
 from . import BrokenException, except_args
 
@@ -191,7 +191,7 @@ class UnsafeExceptionReporterFilter(SafeExceptionReporterFilter):
         return request.POST
 
     def get_traceback_frame_variables(self, request, tb_frame):
-        return dictitems(tb_frame.f_locals)
+        return six.dictitems(tb_frame.f_locals)
 
 
 @sensitive_variables()

@@ -7,7 +7,7 @@ from time import time
 
 from django.conf import settings
 from django.utils.log import getLogger
-from django.utils.py3 import PY3, text_type, n
+from django.utils import six
 from django.utils.timezone import utc
 
 
@@ -49,8 +49,8 @@ class CursorDebugWrapper(CursorWrapper):
                 'sql': sql,
                 'time': "%.3f" % duration,
             })
-            logger.debug(n('(%.3f) %s; args=%s') % (duration, sql, params),
-                extra={n('duration'):duration, n('sql'): sql, n('params'): params}
+            logger.debug(six.n('(%.3f) %s; args=%s') % (duration, sql, params),
+                extra={six.n('duration'):duration, six.n('sql'): sql, six.n('params'): params}
             )
 
     def executemany(self, sql, param_list):
@@ -69,8 +69,8 @@ class CursorDebugWrapper(CursorWrapper):
                 'sql': '%s times: %s' % (times, sql),
                 'time': "%.3f" % duration,
             })
-            logger.debug(n('(%.3f) %s; args=%s') % (duration, sql, param_list),
-                extra={n('duration'): duration, n('sql'): sql, n('params'): param_list}
+            logger.debug(six.n('(%.3f) %s; args=%s') % (duration, sql, param_list),
+                extra={six.n('duration'): duration, six.n('sql'): sql, six.n('params'): param_list}
             )
 
 
@@ -78,7 +78,7 @@ class CursorDebugWrapper(CursorWrapper):
 # Converters from a byte objects to strings #
 ###############################################
 
-if PY3:
+if six.PY3:
     def py3_string_conversion(s):
         # Convert byte s to str
         if isinstance(s, bytes):
@@ -98,7 +98,7 @@ def typecast_date(s):
 
 def typecast_time(s): # does NOT store time zone information
     if not s: return None
-    if isinstance(s, text_type): s = s.encode('utf-8')
+    if isinstance(s, six.text_type): s = s.encode('utf-8')
     hour, minutes, seconds = s.split(b':')
     if b'.' in seconds: # check whether seconds have a fractional part
         seconds, microseconds = seconds.split(b'.')

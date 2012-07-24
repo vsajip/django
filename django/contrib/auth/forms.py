@@ -6,7 +6,6 @@ from django.template import loader
 from django.utils.datastructures import SortedDict
 from django.utils.html import format_html, format_html_join
 from django.utils.http import int_to_base36
-from django.utils.py3 import iteritems
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext, ugettext_lazy as _
 

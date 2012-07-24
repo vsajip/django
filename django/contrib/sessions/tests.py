@@ -18,8 +18,7 @@ from django.test import TestCase, RequestFactory
 from django.test.utils import override_settings
 from django.utils import timezone
 from django.utils import unittest
-from django.utils.py3 import (iterkeys, itervalues, iteritems,
-                              dictvalues, dictitems)
+from django.utils import six
 
 
 class SessionTestsMixin(object):
@@ -88,16 +87,16 @@ class SessionTestsMixin(object):
         self.assertFalse(self.session.modified)
 
     def test_values(self):
-        self.assertEqual(dictvalues(self.session), [])
+        self.assertEqual(six.dictvalues(self.session), [])
         self.assertTrue(self.session.accessed)
         self.session['some key'] = 1
-        self.assertEqual(dictvalues(self.session), [1])
+        self.assertEqual(six.dictvalues(self.session), [1])
 
     def test_iterkeys(self):
         self.session['x'] = 1
         self.session.modified = False
         self.session.accessed = False
-        i = iterkeys(self.session)
+        i = six.iterkeys(self.session)
         self.assertTrue(hasattr(i, '__iter__'))
         self.assertTrue(self.session.accessed)
         self.assertFalse(self.session.modified)
@@ -107,7 +106,7 @@ class SessionTestsMixin(object):
         self.session['x'] = 1
         self.session.modified = False
         self.session.accessed = False
-        i = itervalues(self.session)
+        i = six.itervalues(self.session)
         self.assertTrue(hasattr(i, '__iter__'))
         self.assertTrue(self.session.accessed)
         self.assertFalse(self.session.modified)
@@ -117,7 +116,7 @@ class SessionTestsMixin(object):
         self.session['x'] = 1
         self.session.modified = False
         self.session.accessed = False
-        i = iteritems(self.session)
+        i = six.iteritems(self.session)
         self.assertTrue(hasattr(i, '__iter__'))
         self.assertTrue(self.session.accessed)
         self.assertFalse(self.session.modified)
@@ -127,9 +126,9 @@ class SessionTestsMixin(object):
         self.session['x'] = 1
         self.session.modified = False
         self.session.accessed = False
-        self.assertEqual(dictitems(self.session), [('x', 1)])
+        self.assertEqual(six.dictitems(self.session), [('x', 1)])
         self.session.clear()
-        self.assertEqual(dictitems(self.session), [])
+        self.assertEqual(six.dictitems(self.session), [])
         self.assertTrue(self.session.accessed)
         self.assertTrue(self.session.modified)
 
@@ -156,10 +155,10 @@ class SessionTestsMixin(object):
         self.session['a'], self.session['b'] = 'c', 'd'
         self.session.save()
         prev_key = self.session.session_key
-        prev_data = dictitems(self.session)
+        prev_data = six.dictitems(self.session)
         self.session.cycle_key()
         self.assertNotEqual(self.session.session_key, prev_key)
-        self.assertEqual(dictitems(self.session), prev_data)
+        self.assertEqual(six.dictitems(self.session), prev_data)
 
     def test_invalid_key(self):
         # Submitting an invalid session key (either by guessing, or if the db has

@@ -24,7 +24,7 @@ from django.db.models.sql.expressions import SQLEvaluator
 from django.db.models.sql.where import (WhereNode, Constraint, EverythingNode,
     ExtraWhere, AND, OR)
 from django.core.exceptions import FieldError
-from django.utils.py3 import iteritems, itervalues, next, dictkeys
+from django.utils import six
 
 __all__ = ['Query', 'RawQuery']
 
@@ -603,22 +603,22 @@ class Query(object):
             # slight complexity here is handling fields that exist on parent
             # models.
             workset = {}
-            for model, values in iteritems(seen):
+            for model, values in six.iteritems(seen):
                 for field, m in model._meta.get_fields_with_model():
                     if field in values:
                         continue
                     add_to_dict(workset, m or model, field)
-            for model, values in iteritems(must_include):
+            for model, values in six.iteritems(must_include):
                 # If we haven't included a model in workset, we don't add the
                 # corresponding must_include fields for that model, since an
                 # empty set means "include all fields". That's why there's no
                 # "else" branch here.
                 if model in workset:
                     workset[model].update(values)
-            for model, values in iteritems(workset):
+            for model, values in six.iteritems(workset):
                 callback(target, model, values)
         else:
-            for model, values in iteritems(must_include):
+            for model, values in six.iteritems(must_include):
                 if model in seen:
                     seen[model].update(values)
                 else:
@@ -632,7 +632,7 @@ class Query(object):
             for model in orig_opts.get_parent_list():
                 if model not in seen:
                     seen[model] = set()
-            for model, values in iteritems(seen):
+            for model, values in six.iteritems(seen):
                 callback(target, model, values)
 
 
@@ -771,7 +771,7 @@ class Query(object):
         for k, aliases in self.join_map.items():
             aliases = tuple([change_map.get(a, a) for a in aliases])
             self.join_map[k] = aliases
-        for old_alias, new_alias in iteritems(change_map):
+        for old_alias, new_alias in six.iteritems(change_map):
             alias_data = self.alias_map[old_alias]
             alias_data = alias_data._replace(rhs_alias=new_alias)
             self.alias_refcount[new_alias] = self.alias_refcount[old_alias]
@@ -793,7 +793,7 @@ class Query(object):
                 self.included_inherited_models[key] = change_map[alias]
 
         # 3. Update any joins that refer to the old alias.
-        for alias, data in iteritems(self.alias_map):
+        for alias, data in six.iteritems(self.alias_map):
             lhs = data.lhs_alias
             if lhs in change_map:
                 data = data._replace(lhs_alias=change_map[lhs])
@@ -843,7 +843,7 @@ class Query(object):
         count. Note that after execution, the reference counts are zeroed, so
         tables added in compiler will not be seen by this method.
         """
-        return len([1 for count in itervalues(self.alias_refcount) if count])
+        return len([1 for count in six.itervalues(self.alias_refcount) if count])
 
     def join(self, connection, always_create=False, exclusions=(),
             promote=False, outer_if_first=False, nullable=False, reuse=None):
@@ -1141,10 +1141,10 @@ class Query(object):
             # join list) an outer join.
             join_it = iter(join_list)
             table_it = iter(self.tables)
-            next(join_it), next(table_it)
+            six.advance_iterator(join_it), six.advance_iterator(table_it)
             unconditional = False
             for join in join_it:
-                table = next(table_it)
+                table = six.advance_iterator(table_it)
                 # Once we hit an outer join, all subsequent joins must
                 # also be promoted, regardless of whether they have been
                 # promoted as a result of this pass through the tables.
@@ -1303,7 +1303,7 @@ class Query(object):
                         field, model, direct, m2m = opts.get_field_by_name(f.name)
                         break
                 else:
-                    names = opts.get_all_field_names() + dictkeys(self.aggregate_select)
+                    names = opts.get_all_field_names() + six.dictkeys(self.aggregate_select)
                     raise FieldError("Cannot resolve keyword %r into field. "
                             "Choices are: %s" % (name, ", ".join(names)))
 
@@ -1572,7 +1572,7 @@ class Query(object):
         # Tag.objects.exclude(parent__parent__name='t1'), a tag with no parent
         # would otherwise be overlooked).
         active_positions = [pos for (pos, count) in
-                enumerate(itervalues(query.alias_refcount)) if count]
+                enumerate(six.itervalues(query.alias_refcount)) if count]
         if active_positions[-1] > 1:
             self.add_filter(('%s__isnull' % prefix, False), negate=True,
                     trim=True, can_reuse=can_reuse)
@@ -1780,7 +1780,7 @@ class Query(object):
                 entry_params = []
                 pos = entry.find("%s")
                 while pos != -1:
-                    entry_params.append(next(param_iter))
+                    entry_params.append(six.advance_iterator(param_iter))
                     pos = entry.find("%s", pos + 2)
                 select_pairs[name] = (entry, entry_params)
             # This is order preserving, since self.extra_select is a SortedDict.

@@ -11,7 +11,7 @@ import django
 from django.core.management.base import CommandError, NoArgsCommand
 from django.utils.text import get_text_list
 from django.utils.jslex import prepare_js_for_gettext
-from django.utils.py3 import lfilter
+from django.utils import six
 
 plural_forms_re = re.compile(r'^(?P<value>"Plural-Forms.+?\\n")\s*$', re.MULTILINE | re.DOTALL)
 STATUS_OK = 0
@@ -332,7 +332,7 @@ def make_messages(locale=None, domain='django', verbosity=1, all=False,
     if locale is not None:
         locales.append(locale)
     elif all:
-        locale_dirs = lfilter(os.path.isdir, glob.glob('%s/*' % localedir))
+        locale_dirs = six.lfilter(os.path.isdir, glob.glob('%s/*' % localedir))
         locales = [os.path.basename(l) for l in locale_dirs]
 
     wrap = '--no-wrap' if no_wrap else ''

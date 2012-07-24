@@ -13,6 +13,10 @@ import time
 import os
 import sys
 import traceback
+try:
+    from urllib.parse import urljoin
+except ImportError:     # Python 2
+    from urlparse import urljoin
 
 from django import template
 from django.template import base as template_base, RequestContext, Template, Context
@@ -22,9 +26,9 @@ from django.template.loaders import app_directories, filesystem, cached
 from django.test import RequestFactory
 from django.test.utils import (setup_test_template_loader,
     restore_template_loaders, override_settings)
+from django.utils import six
 from django.utils import unittest
 from django.utils.formats import date_format
-from django.utils.py3 import urljoin, iteritems, dictitems, PY3
 from django.utils.translation import activate, deactivate, ugettext as _
 from django.utils.safestring import mark_safe
 from django.utils.tzinfo import LocalTimezone
@@ -148,7 +152,7 @@ class UTF8Class:
     "Class whose __str__ returns non-ASCII data"
     def __str__(self):
         result = 'ŠĐĆŽćžšđ'
-        if not PY3: result = result.encode('utf-8')
+        if not six.PY3: result = result.encode('utf-8')
         return result
 
 class Templates(unittest.TestCase):
@@ -402,12 +406,12 @@ class Templates(unittest.TestCase):
         template_tests.update(filter_tests)
 
         cache_loader = setup_test_template_loader(
-            dict([(name, t[0]) for name, t in iteritems(template_tests)]),
+            dict([(name, t[0]) for name, t in six.iteritems(template_tests)]),
             use_cached_loader=True,
         )
 
         failures = []
-        tests = dictitems(template_tests)
+        tests = six.dictitems(template_tests)
         tests.sort()
 
         # Turn TEMPLATE_DEBUG off, because tests assume that.
@@ -1459,7 +1463,7 @@ class Templates(unittest.TestCase):
             'widthratio05': ('{% widthratio a b 100 %}', {'a':100,'b':100}, '100'),
 
             # 62.5 should round to 63 on 2.x, 62 on 3.x
-            'widthratio06': ('{% widthratio a b 100 %}', {'a':50,'b':80}, iif(PY3, '62', '63')),
+            'widthratio06': ('{% widthratio a b 100 %}', {'a':50,'b':80}, iif(six.PY3, '62', '63')),
 
             # 71.4 should round to 71
             'widthratio07': ('{% widthratio a b 100 %}', {'a':50,'b':70}, '71'),

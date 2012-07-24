@@ -4,9 +4,13 @@ import hashlib
 import os
 import shutil
 import time
+try:
+    from django.utils.six.moves import cPickle as pickle
+except ImportError:
+    import pickle
 
 from django.core.cache.backends.base import BaseCache
-from django.utils.py3 import pickle, text_type
+from django.utils import six
 
 class FileBasedCache(BaseCache):
     def __init__(self, dir, params):
@@ -133,7 +137,7 @@ class FileBasedCache(BaseCache):
         Thus, a cache key of "foo" gets turnned into a file named
         ``{cache-dir}ac/bd/18db4cc2f85cedef654fccc4a4d8``.
         """
-        if isinstance(key, text_type): key = key.encode('utf-8')
+        if isinstance(key, six.text_type): key = key.encode('utf-8')
         path = hashlib.md5(key).hexdigest()
         path = os.path.join(path[:2], path[2:4], path[4:])
         return os.path.join(self._dir, path)

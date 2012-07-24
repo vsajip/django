@@ -2,7 +2,7 @@ from __future__ import absolute_import, unicode_literals
 
 from django.contrib.auth.models import User
 from django.db import models
-from django.utils.py3 import text_type
+from django.utils import six
 
 
 class Animal(models.Model):
@@ -30,7 +30,7 @@ class Stuff(models.Model):
     owner = models.ForeignKey(User, null=True)
 
     def __unicode__(self):
-        return text_type(self.name) + ' is owned by ' + text_type(self.owner)
+        return six.text_type(self.name) + ' is owned by ' + six.text_type(self.owner)
 
 
 class Absolute(models.Model):

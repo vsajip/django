@@ -9,7 +9,7 @@ from django.utils import formats
 from django.utils.text import capfirst
 from django.utils.encoding import smart_unicode, smart_str, iri_to_uri
 from django.db.models.query import QuerySet
-from django.utils.py3 import dictkeys, dictvalues, lzip
+from django.utils import six
 
 EMPTY_VALUE = '(None)'
 DISPLAY_SIZE = 100
@@ -18,7 +18,7 @@ class EasyModel(object):
     def __init__(self, site, model):
         self.site = site
         self.model = model
-        self.model_list = dictkeys(site.registry)
+        self.model_list = six.dictkeys(site.registry)
         self.verbose_name = model._meta.verbose_name
         self.verbose_name_plural = model._meta.verbose_name_plural
 
@@ -179,7 +179,7 @@ class EasyInstanceField(object):
             if urls is not None:
                 #plugin_urls.append(urls)
                 values = self.values()
-                return lzip(self.values(), urls)
+                return six.lzip(self.values(), urls)
         if self.field.rel:
             m = EasyModel(self.model.site, self.field.rel.to)
             if self.field.rel.to in self.model.model_list:
@@ -197,10 +197,10 @@ class EasyInstanceField(object):
                 url = '%s%s/%s/fields/%s/%s/' % (self.model.site.root_url, self.model.model._meta.app_label, self.model.model._meta.module_name, self.field.name, iri_to_uri(self.raw_value))
                 lst.append((value, url))
         elif isinstance(self.field, models.URLField):
-            val = dictvalues(self)[0]
+            val = six.dictvalues(self)[0]
             lst = [(val, iri_to_uri(val))]
         else:
-            lst = [dictvalues((self)[0], None)]
+            lst = [six.dictvalues((self)[0], None)]
         return lst
 
 class EasyQuerySet(QuerySet):

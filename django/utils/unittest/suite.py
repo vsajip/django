@@ -2,7 +2,7 @@
 
 import sys
 import unittest
-from django.utils.py3 import string_types
+from django.utils import six
 from django.utils.unittest import case, util
 
 __unittest = True
@@ -49,7 +49,7 @@ class BaseTestSuite(unittest.TestSuite):
         self._tests.append(test)
 
     def addTests(self, tests):
-        if isinstance(tests, string_types):
+        if isinstance(tests, six.string_types):
             raise TypeError("tests must be an iterable of tests, not a string")
         for test in tests:
             self.addTest(test)

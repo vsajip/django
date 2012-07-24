@@ -21,7 +21,7 @@ from django.template import Context, RequestContext, Template, TemplateSyntaxErr
 from django.test import TestCase, skipIfDBFeature, skipUnlessDBFeature
 from django.test.utils import override_settings
 from django.utils import timezone
-from django.utils.py3 import next, iteritems
+from django.utils import six
 from django.utils.tzinfo import FixedOffset
 from django.utils.unittest import skipIf, skipUnless
 
@@ -496,23 +496,23 @@ class SerializationTests(TestCase):
 
         data = serializers.serialize('python', [Event(dt=dt)])
         self.assertEqual(data[0]['fields']['dt'], dt)
-        obj = next(serializers.deserialize('python', data)).object
+        obj = six.advance_iterator(serializers.deserialize('python', data)).object
         self.assertEqual(obj.dt, dt)
 
         data = serializers.serialize('json', [Event(dt=dt)])
         self.assertIn('"fields": {"dt": "2011-09-01T13:20:30"}', data)
-        obj = next(serializers.deserialize('json', data)).object
+        obj = six.advance_iterator(serializers.deserialize('json', data)).object
         self.assertEqual(obj.dt, dt)
 
         data = serializers.serialize('xml', [Event(dt=dt)])
         self.assertIn('<field type="DateTimeField" name="dt">2011-09-01T13:20:30</field>', data)
-        obj = next(serializers.deserialize('xml', data)).object
+        obj = six.advance_iterator(serializers.deserialize('xml', data)).object
         self.assertEqual(obj.dt, dt)
 
         if 'yaml' in serializers.get_serializer_formats():
             data = serializers.serialize('yaml', [Event(dt=dt)])
             self.assertIn("- fields: {dt: !!timestamp '2011-09-01 13:20:30'}", data)
-            obj = next(serializers.deserialize('yaml', data)).object
+            obj = six.advance_iterator(serializers.deserialize('yaml', data)).object
             self.assertEqual(obj.dt, dt)
 
     def test_naive_datetime_with_microsecond(self):
@@ -520,23 +520,23 @@ class SerializationTests(TestCase):
 
         data = serializers.serialize('python', [Event(dt=dt)])
         self.assertEqual(data[0]['fields']['dt'], dt)
-        obj = next(serializers.deserialize('python', data)).object
+        obj = six.advance_iterator(serializers.deserialize('python', data)).object
         self.assertEqual(obj.dt, dt)
 
         data = serializers.serialize('json', [Event(dt=dt)])
         self.assertIn('"fields": {"dt": "2011-09-01T13:20:30.405"}', data)
-        obj = next(serializers.deserialize('json', data)).object
+        obj = six.advance_iterator(serializers.deserialize('json', data)).object
         self.assertEqual(obj.dt, dt.replace(microsecond=405000))
 
         data = serializers.serialize('xml', [Event(dt=dt)])
         self.assertIn('<field type="DateTimeField" name="dt">2011-09-01T13:20:30.405060</field>', data)
-        obj = next(serializers.deserialize('xml', data)).object
+        obj = six.advance_iterator(serializers.deserialize('xml', data)).object
         self.assertEqual(obj.dt, dt)
 
         if 'yaml' in serializers.get_serializer_formats():
             data = serializers.serialize('yaml', [Event(dt=dt)])
             self.assertIn("- fields: {dt: !!timestamp '2011-09-01 13:20:30.405060'}", data)
-            obj = next(serializers.deserialize('yaml', data)).object
+            obj = six.advance_iterator(serializers.deserialize('yaml', data)).object
             self.assertEqual(obj.dt, dt)
 
     def test_aware_datetime_with_microsecond(self):
@@ -544,23 +544,23 @@ class SerializationTests(TestCase):
 
         data = serializers.serialize('python', [Event(dt=dt)])
         self.assertEqual(data[0]['fields']['dt'], dt)
-        obj = next(serializers.deserialize('python', data)).object
+        obj = six.advance_iterator(serializers.deserialize('python', data)).object
         self.assertEqual(obj.dt, dt)
 
         data = serializers.serialize('json', [Event(dt=dt)])
         self.assertIn('"fields": {"dt": "2011-09-01T17:20:30.405+07:00"}', data)
-        obj = next(serializers.deserialize('json', data)).object
+        obj = six.advance_iterator(serializers.deserialize('json', data)).object
         self.assertEqual(obj.dt, dt.replace(microsecond=405000))
 
         data = serializers.serialize('xml', [Event(dt=dt)])
         self.assertIn('<field type="DateTimeField" name="dt">2011-09-01T17:20:30.405060+07:00</field>', data)
-        obj = next(serializers.deserialize('xml', data)).object
+        obj = six.advance_iterator(serializers.deserialize('xml', data)).object
         self.assertEqual(obj.dt, dt)
 
         if 'yaml' in serializers.get_serializer_formats():
             data = serializers.serialize('yaml', [Event(dt=dt)])
             self.assertIn("- fields: {dt: !!timestamp '2011-09-01 17:20:30.405060+07:00'}", data)
-            obj = next(serializers.deserialize('yaml', data)).object
+            obj = six.advance_iterator(serializers.deserialize('yaml', data)).object
             self.assertEqual(obj.dt.replace(tzinfo=UTC), dt)
 
     def test_aware_datetime_in_utc(self):
@@ -568,23 +568,23 @@ class SerializationTests(TestCase):
 
         data = serializers.serialize('python', [Event(dt=dt)])
         self.assertEqual(data[0]['fields']['dt'], dt)
-        obj = next(serializers.deserialize('python', data)).object
+        obj = six.advance_iterator(serializers.deserialize('python', data)).object
         self.assertEqual(obj.dt, dt)
 
         data = serializers.serialize('json', [Event(dt=dt)])
         self.assertIn('"fields": {"dt": "2011-09-01T10:20:30Z"}', data)
-        obj = next(serializers.deserialize('json', data)).object
+        obj = six.advance_iterator(serializers.deserialize('json', data)).object
         self.assertEqual(obj.dt, dt)
 
         data = serializers.serialize('xml', [Event(dt=dt)])
         self.assertIn('<field type="DateTimeField" name="dt">2011-09-01T10:20:30+00:00</field>', data)
-        obj = next(serializers.deserialize('xml', data)).object
+        obj = six.advance_iterator(serializers.deserialize('xml', data)).object
         self.assertEqual(obj.dt, dt)
 
         if 'yaml' in serializers.get_serializer_formats():
             data = serializers.serialize('yaml', [Event(dt=dt)])
             self.assertIn("- fields: {dt: !!timestamp '2011-09-01 10:20:30+00:00'}", data)
-            obj = next(serializers.deserialize('yaml', data)).object
+            obj = six.advance_iterator(serializers.deserialize('yaml', data)).object
             self.assertEqual(obj.dt.replace(tzinfo=UTC), dt)
 
     def test_aware_datetime_in_local_timezone(self):
@@ -592,23 +592,23 @@ class SerializationTests(TestCase):
 
         data = serializers.serialize('python', [Event(dt=dt)])
         self.assertEqual(data[0]['fields']['dt'], dt)
-        obj = next(serializers.deserialize('python', data)).object
+        obj = six.advance_iterator(serializers.deserialize('python', data)).object
         self.assertEqual(obj.dt, dt)
 
         data = serializers.serialize('json', [Event(dt=dt)])
         self.assertIn('"fields": {"dt": "2011-09-01T13:20:30+03:00"}', data)
-        obj = next(serializers.deserialize('json', data)).object
+        obj = six.advance_iterator(serializers.deserialize('json', data)).object
         self.assertEqual(obj.dt, dt)
 
         data = serializers.serialize('xml', [Event(dt=dt)])
         self.assertIn('<field type="DateTimeField" name="dt">2011-09-01T13:20:30+03:00</field>', data)
-        obj = next(serializers.deserialize('xml', data)).object
+        obj = six.advance_iterator(serializers.deserialize('xml', data)).object
         self.assertEqual(obj.dt, dt)
 
         if 'yaml' in serializers.get_serializer_formats():
             data = serializers.serialize('yaml', [Event(dt=dt)])
             self.assertIn("- fields: {dt: !!timestamp '2011-09-01 13:20:30+03:00'}", data)
-            obj = next(serializers.deserialize('yaml', data)).object
+            obj = six.advance_iterator(serializers.deserialize('yaml', data)).object
             self.assertEqual(obj.dt.replace(tzinfo=UTC), dt)
 
     def test_aware_datetime_in_other_timezone(self):
@@ -616,23 +616,23 @@ class SerializationTests(TestCase):
 
         data = serializers.serialize('python', [Event(dt=dt)])
         self.assertEqual(data[0]['fields']['dt'], dt)
-        obj = next(serializers.deserialize('python', data)).object
+        obj = six.advance_iterator(serializers.deserialize('python', data)).object
         self.assertEqual(obj.dt, dt)
 
         data = serializers.serialize('json', [Event(dt=dt)])
         self.assertIn('"fields": {"dt": "2011-09-01T17:20:30+07:00"}', data)
-        obj = next(serializers.deserialize('json', data)).object
+        obj = six.advance_iterator(serializers.deserialize('json', data)).object
         self.assertEqual(obj.dt, dt)
 
         data = serializers.serialize('xml', [Event(dt=dt)])
         self.assertIn('<field type="DateTimeField" name="dt">2011-09-01T17:20:30+07:00</field>', data)
-        obj = next(serializers.deserialize('xml', data)).object
+        obj = six.advance_iterator(serializers.deserialize('xml', data)).object
         self.assertEqual(obj.dt, dt)
 
         if 'yaml' in serializers.get_serializer_formats():
             data = serializers.serialize('yaml', [Event(dt=dt)])
             self.assertIn("- fields: {dt: !!timestamp '2011-09-01 17:20:30+07:00'}", data)
-            obj = next(serializers.deserialize('yaml', data)).object
+            obj = six.advance_iterator(serializers.deserialize('yaml', data)).object
             self.assertEqual(obj.dt.replace(tzinfo=UTC), dt)
 
 
@@ -691,8 +691,8 @@ class TemplateTests(TestCase):
             }
         }
 
-        for k1, dt in iteritems(datetimes):
-            for k2, tpl in iteritems(templates):
+        for k1, dt in six.iteritems(datetimes):
+            for k2, tpl in six.iteritems(templates):
                 ctx = Context({'dt': dt, 'ICT': ICT})
                 actual = tpl.render(ctx)
                 expected = results[k1][k2]
@@ -704,8 +704,8 @@ class TemplateTests(TestCase):
         results['ict']['notag'] = t('ict', 'eat', 'utc', 'ict')
 
         with self.settings(USE_TZ=False):
-            for k1, dt in iteritems(datetimes):
-                for k2, tpl in iteritems(templates):
+            for k1, dt in six.iteritems(datetimes):
+                for k2, tpl in six.iteritems(templates):
                     ctx = Context({'dt': dt, 'ICT': ICT})
                     actual = tpl.render(ctx)
                     expected = results[k1][k2]

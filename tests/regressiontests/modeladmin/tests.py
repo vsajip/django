@@ -17,7 +17,7 @@ from django.forms.widgets import Select
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils import unittest
-from django.utils.py3 import n, dictkeys
+from django.utils import six
 
 from .models import Band, Concert, ValidationTestModel, ValidationTestInlineModel
 
@@ -48,7 +48,7 @@ class ModelAdminTests(TestCase):
     def test_default_fields(self):
         ma = ModelAdmin(Band, self.site)
 
-        self.assertEqual(dictkeys(ma.get_form(request).base_fields),
+        self.assertEqual(six.dictkeys(ma.get_form(request).base_fields),
             ['name', 'bio', 'sign_date'])
 
     def test_default_fieldsets(self):
@@ -91,8 +91,8 @@ class ModelAdminTests(TestCase):
             fields = ['name']
 
         ma = BandAdmin(Band, self.site)
-        self.assertEqual(dictkeys(ma.get_form(request).base_fields), ['name'])
-        self.assertEqual(dictkeys(ma.get_form(request, self.band).base_fields),
+        self.assertEqual(six.dictkeys(ma.get_form(request).base_fields), ['name'])
+        self.assertEqual(six.dictkeys(ma.get_form(request, self.band).base_fields),
             ['name'])
 
         # Using `fieldsets`.
@@ -100,8 +100,8 @@ class ModelAdminTests(TestCase):
             fieldsets = [(None, {'fields': ['name']})]
 
         ma = BandAdmin(Band, self.site)
-        self.assertEqual(dictkeys(ma.get_form(request).base_fields), ['name'])
-        self.assertEqual(dictkeys(ma.get_form(request, self.band).base_fields),
+        self.assertEqual(six.dictkeys(ma.get_form(request).base_fields), ['name'])
+        self.assertEqual(six.dictkeys(ma.get_form(request, self.band).base_fields),
             ['name'])
 
         # Using `exclude`.
@@ -109,7 +109,7 @@ class ModelAdminTests(TestCase):
             exclude = ['bio']
 
         ma = BandAdmin(Band, self.site)
-        self.assertEqual(dictkeys(ma.get_form(request).base_fields),
+        self.assertEqual(six.dictkeys(ma.get_form(request).base_fields),
             ['name', 'sign_date'])
 
         # You can also pass a tuple to `exclude`.
@@ -117,7 +117,7 @@ class ModelAdminTests(TestCase):
             exclude = ('bio',)
 
         ma = BandAdmin(Band, self.site)
-        self.assertEqual(dictkeys(ma.get_form(request).base_fields),
+        self.assertEqual(six.dictkeys(ma.get_form(request).base_fields),
             ['name', 'sign_date'])
 
         # Using `fields` and `exclude`.
@@ -126,7 +126,7 @@ class ModelAdminTests(TestCase):
             exclude = ['bio']
 
         ma = BandAdmin(Band, self.site)
-        self.assertEqual(dictkeys(ma.get_form(request).base_fields),
+        self.assertEqual(six.dictkeys(ma.get_form(request).base_fields),
             ['name'])
 
     def test_custom_form_meta_exclude_with_readonly(self):
@@ -149,7 +149,7 @@ class ModelAdminTests(TestCase):
             form = AdminBandForm
 
         ma = BandAdmin(Band, self.site)
-        self.assertEqual(dictkeys(ma.get_form(request).base_fields),
+        self.assertEqual(six.dictkeys(ma.get_form(request).base_fields),
             ['sign_date',])
 
         # Then, with `InlineModelAdmin`  -----------------
@@ -173,7 +173,7 @@ class ModelAdminTests(TestCase):
 
         ma = BandAdmin(Band, self.site)
         self.assertEqual(
-            dictkeys(list(ma.get_formsets(request))[0]().forms[0].fields),
+            six.dictkeys(list(ma.get_formsets(request))[0]().forms[0].fields),
             ['main_band', 'opening_band', 'id', 'DELETE',])
 
     def test_custom_form_meta_exclude(self):
@@ -195,7 +195,7 @@ class ModelAdminTests(TestCase):
             form = AdminBandForm
 
         ma = BandAdmin(Band, self.site)
-        self.assertEqual(dictkeys(ma.get_form(request).base_fields),
+        self.assertEqual(six.dictkeys(ma.get_form(request).base_fields),
             ['bio', 'sign_date',])
 
         # Then, with `InlineModelAdmin`  -----------------
@@ -219,7 +219,7 @@ class ModelAdminTests(TestCase):
 
         ma = BandAdmin(Band, self.site)
         self.assertEqual(
-            dictkeys(list(ma.get_formsets(request))[0]().forms[0].fields),
+            six.dictkeys(list(ma.get_formsets(request))[0]().forms[0].fields),
             ['main_band', 'opening_band', 'day', 'id', 'DELETE',])
 
     def test_custom_form_validation(self):
@@ -236,7 +236,7 @@ class ModelAdminTests(TestCase):
             form = AdminBandForm
 
         ma = BandAdmin(Band, self.site)
-        self.assertEqual(dictkeys(ma.get_form(request).base_fields),
+        self.assertEqual(six.dictkeys(ma.get_form(request).base_fields),
             ['name', 'bio', 'sign_date', 'delete'])
 
         self.assertEqual(
@@ -264,7 +264,7 @@ class ModelAdminTests(TestCase):
                 return super(BandAdmin, self).get_form(request, obj, **kwargs)
 
         ma = BandAdmin(Band, self.site)
-        self.assertEqual(dictkeys(ma.get_form(request).base_fields),
+        self.assertEqual(six.dictkeys(ma.get_form(request).base_fields),
             ['name', 'sign_date',])
 
 
@@ -297,7 +297,7 @@ class ModelAdminTests(TestCase):
 
         ma = BandAdmin(Band, self.site)
         self.assertEqual(
-            dictkeys(list(ma.get_formsets(request))[0]().forms[0].fields),
+            six.dictkeys(list(ma.get_formsets(request))[0]().forms[0].fields),
             ['main_band', 'day', 'transport', 'id', 'DELETE',])
 
     def test_queryset_override(self):
@@ -462,7 +462,7 @@ class ModelAdminTests(TestCase):
             form = AdminConcertForm
 
         ma = ConcertAdmin(Concert, self.site)
-        self.assertEqual(dictkeys(ma.get_form(request).base_fields),
+        self.assertEqual(six.dictkeys(ma.get_form(request).base_fields),
             ['main_band', 'opening_band', 'day'])
 
         class AdminConcertForm(forms.ModelForm):
@@ -476,7 +476,7 @@ class ModelAdminTests(TestCase):
             form = AdminConcertForm
 
         ma = ConcertAdmin(Concert, self.site)
-        self.assertEqual(dictkeys(ma.get_form(request).base_fields),
+        self.assertEqual(six.dictkeys(ma.get_form(request).base_fields),
             ['extra', 'transport'])
 
         class ConcertInline(TabularInline):
@@ -492,7 +492,7 @@ class ModelAdminTests(TestCase):
 
         ma = BandAdmin(Band, self.site)
         self.assertEqual(
-            dictkeys(list(ma.get_formsets(request))[0]().forms[0].fields),
+            six.dictkeys(list(ma.get_formsets(request))[0]().forms[0].fields),
             ['extra', 'transport', 'id', 'DELETE', 'main_band'])
 
 
@@ -944,7 +944,7 @@ class ValidationTests(unittest.TestCase):
         )
 
         class ValidationTestModelAdmin(ModelAdmin):
-            list_display = (n('non_existent_field'),)
+            list_display = (six.n('non_existent_field'),)
 
         self.assertRaisesRegexp(
             ImproperlyConfigured,

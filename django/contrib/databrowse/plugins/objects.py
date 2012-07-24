@@ -1,8 +1,12 @@
+try:
+    from urllib.parse import urljoin
+except ImportError:     # Python 2
+    from urlparse import urljoin
+
 from django import http
 from django.contrib.databrowse.datastructures import EasyModel
 from django.contrib.databrowse.sites import DatabrowsePlugin
 from django.shortcuts import render_to_response
-from django.utils.py3 import urljoin
 
 class ObjectDetailPlugin(DatabrowsePlugin):
     def model_view(self, request, model_databrowse, url):

@@ -492,11 +492,12 @@ __test__ = {"API_TEST": r"""
 # Some checks of the doctest output normalizer.
 # Standard doctests do fairly
 >>> import json
->>> from django.utils.py3 import long_type, StringIO
+>>> from django.utils import six
+>>> from django.utils.six.moves import StringIO
 >>> from django.utils.xmlutils import SimplerXMLGenerator
 
 >>> def produce_long():
-...     return long_type(42)
+...     return six.long_type(42)
 
 >>> def produce_int():
 ...     return 42
@@ -534,7 +535,7 @@ __test__ = {"API_TEST": r"""
 42
 
 # ... and vice versa
->>> produce_int() == long_type(42)
+>>> produce_int() == six.long_type(42)
 True
 
 # JSON output is normalized for field order, so it doesn't matter

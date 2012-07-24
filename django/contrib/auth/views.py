@@ -1,9 +1,13 @@
+try:
+    from urllib.parse import urlparse, urlunparse
+except ImportError:     # Python 2
+    from urlparse import urlparse, urlunparse
+
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, QueryDict
 from django.template.response import TemplateResponse
 from django.utils.http import base36_to_int
-from django.utils.py3 import urlparse, urlunparse
 from django.utils.translation import ugettext as _
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.cache import never_cache

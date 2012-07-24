@@ -1,14 +1,14 @@
 # Taken from Python 2.7 with permission from/by the original author.
 import sys
 
-from django.utils.py3 import xrange
+from django.utils.six.moves import xrange
 
 def _resolve_name(name, package, level):
     """Return the absolute name of the module to be imported."""
     if not hasattr(package, 'rindex'):
         raise ValueError("'package' not set to a string")
     dot = len(package)
-    for x in xrange(level, 1, -1):
+    for x in range(level, 1, -1):
         try:
             dot = package.rindex('.', 0, dot)
         except ValueError:

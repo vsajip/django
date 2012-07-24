@@ -4,7 +4,7 @@ from operator import attrgetter
 from django.db import connections, transaction, IntegrityError
 from django.db.models import signals, sql
 from django.utils.datastructures import SortedDict
-from django.utils.py3 import iteritems, itervalues, dictkeys
+from django.utils import six
 
 
 class ProtectedError(IntegrityError):
@@ -158,7 +158,7 @@ class Collector(object):
         # Recursively collect concrete model's parent models, but not their
         # related objects. These will be found by meta.get_all_related_objects()
         concrete_model = model._meta.concrete_model
-        for ptr in itervalues(concrete_model._meta.parents):
+        for ptr in six.itervalues(concrete_model._meta.parents):
             if ptr:
                 parent_objs = [getattr(obj, ptr.name) for obj in new_objs]
                 self.collect(parent_objs, source=model,
@@ -200,14 +200,14 @@ class Collector(object):
         )
 
     def instances_with_model(self):
-        for model, instances in iteritems(self.data):
+        for model, instances in six.iteritems(self.data):
             for obj in instances:
                 yield model, obj
 
     def sort(self):
         sorted_models = []
         concrete_models = set()
-        models = dictkeys(self.data)
+        models = six.dictkeys(self.data)
         while len(sorted_models) < len(models):
             found = False
             for model in models:
@@ -242,24 +242,24 @@ class Collector(object):
                 )
 
         # update fields
-        for model, instances_for_fieldvalues in iteritems(self.field_updates):
+        for model, instances_for_fieldvalues in six.iteritems(self.field_updates):
             query = sql.UpdateQuery(model)
-            for (field, value), instances in iteritems(instances_for_fieldvalues):
+            for (field, value), instances in six.iteritems(instances_for_fieldvalues):
                 query.update_batch([obj.pk for obj in instances],
                                    {field.name: value}, self.using)
 
         # reverse instance collections
-        for instances in itervalues(self.data):
+        for instances in six.itervalues(self.data):
             instances.reverse()
 
         # delete batches
-        for model, batches in iteritems(self.batches):
+        for model, batches in six.iteritems(self.batches):
             query = sql.DeleteQuery(model)
-            for field, instances in iteritems(batches):
+            for field, instances in six.iteritems(batches):
                 query.delete_batch([obj.pk for obj in instances], self.using, field)
 
         # delete instances
-        for model, instances in iteritems(self.data):
+        for model, instances in six.iteritems(self.data):
             query = sql.DeleteQuery(model)
             pk_list = [obj.pk for obj in instances]
             query.delete_batch(pk_list, self.using)
@@ -272,10 +272,10 @@ class Collector(object):
                 )
 
         # update collected instances
-        for model, instances_for_fieldvalues in iteritems(self.field_updates):
-            for (field, value), instances in iteritems(instances_for_fieldvalues):
+        for model, instances_for_fieldvalues in six.iteritems(self.field_updates):
+            for (field, value), instances in six.iteritems(instances_for_fieldvalues):
                 for obj in instances:
                     setattr(obj, field.attname, value)
-        for model, instances in iteritems(self.data):
+        for model, instances in six.iteritems(self.data):
             for instance in instances:
                 setattr(instance, model._meta.pk.attname, None)

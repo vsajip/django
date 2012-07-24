@@ -1,7 +1,7 @@
 import os
 import sys
 from django.db.backends.creation import BaseDatabaseCreation
-from django.utils.py3 import raw_input
+from django.utils import six
 
 class DatabaseCreation(BaseDatabaseCreation):
     # SQLite doesn't actually support most of these types, but it "does the right
@@ -54,7 +54,7 @@ class DatabaseCreation(BaseDatabaseCreation):
                 print("Destroying old test database '%s'..." % self.connection.alias)
             if os.access(test_database_name, os.F_OK):
                 if not autoclobber:
-                    confirm = raw_input("Type 'yes' if you would like to try deleting the test database '%s', or 'no' to cancel: " % test_database_name)
+                    confirm = six.raw_input("Type 'yes' if you would like to try deleting the test database '%s', or 'no' to cancel: " % test_database_name)
                 if autoclobber or confirm == 'yes':
                   try:
                       os.remove(test_database_name)

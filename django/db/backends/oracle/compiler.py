@@ -1,5 +1,5 @@
 from django.db.models.sql import compiler
-from django.utils.py3 import izip_longest, dictkeys
+from django.utils.py3 import six
 
 
 class SQLCompiler(compiler.SQLCompiler):
@@ -11,10 +11,10 @@ class SQLCompiler(compiler.SQLCompiler):
             rn_offset = 1
         else:
             rn_offset = 0
-        index_start = rn_offset + len(dictkeys(self.query.extra_select))
+        index_start = rn_offset + len(six.dictkeys(self.query.extra_select))
         values = [self.query.convert_values(v, None, connection=self.connection)
                   for v in row[rn_offset:index_start]]
-        for value, field in izip_longest(row[index_start:], fields):
+        for value, field in six.izip_longest(row[index_start:], fields):
             values.append(self.query.convert_values(value, field, connection=self.connection))
         return tuple(values)
 

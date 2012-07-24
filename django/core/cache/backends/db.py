@@ -3,11 +3,15 @@ import base64
 import time
 from datetime import datetime
 
+try:
+    from django.utils.six.moves import cPickle as pickle
+except ImportError:
+    import pickle
+
 from django.conf import settings
 from django.core.cache.backends.base import BaseCache
 from django.db import connections, router, transaction, DatabaseError
 from django.utils import timezone
-from django.utils.py3 import pickle
 
 
 class Options(object):

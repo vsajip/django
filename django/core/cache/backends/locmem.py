@@ -1,10 +1,13 @@
 "Thread-safe in-memory cache backend."
 
 import time
+try:
+    from django.utils.six.moves import cPickle as pickle
+except ImportError:
+    import pickle
 
 from django.core.cache.backends.base import BaseCache
 from django.utils.synch import RWLock
-from django.utils.py3 import pickle
 
 # Global in-memory store of cache data. Keyed by name, to provide
 # multiple named local memory caches.

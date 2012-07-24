@@ -13,7 +13,8 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.http.multipartparser import MultiPartParser
 from django.test import TestCase, client
 from django.utils import unittest
-from django.utils.py3 import StringIO, PY3, dictkeys
+from django.utils import six
+from django.utils.six.moves import StringIO
 
 from . import uploadhandler
 from .models import FileModel, temp_storage, UPLOAD_TO
@@ -48,7 +49,7 @@ class FileUploadTests(TestCase):
             'file_field2': file2,
             }
 
-        for key in dictkeys(post_data):
+        for key in six.dictkeys(post_data):
             try:
                 post_data[key + '_hash'] = hashlib.sha1(post_data[key].read()).hexdigest()
                 post_data[key].seek(0)
@@ -88,7 +89,7 @@ class FileUploadTests(TestCase):
         tdir = tempfile.gettempdir()
 
         # This file contains chinese symbols and an accented char in the name.
-        if PY3:
+        if six.PY3:
             fn = os.path.join(tdir, UNICODE_FILENAME)
         else:
             fn = os.path.join(tdir, UNICODE_FILENAME.encode('utf-8'))

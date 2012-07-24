@@ -1,9 +1,14 @@
 import sys
-from io import BytesIO
 import os
 import re
 import mimetypes
 from copy import copy
+from io import BytesIO
+try:
+    from urllib.parse import unquote, urlparse, urlsplit
+except ImportError:     # Python 2
+    from urllib import unquote
+    from urlparse import urlparse, urlsplit
 
 from django.conf import settings
 from django.contrib.auth import authenticate, login
@@ -18,8 +23,8 @@ from django.utils.encoding import smart_str
 from django.utils.http import urlencode
 from django.utils.importlib import import_module
 from django.utils.itercompat import is_iterable
-from django.utils.py3 import (urlparse, urlsplit, string_types, unquote,
-                              reraise, StringIO)
+from django.utils import six
+from django.utils.six.moves import StringIO
 from django.db import close_connection
 from django.test.utils import ContextList
 
@@ -114,7 +119,7 @@ def encode_multipart(boundary, data):
     for (key, value) in data.items():
         if is_file(value):
             lines.extend(encode_file(boundary, key, value))
-        elif not isinstance(value, string_types) and is_iterable(value):
+        elif not isinstance(value, six.string_types) and is_iterable(value):
             for item in value:
                 if is_file(item):
                     lines.extend(encode_file(boundary, key, item))
@@ -383,7 +388,7 @@ class Client(RequestFactory):
             if self.exc_info:
                 exc_info = self.exc_info
                 self.exc_info = None
-                reraise(*exc_info)
+                six.reraise(*exc_info)
 
             # Save the client and request that stimulated the response.
             response.client = self

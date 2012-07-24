@@ -6,8 +6,8 @@ import decimal
 
 from django.template.defaultfilters import *
 from django.test import TestCase
+from django.utils import six
 from django.utils import unittest, translation
-from django.utils.py3 import text_type, PY3
 from django.utils.safestring import SafeData
 
 
@@ -49,13 +49,13 @@ class DefaultFiltersTests(TestCase):
                                      '0.00000000000000000002')
 
         pos_inf = float(1e30000)
-        self.assertEqual(floatformat(pos_inf), text_type(pos_inf))
+        self.assertEqual(floatformat(pos_inf), six.text_type(pos_inf))
 
         neg_inf = float(-1e30000)
-        self.assertEqual(floatformat(neg_inf), text_type(neg_inf))
+        self.assertEqual(floatformat(neg_inf), six.text_type(neg_inf))
 
         nan = pos_inf / pos_inf
-        self.assertEqual(floatformat(nan), text_type(nan))
+        self.assertEqual(floatformat(nan), six.text_type(nan))
 
         class FloatWrapper(object):
             def __init__(self, value):
@@ -85,7 +85,7 @@ class DefaultFiltersTests(TestCase):
     def test_floatformat_fail(self):
         self.assertEqual(floatformat(1.00000000000000015, 16), '1.0000000000000002')
 
-    if not PY3:
+    if not six.PY3:
         test_floatformat_fail = unittest.expectedFailure(test_floatformat_fail)
 
     def test_addslashes(self):

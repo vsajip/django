@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from django.test import TestCase
-from django.utils.py3 import text_type
+from django.utils import six
 
 from .models import Person
 
@@ -20,7 +20,7 @@ class SaveDeleteHookTests(TestCase):
             Person.objects.all(), [
                 "John Smith",
             ],
-            text_type
+            six.text_type
         )
 
         p.delete()

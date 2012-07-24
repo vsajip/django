@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 
 from django.utils.encoding import force_unicode
 from django.utils.functional import lazy
-from django.utils.py3 import text_type
+from django.utils import six
 
 
 __all__ = [
@@ -81,10 +81,10 @@ def npgettext(context, singular, plural, number):
 
 ngettext_lazy = lazy(ngettext, bytes)
 gettext_lazy = lazy(gettext, bytes)
-ungettext_lazy = lazy(ungettext, text_type)
-ugettext_lazy = lazy(ugettext, text_type)
-pgettext_lazy = lazy(pgettext, text_type)
-npgettext_lazy = lazy(npgettext, text_type)
+ungettext_lazy = lazy(ungettext, six.text_type)
+ugettext_lazy = lazy(ugettext, six.text_type)
+pgettext_lazy = lazy(pgettext, six.text_type)
+npgettext_lazy = lazy(npgettext, six.text_type)
 
 def activate(language):
     return _trans.activate(language)
@@ -140,7 +140,7 @@ def _string_concat(*strings):
     constructed from multiple parts.
     """
     return ''.join([force_unicode(s) for s in strings])
-string_concat = lazy(_string_concat, text_type)
+string_concat = lazy(_string_concat, six.text_type)
 
 def get_language_info(lang_code):
     from django.conf.locale import LANG_INFO

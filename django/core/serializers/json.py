@@ -12,7 +12,7 @@ import json
 from django.core.serializers.base import DeserializationError
 from django.core.serializers.python import Serializer as PythonSerializer
 from django.core.serializers.python import Deserializer as PythonDeserializer
-from django.utils.py3 import StringIO, string_types
+from django.utils import six
 from django.utils.timezone import is_aware
 
 class Serializer(PythonSerializer):
@@ -70,7 +70,7 @@ def Deserializer(stream_or_string, **options):
     # neither here nor there.
     if isinstance(stream_or_string, bytes):
         stream_or_string = stream_or_string.decode('utf-8')
-    if isinstance(stream_or_string, string_types):
+    if isinstance(stream_or_string, six.string_types):
         string = stream_or_string
     else:
         string = stream_or_string.read()

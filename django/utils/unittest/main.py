@@ -4,7 +4,7 @@ import sys
 import os
 import types
 
-from django.utils.py3 import string_types
+from django.utils import six
 from django.utils.unittest import loader, runner
 try:
     from django.utils.unittest.signals import installHandler
@@ -77,7 +77,7 @@ class TestProgram(object):
                  argv=None, testRunner=None,
                  testLoader=loader.defaultTestLoader, exit=True,
                  verbosity=1, failfast=None, catchbreak=None, buffer=None):
-        if isinstance(module, string_types):
+        if isinstance(module, six.string_types):
             self.module = __import__(module)
             for part in module.split('.')[1:]:
                 self.module = getattr(self.module, part)

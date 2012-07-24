@@ -1,7 +1,7 @@
 from ctypes import c_void_p
 
 from django.contrib.gis.gdal.error import GDALException
-from django.utils.py3 import integer_types
+from django.utils import six
 
 class GDALBase(object):
     """
@@ -25,7 +25,7 @@ class GDALBase(object):
     def _set_ptr(self, ptr):
         # Only allow the pointer to be set with pointers of the
         # compatible type or None (NULL).
-        if isinstance(ptr, integer_types):
+        if isinstance(ptr, six.integer_types):
             self._ptr = self.ptr_type(ptr)
         elif ptr is None or isinstance(ptr, self.ptr_type):
             self._ptr = ptr

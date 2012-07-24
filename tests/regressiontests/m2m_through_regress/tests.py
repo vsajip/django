@@ -5,7 +5,8 @@ import json
 from django.core import management
 from django.contrib.auth.models import User
 from django.test import TestCase
-from django.utils.py3 import StringIO, PY3, dictitems
+from django.utils import six
+from django.utils.six.moves import StringIO
 
 from .models import (Person, Group, Membership, UserMembership, Car, Driver,
     CarDriver)
@@ -150,14 +151,14 @@ class ThroughLoadDataTestCase(TestCase):
         EXPECTED = """[{"pk": 1, "model": "m2m_through_regress.usermembership", "fields": {"price": 100, "group": 1, "user": 1}}, {"pk": 1, "model": "m2m_through_regress.person", "fields": {"name": "Guido"}}, {"pk": 1, "model": "m2m_through_regress.group", "fields": {"name": "Python Core Group"}}]"""
         v1 = out.getvalue().strip()
         v2 = EXPECTED
-        if PY3:
+        if six.PY3:
             def transform_dict(d):
                 if not isinstance(d, dict):
                     result = d
                 else:
                     for k in d:
                         d[k] = transform_dict(d[k])
-                    result = dictitems(d)
+                    result = six.dictitems(d)
                 return result
 
             v1 = json.loads(v1)

@@ -4,9 +4,10 @@ import copy
 import pickle
 import sys
 
+from django.utils import six
 from django.utils.unittest import TestCase
 from django.utils.functional import SimpleLazyObject, empty
-from django.utils.py3 import text_type, PY3, n
+
 
 class _ComplexObject(object):
     def __init__(self, name):
@@ -19,18 +20,18 @@ class _ComplexObject(object):
         return hash(self.name)
 
     def __str__(self):
-        if PY3:
+        if six.PY3:
             return self.__unicode__()
         else:
             return "I am _ComplexObject(%r)" % self.name
 
     def __unicode__(self):
-        return text_type(self.name)
+        return six.text_type(self.name)
 
     def __repr__(self):
         return "_ComplexObject(%r)" % self.name
 
-complex_object = lambda: _ComplexObject(n("joe"))
+complex_object = lambda: _ComplexObject(six.n("joe"))
 
 class TestUtilsSimpleLazyObject(TestCase):
     """
@@ -57,11 +58,11 @@ class TestUtilsSimpleLazyObject(TestCase):
         self.assertTrue("SimpleLazyObject" in repr(SimpleLazyObject(complex_object)))
 
     def test_str(self):
-        if not PY3:
+        if not six.PY3:
             self.assertEqual("I am _ComplexObject('joe')", str(SimpleLazyObject(complex_object)))
 
     def test_unicode(self):
-        self.assertEqual("joe", text_type(SimpleLazyObject(complex_object)))
+        self.assertEqual("joe", six.text_type(SimpleLazyObject(complex_object)))
 
     def test_class(self):
         # This is important for classes that use __class__ in things like
@@ -117,5 +118,5 @@ class TestUtilsSimpleLazyObject(TestCase):
         pickled = pickle.dumps(x, protocol)
         unpickled = pickle.loads(pickled)
         self.assertEqual(unpickled, x)
-        self.assertEqual(text_type(unpickled), text_type(x))
+        self.assertEqual(six.text_type(unpickled), six.text_type(x))
         self.assertEqual(unpickled.name, x.name)

@@ -9,7 +9,7 @@ from django.contrib.gis.measure import Distance
 from django.core.exceptions import ImproperlyConfigured
 from django.db.backends.sqlite3.base import DatabaseOperations
 from django.db.utils import DatabaseError
-from django.utils.py3 import string_types, integer_types. dictkeys
+from django.utils import six
 
 class SpatiaLiteOperator(SpatialOperation):
     "For SpatiaLite operators (e.g. `&&`, `~`)."
@@ -43,7 +43,7 @@ class SpatiaLiteRelate(SpatiaLiteFunctionParam):
         super(SpatiaLiteRelate, self).__init__('Relate')
 
 # Valid distance types and substitutions
-dtypes = (Decimal, Distance, float) + integer_types
+dtypes = (Decimal, Distance, float) + six.integer_types
 def get_dist_ops(operator):
     "Returns operations for regular distances; spherical distances are not currently supported."
     return (SpatiaLiteDistance(operator),)
@@ -90,7 +90,7 @@ class SpatiaLiteOperations(DatabaseOperations, BaseSpatialOperations):
         'overlaps' : SpatiaLiteFunction('Overlaps'),
         'contains' : SpatiaLiteFunction('Contains'),
         'intersects' : SpatiaLiteFunction('Intersects'),
-        'relate' : (SpatiaLiteRelate, string_types[0]),
+        'relate' : (SpatiaLiteRelate, six.string_types),
         # Returns true if B's bounding box completely contains A's bounding box.
         'contained' : SpatiaLiteFunction('MbrWithin'),
         # Returns true if A's bounding box completely contains B's bounding box.
@@ -131,7 +131,7 @@ class SpatiaLiteOperations(DatabaseOperations, BaseSpatialOperations):
 
         # Creating the GIS terms dictionary.
         gis_terms = ['isnull']
-        gis_terms += dictkeys(self.geometry_functions)
+        gis_terms += six.dictkeys(self.geometry_functions)
         self.gis_terms = dict([(term, None) for term in gis_terms])
 
         if version >= (2, 4, 0):

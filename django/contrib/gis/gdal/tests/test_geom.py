@@ -1,10 +1,14 @@
 from binascii import b2a_hex
+try:
+    from django.utils.six.moves import cPickle as pickle
+except ImportError:
+    import pickle
 
 from django.contrib.gis.gdal import (OGRGeometry, OGRGeomType, OGRException,
     OGRIndexError, SpatialReference, CoordTransform, GDAL_VERSION)
 from django.contrib.gis.geometry.test_data import TestDataMixin
+from django.utils.six.moves import xrange
 from django.utils import unittest
-from django.utils.py3 import pickle, xrange
 
 class OGRGeomTest(unittest.TestCase, TestDataMixin):
     "This tests the OGR Geometry."

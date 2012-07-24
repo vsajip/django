@@ -9,8 +9,11 @@ import gettext as gettext_module
 from threading import local
 
 from django.utils.importlib import import_module
-from django.utils.py3 import StringIO, PY3, n
 from django.utils.safestring import mark_safe, SafeData
+from django.utils import six
+# We don't use the version from six.moves - that's StringIO.StringIO, and templatize
+# fails with that on 2.x, but works with cStringIO.
+from django.utils.six import StringIO
 
 
 # Translations are cached in a dictionary for every language+app tuple.
@@ -259,7 +262,7 @@ def do_translate(message, translation_function):
 def gettext(message):
     return do_translate(message, 'gettext')
 
-if not PY3:
+if not six.PY3:
     def ugettext(message):
         return do_translate(message, 'ugettext')
 else:
@@ -306,11 +309,11 @@ def ungettext(singular, plural, number):
     plural, based on the number.
     """
     return do_ntranslate(singular, plural, number, 'ungettext')
-if PY3:
+if six.PY3:
     ungettext = ngettext
 
 def npgettext(context, singular, plural, number):
-    if PY3:
+    if six.PY3:
         ung = 'ngettext'
     else:
         ung = 'ungettext'
@@ -459,14 +462,14 @@ def templatize(src, origin=None):
     for t in Lexer(src, origin).tokenize():
         if incomment:
             if t.token_type == TOKEN_BLOCK and t.contents == 'endcomment':
-                content = n('').join(comment)
+                content = six.n('').join(comment)
                 translators_comment_start = None
                 for lineno, line in enumerate(content.splitlines(True)):
-                    if line.lstrip().startswith(n(TRANSLATOR_COMMENT_MARK)):
+                    if line.lstrip().startswith(six.n(TRANSLATOR_COMMENT_MARK)):
                         translators_comment_start = lineno
                 for lineno, line in enumerate(content.splitlines(True)):
                     if translators_comment_start is not None and lineno >= translators_comment_start:
-                        out.write(n(' # %s') % line)
+                        out.write(six.n(' # %s') % line)
                     else:
                         out.write(' #\n')
                 incomment = False

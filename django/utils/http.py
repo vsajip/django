@@ -4,14 +4,20 @@ import calendar
 import datetime
 import re
 import sys
+try:
+    from urllib import parse as urllib_parse
+except ImportError:     # Python 2
+    import urllib as urllib_parse
+    import urlparse
+    urllib_parse.urlparse = urlparse.urlparse
+
+
 from email.utils import formatdate
 
 from django.utils.datastructures import MultiValueDict
 from django.utils.encoding import smart_text, force_unicode
 from django.utils.functional import allow_lazy
-from django.utils.py3 import (text_type, quote, quote_plus, urlparse, unquote,
-                              unquote_plus, urlencode as orig_urlencode,
-                              maxsize)
+from django.utils import six
 
 ETAG_MATCH = re.compile(r'(?:W/)?"((?:\\.|[^"])*)"')
 
@@ -33,8 +39,8 @@ def urlquote(url, safe='/'):
     can safely be used as part of an argument to a subsequent iri_to_uri() call
     without double-quoting occurring.
     """
-    return force_unicode(quote(smart_text(url), smart_text(safe)))
-urlquote = allow_lazy(urlquote, text_type)
+    return force_unicode(urllib_parse.quote(smart_text(url), smart_text(safe)))
+urlquote = allow_lazy(urlquote, six.text_type)
 
 def urlquote_plus(url, safe=''):
     """
@@ -43,24 +49,24 @@ def urlquote_plus(url, safe=''):
     returned string can safely be used as part of an argument to a subsequent
     iri_to_uri() call without double-quoting occurring.
     """
-    return force_unicode(quote_plus(smart_text(url), smart_text(safe)))
-urlquote_plus = allow_lazy(urlquote_plus, text_type)
+    return force_unicode(urllib_parse.quote_plus(smart_text(url), smart_text(safe)))
+urlquote_plus = allow_lazy(urlquote_plus, six.text_type)
 
 def urlunquote(quoted_url):
     """
     A wrapper for Python's urllib.unquote() function that can operate on
     the result of django.utils.http.urlquote().
     """
-    return force_unicode(unquote(smart_text(quoted_url)))
-urlunquote = allow_lazy(urlunquote, text_type)
+    return force_unicode(urllib_parse.unquote(smart_text(quoted_url)))
+urlunquote = allow_lazy(urlunquote, six.text_type)
 
 def urlunquote_plus(quoted_url):
     """
     A wrapper for Python's urllib.unquote_plus() function that can operate on
     the result of django.utils.http.urlquote_plus().
     """
-    return force_unicode(unquote_plus(smart_text(quoted_url)))
-urlunquote_plus = allow_lazy(urlunquote_plus, text_type)
+    return force_unicode(urllib_parse.unquote_plus(smart_text(quoted_url)))
+urlunquote_plus = allow_lazy(urlunquote_plus, six.text_type)
 
 def urlencode(query, doseq=0):
     """
@@ -72,7 +78,7 @@ def urlencode(query, doseq=0):
         query = query.lists()
     elif hasattr(query, 'items'):
         query = query.items()
-    return orig_urlencode(
+    return urllib_parse.urlencode(
         [(smart_text(k),
          [smart_text(i) for i in v] if isinstance(v, (list,tuple)) else smart_text(v))
             for k, v in query],
@@ -164,7 +170,7 @@ def base36_to_int(s):
         raise ValueError("Base36 input too large")
     value = int(s, 36)
     # ... then do a final check that the value will fit into an int.
-    if value > maxsize:
+    if value > six.MAXSIZE:
         raise ValueError("Base36 input too large")
     return value
 
@@ -174,7 +180,7 @@ def int_to_base36(i):
     """
     digits = "0123456789abcdefghijklmnopqrstuvwxyz"
     factor = 0
-    if not 0 <= i <= maxsize:
+    if not 0 <= i <= six.MAXSIZE:
         raise ValueError("Base36 conversion input too large or incorrect type.")
     # Find starting factor
     while True:
@@ -214,5 +220,5 @@ def same_origin(url1, url2):
     """
     Checks if two URLs are 'same-origin'
     """
-    p1, p2 = urlparse(url1), urlparse(url2)
+    p1, p2 = urllib_parse.urlparse(url1), urllib_parse.urlparse(url2)
     return (p1.scheme, p1.hostname, p1.port) == (p2.scheme, p2.hostname, p2.port)

@@ -4,7 +4,7 @@ from operator import attrgetter
 
 from django.core.exceptions import FieldError
 from django.test import TestCase
-from django.utils.py3 import text_type
+from django.utils import six
 
 from .models import (Chef, CommonInfo, ItalianRestaurant, ParkingLot, Place,
     Post, Restaurant, Student, StudentWorker, Supplier, Worker, MixinModel)
@@ -22,8 +22,8 @@ class ModelInheritanceTests(TestCase):
 
         s = Student.objects.create(name="Pebbles", age=5, school_class="1B")
 
-        self.assertEqual(text_type(w1), "Worker Fred")
-        self.assertEqual(text_type(s), "Student Pebbles")
+        self.assertEqual(six.text_type(w1), "Worker Fred")
+        self.assertEqual(six.text_type(s), "Student Pebbles")
 
         # The children inherit the Meta class of their parents (if they don't
         # specify their own).

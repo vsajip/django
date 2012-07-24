@@ -27,7 +27,8 @@ import sys
 import tarfile
 import zipfile
 
-from .py3 import string_types
+from django.utils import six
+
 
 class ArchiveException(Exception):
     """
@@ -59,7 +60,7 @@ class Archive(object):
     @staticmethod
     def _archive_cls(file):
         cls = None
-        if isinstance(file, string_types):
+        if isinstance(file, six.string_types):
             filename = file
         else:
             try:

@@ -11,11 +11,11 @@ from django.core.urlresolvers import reverse
 from django.forms.widgets import RadioFieldRenderer
 from django.forms.util import flatatt
 from django.utils.html import escape, format_html, format_html_join
-from django.utils.py3 import text_type
 from django.utils.text import Truncator
 from django.utils.translation import ugettext as _
 from django.utils.safestring import mark_safe
 from django.utils.encoding import force_unicode
+from django.utils import six
 
 
 class FilteredSelectMultiple(forms.SelectMultiple):
@@ -122,7 +122,7 @@ def url_params_from_lookup_dict(lookups):
                 # See django.db.fields.BooleanField.get_prep_lookup
                 v = ('0', '1')[v]
             else:
-                v = text_type(v)
+                v = six.text_type(v)
             items.append((k, v))
         params.update(dict(items))
     return params

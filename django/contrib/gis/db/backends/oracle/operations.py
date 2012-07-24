@@ -16,7 +16,7 @@ from django.contrib.gis.db.backends.oracle.adapter import OracleSpatialAdapter
 from django.contrib.gis.db.backends.util import SpatialFunction
 from django.contrib.gis.geometry.backend import Geometry
 from django.contrib.gis.measure import Distance
-from django.utils.py3 import integer_types, string_types, dictkeys
+from django.utils import six
 
 class SDOOperation(SpatialFunction):
     "Base class for SDO* Oracle operations."
@@ -66,7 +66,7 @@ class SDORelate(SpatialFunction):
         super(SDORelate, self).__init__(self.relate_func, mask=mask)
 
 # Valid distance types and substitutions
-dtypes = (Decimal, Distance, float) + integer_types
+dtypes = (Decimal, Distance, float) + six.integer_types
 
 class OracleOperations(DatabaseOperations, BaseSpatialOperations):
     compiler_module = "django.contrib.gis.db.backends.oracle.compiler"
@@ -121,14 +121,14 @@ class OracleOperations(DatabaseOperations, BaseSpatialOperations):
         'exact' : SDOOperation('SDO_EQUAL'),
         'overlaps' : SDOOperation('SDO_OVERLAPS'),
         'same_as' : SDOOperation('SDO_EQUAL'),
-        'relate' : (SDORelate, string_types[0]), # Oracle uses a different syntax, e.g., 'mask=inside+touch'
+        'relate' : (SDORelate, six.string_types), # Oracle uses a different syntax, e.g., 'mask=inside+touch'
         'touches' : SDOOperation('SDO_TOUCH'),
         'within' : SDOOperation('SDO_INSIDE'),
         }
     geometry_functions.update(distance_functions)
 
     gis_terms = ['isnull']
-    gis_terms += dictkeys(geometry_functions)
+    gis_terms += six.dictkeys(geometry_functions)
     gis_terms = dict([(term, None) for term in gis_terms])
 
     truncate_params = {'relate' : None}

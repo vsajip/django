@@ -7,6 +7,10 @@ from __future__ import absolute_import, unicode_literals
 import copy
 import datetime
 from itertools import chain
+try:
+    from urllib.parse import urljoin
+except ImportError:     # Python 2
+    from urlparse import urljoin
 
 from django.conf import settings
 from django.forms.util import flatatt, to_current_timezone
@@ -14,8 +18,8 @@ from django.utils.datastructures import MultiValueDict, MergeDict
 from django.utils.html import conditional_escape, format_html, format_html_join
 from django.utils.translation import ugettext, ugettext_lazy
 from django.utils.encoding import StrAndUnicode, force_unicode
-from django.utils.py3 import urljoin, with_metaclass, string_types, dictkeys
 from django.utils.safestring import mark_safe
+from django.utils import six
 from django.utils import datetime_safe, formats
 
 __all__ = (
@@ -58,7 +62,7 @@ class Media(StrAndUnicode):
     def render_css(self):
         # To keep rendering order consistent, we can't just iterate over items().
         # We need to sort the keys, and iterate over the sorted list.
-        media = dictkeys(self._css)
+        media = six.dictkeys(self._css)
         media.sort()
         return chain(*[
                 [format_html('<link href="{0}" type="text/css" media="{1}" rel="stylesheet" />', self.absolute_path(path), medium)
@@ -153,7 +157,7 @@ class SubWidget(StrAndUnicode):
             args.append(self.choices)
         return self.parent_widget.render(*args)
 
-class Widget(with_metaclass(MediaDefiningClass)):
+class Widget(six.with_metaclass(MediaDefiningClass)):
     is_hidden = False          # Determines whether this corresponds to an <input type="hidden">.
     needs_multipart_form = False # Determines does this widget need multipart form
     is_localized = False
@@ -521,7 +525,7 @@ class CheckboxInput(Widget):
         value = data.get(name)
         # Translate true and false strings to boolean values.
         values =  {'true': True, 'false': False}
-        if isinstance(value, string_types):
+        if isinstance(value, six.string_types):
             value = values.get(value.lower(), value)
         return value
 

@@ -5,7 +5,7 @@ import os
 
 from django.utils.encoding import smart_str, smart_unicode
 from django.core.files.utils import FileProxyMixin
-from django.utils.py3 import PY3
+from django.utils import six
 
 class File(FileProxyMixin):
     DEFAULT_CHUNK_SIZE = 64 * 2**10
@@ -19,7 +19,7 @@ class File(FileProxyMixin):
             self.mode = file.mode
 
     def __str__(self):
-        if not PY3:
+        if not six.PY3:
             return smart_str(self.name or '')
         else:
             return self.__unicode__()

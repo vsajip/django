@@ -2,7 +2,7 @@ from datetime import date
 from django.conf import settings
 from django.utils.http import int_to_base36, base36_to_int
 from django.utils.crypto import constant_time_compare, salted_hmac
-from django.utils.py3 import text_type
+from django.utils import six
 
 class PasswordResetTokenGenerator(object):
     """
@@ -57,9 +57,9 @@ class PasswordResetTokenGenerator(object):
         # Ensure results are consistent across DB backends
         login_timestamp = user.last_login.replace(microsecond=0, tzinfo=None)
 
-        value = (text_type(user.id) + user.password +
-                text_type(login_timestamp) + text_type(timestamp))
-        if isinstance(value, text_type): value = value.encode('utf-8')
+        value = (six.text_type(user.id) + user.password +
+                six.text_type(login_timestamp) + six.text_type(timestamp))
+        if isinstance(value, six.text_type): value = value.encode('utf-8')
         hash = salted_hmac(key_salt, value).hexdigest()[::2]
         return "%s-%s" % (ts_b36, hash)
 

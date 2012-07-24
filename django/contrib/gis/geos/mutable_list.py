@@ -9,8 +9,8 @@ See also http://www.aryehleib.com/MutableLists.html
 Author: Aryeh Leib Taurog.
 """
 from django.utils.functional import total_ordering
-
-from django.utils.py3 import xrange, integer_types, lrange
+from django.utils import six
+from django.utils.six.moves import xrange
 
 @total_ordering
 class ListMixin(object):
@@ -84,16 +84,16 @@ class ListMixin(object):
 
     def __delitem__(self, index):
         "Delete the item(s) at the specified index/slice."
-        if not isinstance(index, integer_types + (slice,)):
+        if not isinstance(index, six.integer_types + (slice,)):
             raise TypeError("%s is not a legal index" % index)
 
         # calculate new length and dimensions
         origLen     = len(self)
-        if isinstance(index, integer_types):
+        if isinstance(index, six.integer_types):
             index = self._checkindex(index)
             indexRange  = [index]
         else:
-            indexRange  = lrange(*index.indices(origLen))
+            indexRange  = six.lrange(*index.indices(origLen))
 
         newLen      = origLen - len(indexRange)
         newItems    = ( self._get_single_internal(i)
@@ -199,7 +199,7 @@ class ListMixin(object):
 
     def insert(self, index, val):
         "Standard list insert method"
-        if not isinstance(index, integer_types):
+        if not isinstance(index, six.integer_types):
             raise TypeError("%s is not a legal index" % index)
         self[index:index] = [val]
 
@@ -275,7 +275,7 @@ class ListMixin(object):
 
     def _assign_extended_slice_rebuild(self, start, stop, step, valueList):
         'Assign an extended slice by rebuilding entire list'
-        indexList   = lrange(start, stop, step)
+        indexList   = six.lrange(start, stop, step)
         # extended slice, only allow assigning slice of same size
         if len(valueList) != len(indexList):
             raise ValueError('attempt to assign sequence of size %d '
@@ -296,7 +296,7 @@ class ListMixin(object):
 
     def _assign_extended_slice(self, start, stop, step, valueList):
         'Assign an extended slice by re-assigning individual items'
-        indexList   = lrange(start, stop, step)
+        indexList   = six.lrange(start, stop, step)
         # extended slice, only allow assigning slice of same size
         if len(valueList) != len(indexList):
             raise ValueError('attempt to assign sequence of size %d '

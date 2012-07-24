@@ -14,13 +14,17 @@ cache class.
 
 See docs/topics/cache.txt for information on the public API.
 """
+try:
+    from urllib.parse import parse_qsl
+except ImportError:     # Python 2
+    from urlparse import parse_qsl
+
 from django.conf import settings
 from django.core import signals
 from django.core.cache.backends.base import (
     InvalidCacheBackendError, CacheKeyWarning, BaseCache)
 from django.core.exceptions import ImproperlyConfigured
 from django.utils import importlib
-from django.utils.py3 import parse_qsl
 
 __all__ = [
     'get_cache', 'cache', 'DEFAULT_CACHE_ALIAS'

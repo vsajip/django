@@ -6,7 +6,7 @@ import sys
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.fields import Field, FieldDoesNotExist
 from django.test import TestCase, skipIfDBFeature, skipUnlessDBFeature
-from django.utils.py3 import long_type
+from django.utils import six
 from django.utils.translation import ugettext_lazy
 
 from .models import Article
@@ -328,17 +328,18 @@ class ModelTest(TestCase):
             ["<Article: Area man programs in Python>",
              "<Article: Third article>"])
 
-        # Slicing works with longs.
-        self.assertEqual(Article.objects.all()[long_type(0)], a)
-        self.assertQuerysetEqual(Article.objects.all()[long_type(1):long_type(3)],
-            ["<Article: Second article>", "<Article: Third article>"])
-        self.assertQuerysetEqual((s1 | s2 | s3)[::long_type(2)],
-            ["<Article: Area man programs in Python>",
-             "<Article: Third article>"])
+        # Slicing works with longs (Python 2 only -- Python 3 doesn't have longs).
+        if not six.PY3:
+            self.assertEqual(Article.objects.all()[long(0)], a)
+            self.assertQuerysetEqual(Article.objects.all()[long(1):long(3)],
+                ["<Article: Second article>", "<Article: Third article>"])
+            self.assertQuerysetEqual((s1 | s2 | s3)[::long(2)],
+                ["<Article: Area man programs in Python>",
+                "<Article: Third article>"])
 
-        # And can be mixed with ints.
-        self.assertQuerysetEqual(Article.objects.all()[1:long_type(3)],
-            ["<Article: Second article>", "<Article: Third article>"])
+            # And can be mixed with ints.
+            self.assertQuerysetEqual(Article.objects.all()[1:long(3)],
+                ["<Article: Second article>", "<Article: Third article>"])
 
         # Slices (without step) are lazy:
         self.assertQuerysetEqual(Article.objects.all()[0:5].filter(),

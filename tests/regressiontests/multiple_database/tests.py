@@ -10,7 +10,8 @@ from django.core import management
 from django.db import connections, router, DEFAULT_DB_ALIAS
 from django.db.models import signals
 from django.test import TestCase
-from django.utils.py3 import StringIO
+from django.utils import six
+from django.utils.six.moves import StringIO
 
 from .models import Book, Person, Pet, Review, UserProfile
 

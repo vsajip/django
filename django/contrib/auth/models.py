@@ -5,8 +5,8 @@ from django.core.mail import send_mail
 from django.db import models
 from django.db.models.manager import EmptyManager
 from django.utils.crypto import get_random_string
-from django.utils.encoding import smart_str
-from django.utils.py3 import quote, text_type, PY3
+from django.utils.http import urlquote
+from django.utils import six
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 
@@ -78,9 +78,9 @@ class Permission(models.Model):
 
     def __unicode__(self):
         return "%s | %s | %s" % (
-            text_type(self.content_type.app_label),
-            text_type(self.content_type),
-            text_type(self.name))
+            six.text_type(self.content_type.app_label),
+            six.text_type(self.content_type),
+            six.text_type(self.name))
 
     def natural_key(self):
         return (self.codename,) + self.content_type.natural_key()
@@ -266,7 +266,7 @@ class User(models.Model):
         return (self.username,)
 
     def get_absolute_url(self):
-        return "/users/%s/" % quote(smart_str(self.username))
+        return "/users/%s/" % urlquote(self.username)
 
     def is_anonymous(self):
         """
@@ -420,7 +420,7 @@ class AnonymousUser(object):
         return 'AnonymousUser'
 
     def __str__(self):
-        if PY3:
+        if six.PY3:
             return self.__unicode__()
         else:
             return unicode(self).encode('utf-8')

@@ -9,7 +9,7 @@ from django.test.testcases import OutputChecker, DocTestRunner, TestCase
 from django.utils import unittest
 from django.utils.importlib import import_module
 from django.utils.module_loading import module_has_submodule
-from django.utils.py3 import dictitems
+from django.utils import six
 
 __all__ = ('DjangoTestSuiteRunner')
 
@@ -304,7 +304,7 @@ class DjangoTestSuiteRunner(object):
         mirrors = []
 
         for signature, (db_name, aliases) in dependency_ordered(
-            dictitems(test_databases), dependencies):
+            six.dictitems(test_databases), dependencies):
             test_db_name = None
             # Actually create the database for the first connection
 

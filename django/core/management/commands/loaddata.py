@@ -16,7 +16,7 @@ from django.db import (connections, router, transaction, DEFAULT_DB_ALIAS,
 from django.db.models import get_apps
 from django.utils.encoding import force_unicode
 from itertools import product
-from django.utils.py3 import reraise
+from django.utils import six
 
 try:
     import bz2
@@ -192,7 +192,7 @@ class Command(BaseCommand):
                                                         'pk': obj.object.pk,
                                                         'error_msg': force_unicode(e)
                                                     }
-                                                reraise(e.__class__, e.__class__(msg), sys.exc_info()[2])
+                                                six.reraise(e.__class__, e.__class__(msg), sys.exc_info()[2])
 
                                     loaded_object_count += loaded_objects_in_fixture
                                     fixture_object_count += objects_in_fixture
@@ -220,7 +220,7 @@ class Command(BaseCommand):
                 transaction.leave_transaction_management(using=using)
             if not isinstance(e, CommandError):
                 msg = "Problem installing fixture '%s': %s" % (full_path, e)
-                reraise(e.__class__, e.__class__(msg), sys.exc_info()[2])
+                six.reraise(e.__class__, e.__class__(msg), sys.exc_info()[2])
             raise
 
         # If we found even one object in a fixture, we need to reset the

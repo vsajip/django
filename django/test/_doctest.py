@@ -104,8 +104,8 @@ import sys, traceback, inspect, linecache, os, re
 import unittest, difflib, pdb, tempfile
 import warnings
 
-from django.utils.py3 import (StringIO, PyStringIO, string_types,
-                              exec_, execfile_, PY3, lrange)
+from django.utils import six
+from django.utils.six.moves import StringIO
 
 if sys.platform.startswith('java'):
     # On Jython, isclass() reports some modules as classes. Patch it.
@@ -211,7 +211,7 @@ def _normalize_module(module, depth=2):
     """
     if inspect.ismodule(module):
         return module
-    elif isinstance(module, string_types):
+    elif isinstance(module, six.string_types):
         return __import__(module, globals(), locals(), ["*"])
     elif module is None:
         return sys.modules[sys._getframe(depth).f_globals['__name__']]
@@ -251,9 +251,9 @@ def _exception_traceback(exc_info):
     return excout.getvalue()
 
 # Override some StringIO methods.
-class _SpoofOut(PyStringIO):
+class _SpoofOut(StringIO):
     def getvalue(self):
-        result = PyStringIO.getvalue(self)
+        result = StringIO.getvalue(self)
 
         # If anything at all was written, make sure there's a trailing
         # newline.  There's no way for the expected output to indicate
@@ -267,7 +267,7 @@ class _SpoofOut(PyStringIO):
         return result
 
     def truncate(self,   size=None):
-        PyStringIO.truncate(self, size)
+        StringIO.truncate(self, size)
         if hasattr(self, "softspace"):
             del self.softspace
 
@@ -481,7 +481,7 @@ class DocTest:
         Create a new DocTest containing the given examples.  The
         DocTest's globals are initialized with a copy of `globs`.
         """
-        assert not isinstance(examples, string_types), \
+        assert not isinstance(examples, six.string_types), \
                "DocTest no longer accepts str; use DocTestParser instead"
         self.examples = examples
         self.docstring = docstring
@@ -915,13 +915,13 @@ class DocTestFinder:
         # Look for tests in a module's __test__ dictionary.
         if inspect.ismodule(obj) and self._recurse:
             for valname, val in getattr(obj, '__test__', {}).items():
-                if not isinstance(valname, string_types):
+                if not isinstance(valname, six.string_types):
                     raise ValueError("DocTestFinder.find: __test__ keys "
                                      "must be strings: %r" %
                                      (type(valname),))
                 if not (inspect.isfunction(val) or inspect.isclass(val) or
                         inspect.ismethod(val) or inspect.ismodule(val) or
-                        isinstance(val, string_types)):
+                        isinstance(val, six.string_types)):
                     raise ValueError("DocTestFinder.find: __test__ values "
                                      "must be strings, functions, methods, "
                                      "classes, or modules: %r" %
@@ -954,7 +954,7 @@ class DocTestFinder:
         """
         # Extract the object's docstring.  If it doesn't have one,
         # then return None (no test for this object).
-        if isinstance(obj, string_types):
+        if isinstance(obj, six.string_types):
             docstring = obj
         else:
             try:
@@ -962,7 +962,7 @@ class DocTestFinder:
                     docstring = ''
                 else:
                     docstring = obj.__doc__
-                    if not isinstance(docstring, string_types):
+                    if not isinstance(docstring, six.string_types):
                         docstring = str(docstring)
             except (TypeError, AttributeError):
                 docstring = ''
@@ -1243,7 +1243,7 @@ class DocTestRunner:
             # because it expects a leading u"", then use an alternate displayhook
             original_displayhook = sys.displayhook
         
-            if PY3:
+            if six.PY3:
                  # only set alternate displayhook if Python 3.x or after
                 lines = []
                 def py3_displayhook(value):
@@ -1294,7 +1294,7 @@ class DocTestRunner:
             # keyboard interrupts.)
             try:
                 # Don't blink!  This is where the user's code gets run.
-                exec_(compile(example.source, filename, "single",
+                six.exec_(compile(example.source, filename, "single",
                              compileflags, 1), test.globs)
                 self.debugger.set_continue() # ==== Example Finished ====
                 exception = None
@@ -1322,7 +1322,7 @@ class DocTestRunner:
             # The example raised an exception:  check if it was expected.
             else:
                 exc_msg = traceback.format_exception_only(*exception[:2])[-1]
-                if PY3:
+                if six.PY3:
                     # module name will be in group(1) and the expected
                     # exception message will be in group(2)
                     m = re.match(r'(.*)\.(\w+:.+\s)', exc_msg)
@@ -2722,7 +2722,7 @@ __test__ = {"_TestClass": _TestClass,
             "whitespace normalization": r"""
                 If the whitespace normalization flag is used, then
                 differences in whitespace are ignored.
-                    >>> print(lrange(30)) #doctest: +NORMALIZE_WHITESPACE
+                    >>> print(six.lrange(30)) #doctest: +NORMALIZE_WHITESPACE
                     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
                      15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
                      27, 28, 29]

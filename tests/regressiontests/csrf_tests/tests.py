@@ -7,7 +7,7 @@ from django.http import HttpRequest, HttpResponse
 from django.middleware.csrf import CsrfViewMiddleware, CSRF_KEY_LENGTH
 from django.template import RequestContext, Template
 from django.test import TestCase
-from django.utils.py3 import n
+from django.utils import six
 from django.views.decorators.csrf import csrf_exempt, requires_csrf_token, ensure_csrf_cookie
 
 
@@ -99,7 +99,7 @@ class CsrfViewMiddlewareTest(TestCase):
         req = self._get_GET_no_csrf_cookie_request()
 
         # Put tests for CSRF_COOKIE_* settings here
-        with self.settings(CSRF_COOKIE_NAME=n('myname'),
+        with self.settings(CSRF_COOKIE_NAME=six.n('myname'),
                            CSRF_COOKIE_DOMAIN='.example.com',
                            CSRF_COOKIE_PATH='/test/',
                            CSRF_COOKIE_SECURE=True):

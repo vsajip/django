@@ -1,9 +1,13 @@
+try:
+    from urllib.parse import urlparse
+except ImportError:     # Python 2
+    from urlparse import urlparse
 from functools import wraps
 from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.core.exceptions import PermissionDenied
 from django.utils.decorators import available_attrs
-from django.utils.py3 import urlparse
+
 
 def user_passes_test(test_func, login_url=None, redirect_field_name=REDIRECT_FIELD_NAME):
     """

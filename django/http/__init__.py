@@ -2,34 +2,38 @@ from __future__ import absolute_import, unicode_literals
 
 import copy
 import datetime
-from io import BytesIO
 import os
 import re
 import sys
 import time
 import warnings
 
+from io import BytesIO
 from pprint import pformat
-from django.utils.py3 import (urlencode, quote, urljoin, cookies, next,
-                              PY3, n, reraise, string_types, parse_qsl,
-                              StringIO, dictvalues)
-
-# Some versions of Python 2.7 and later won't need this encoding bug fix:
-_cookie_encodes_correctly = cookies.SimpleCookie().value_encode(';') == (';', '"\\073"')
-# See ticket #13007, http://bugs.python.org/issue2193 and http://trac.edgewall.org/ticket/2256
-_tc = cookies.SimpleCookie()
 try:
-    _tc.load(n('foo:bar=1'))
+    from urllib.parse import quote, parse_qsl, urlencode, urljoin
+except ImportError:     # Python 2
+    from urllib import quote, urlencode
+    from urlparse import parse_qsl, urljoin
+
+from django.utils import six
+from django.utils.six.moves import http_cookies
+# Some versions of Python 2.7 and later won't need this encoding bug fix:
+_cookie_encodes_correctly = http_cookies.SimpleCookie().value_encode(';') == (';', '"\\073"')
+# See ticket #13007, http://bugs.python.org/issue2193 and http://trac.edgewall.org/ticket/2256
+_tc = http_cookies.SimpleCookie()
+try:
+    _tc.load(six.n('foo:bar=1'))
     _cookie_allows_colon_in_names = True
-except cookies.CookieError:
+except http_cookies.CookieError:
     _cookie_allows_colon_in_names = False
 
 if _cookie_encodes_correctly and _cookie_allows_colon_in_names:
-    SimpleCookie = cookies.SimpleCookie
+    SimpleCookie = http_cookies.SimpleCookie
 else:
-    Morsel = cookies.Morsel
+    Morsel = http_cookies.Morsel
 
-    class SimpleCookie(cookies.SimpleCookie):
+    class SimpleCookie(http_cookies.SimpleCookie):
         if not _cookie_encodes_correctly:
             def value_encode(self, val):
                 # Some browsers do not support quoted-string from RFC 2109,
@@ -69,9 +73,9 @@ else:
                     M = self.get(key, Morsel())
                     M.set(key, real_value, coded_value)
                     dict.__setitem__(self, key, M)
-                except cookies.CookieError:
+                except http_cookies.CookieError:
                     self.bad_cookies.add(key)
-                    dict.__setitem__(self, key, cookies.Morsel())
+                    dict.__setitem__(self, key, http_cookies.Morsel())
 
 
 from django.conf import settings
@@ -83,8 +87,8 @@ from django.http.utils import *
 from django.utils.datastructures import MultiValueDict, ImmutableList
 from django.utils.encoding import smart_str, smart_unicode, iri_to_uri, force_unicode
 from django.utils.http import cookie_date
+from django.utils import six
 from django.utils import timezone
-from django.utils.py3 import text_type
 
 RESERVED_CHARS="!*'();:@&=+$,/?%#[]"
 
@@ -136,10 +140,10 @@ def build_request_repr(request, path_override=None, GET_override=None,
     return smart_unicode('<%s\npath:%s,\nGET:%s,\nPOST:%s,\nCOOKIES:%s,\nMETA:%s>' %
                      (request.__class__.__name__,
                       path,
-                      text_type(get),
-                      text_type(post),
-                      text_type(cookies),
-                      text_type(meta)))
+                      six.text_type(get),
+                      six.text_type(post),
+                      six.text_type(cookies),
+                      six.text_type(meta)))
 
 class UnreadablePostError(IOError):
     pass
@@ -291,7 +295,7 @@ class HttpRequest(object):
                 self._body = self.read()
             except IOError:
                 e = sys.exc_info()
-                reraise(UnreadablePostError, UnreadablePostError(*e[1].args), e[2])
+                six.reraise(UnreadablePostError, UnreadablePostError(*e[1].args), e[2])
             self._stream = BytesIO(self._body)
         return self._body
 
@@ -478,7 +482,7 @@ class QueryDict(MultiValueDict):
         """
         output = []
         if safe:
-            safe = n(safe)
+            safe = six.n(safe)
             encode = lambda k, v: '%s=%s' % ((quote(k, safe), quote(v, safe)))
         else:
             encode = lambda k, v: urlencode({k: v})
@@ -492,11 +496,11 @@ class QueryDict(MultiValueDict):
 def parse_cookie(cookie):
     if cookie == '':
         return {}
-    if not isinstance(cookie, cookies.BaseCookie):
+    if not isinstance(cookie, http_cookies.BaseCookie):
         try:
             c = SimpleCookie()
-            c.load(n(cookie))
-        except cookies.CookieError:
+            c.load(six.n(cookie))
+        except http_cookies.CookieError:
             # Invalid cookie
             return {}
     else:
@@ -544,9 +548,9 @@ class HttpResponse(object):
     def _convert_to_ascii(self, *values):
         """Converts all values to ascii strings."""
         for value in values:
-            if isinstance(value, text_type):
+            if isinstance(value, six.text_type):
                 try:
-                    if not PY3:
+                    if not six.PY3:
                         value = value.encode('us-ascii')
                     else:
                         # In 3k, still use Unicode strings in headers
@@ -554,7 +558,7 @@ class HttpResponse(object):
                 except UnicodeError as e:
                     e.reason += ', HTTP response headers must be in US-ASCII format'
                     raise
-            elif PY3 and isinstance(value, bytes):
+            elif six.PY3 and isinstance(value, bytes):
                 # str(<bytes>) would result in "b'...'"
                 value = value.decode()
             else:
@@ -594,7 +598,7 @@ class HttpResponse(object):
     __contains__ = has_header
 
     def items(self):
-        return dictvalues(self._headers)
+        return six.dictvalues(self._headers)
 
     def get(self, header, alternate=None):
         return self._headers.get(header.lower(), (None, alternate))[1]
@@ -652,7 +656,7 @@ class HttpResponse(object):
     def _process_chunk(self, chunk):
         # django3: added to simplify handling of non-character content
         # like integers (why we need this, I have no idea ;-)
-        if isinstance(chunk, text_type):
+        if isinstance(chunk, six.text_type):
             chunk = chunk.encode(self._charset)
         if not isinstance(chunk, bytes):
             # django3: chunk could be any random object
@@ -673,7 +677,7 @@ class HttpResponse(object):
     def _set_content(self, value):
         # in 3.x, bytes and unicode has __iter__, but they shouldn't be considered
         # collections here
-        if hasattr(value, '__iter__') and not isinstance(value, (bytes, text_type)):
+        if hasattr(value, '__iter__') and not isinstance(value, (bytes, six.text_type)):
             self._container = value
             self._base_content_is_iter = True
         else:
@@ -765,7 +769,7 @@ def str_to_unicode(s, encoding):
     Returns any non-basestring objects without change.
     """
     if isinstance(s, bytes):
-        return text_type(s, encoding, 'replace')
+        return six.text_type(s, encoding, 'replace')
     else:
         return s
 

@@ -2,7 +2,7 @@
 import pickle
 
 from django.utils.crypto import salted_hmac
-from django.utils.py3 import string_types
+from django.utils import six
 
 
 def form_hmac(form):
@@ -17,7 +17,7 @@ def form_hmac(form):
             value = bf.data or ''
         else:
             value = bf.field.clean(bf.data) or ''
-        if isinstance(value, string_types):
+        if isinstance(value, six.string_types):
             value = value.strip()
         data.append((bf.name, value))
 

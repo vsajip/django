@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import threading
 
 from django.db import models
-from django.utils.py3 import text_type
+from django.utils import six
 
 
 class DumbCategory(models.Model):
@@ -123,7 +123,7 @@ class Number(models.Model):
     num = models.IntegerField()
 
     def __unicode__(self):
-        return text_type(self.num)
+        return six.text_type(self.num)
 
 # Symmetrical m2m field with a normal field using the reverse accesor name
 # ("valid").

@@ -18,7 +18,8 @@ from django.template import TemplateDoesNotExist, Context
 from django.template.loaders.eggs import Loader as EggLoader
 from django.template import loader
 from django.utils import unittest
-from django.utils.py3 import StringIO
+from django.utils import six
+from django.utils.six.moves import StringIO
 
 # Mock classes and objects for pkg_resources functions.
 class MockProvider(pkg_resources.NullProvider):

@@ -12,7 +12,8 @@ import django
 from django.core.exceptions import ImproperlyConfigured
 from django.core.management.color import color_style
 from django.utils.encoding import smart_text
-from django.utils.py3 import PY3, StringIO, text_type
+from django.utils import six
+from django.utils.six.moves import StringIO
 
 class CommandError(Exception):
     """
@@ -249,7 +250,7 @@ class BaseCommand(object):
                 self.validate()
             output = self.handle(*args, **options)
             if output:
-                if PY3 and isinstance(output, bytes):
+                if six.PY3 and isinstance(output, bytes):
                     # Decode to Unicode so that print can render it correctly
                     output = output.decode('utf-8')
                 if self.output_transaction:

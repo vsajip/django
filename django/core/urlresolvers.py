@@ -18,8 +18,8 @@ from django.utils.encoding import iri_to_uri, force_unicode, smart_text
 from django.utils.functional import memoize, lazy
 from django.utils.importlib import import_module
 from django.utils.module_loading import module_has_submodule
-from django.utils.py3 import string_types, iteritems, dictkeys
 from django.utils.regex_helper import normalize
+from django.utils import six
 from django.utils.translation import get_language
 
 
@@ -160,11 +160,17 @@ class LocaleRegexProvider(object):
         """
         language_code = get_language()
         if language_code not in self._regex_dict:
-            if isinstance(self._regex, string_types):
-                compiled_regex = re.compile(self._regex, re.UNICODE)
+            if isinstance(self._regex, six.string_types):
+                regex = self._regex
             else:
                 regex = force_unicode(self._regex)
+            try:
                 compiled_regex = re.compile(regex, re.UNICODE)
+            except re.error as e:
+                raise ImproperlyConfigured(
+                    '"%s" is not a valid regular expression: %s' %
+                    (regex, six.text_type(e)))
+
             self._regex_dict[language_code] = compiled_regex
         return self._regex_dict[language_code]
 
@@ -223,7 +229,7 @@ class RegexURLResolver(LocaleRegexProvider):
         LocaleRegexProvider.__init__(self, regex)
         # urlconf_name is a string representing the module containing URLconfs.
         self.urlconf_name = urlconf_name
-        if not isinstance(urlconf_name, string_types):
+        if not isinstance(urlconf_name, six.string_types):
             self._urlconf_module = self.urlconf_name
         self.callback = None
         self.default_kwargs = default_kwargs or {}
@@ -370,7 +376,7 @@ class RegexURLResolver(LocaleRegexProvider):
                     unicode_args = [force_unicode(val) for val in args]
                     candidate =  (prefix_norm + result) % dict(zip(prefix_args + params, unicode_args))
                 else:
-                    if set(dictkeys(kwargs) + dictkeys(defaults)) != set(params + dictkeys(defaults) + prefix_args):
+                    if set(six.dictkeys(kwargs) + six.dictkeys(defaults)) != set(params + six.dictkeys(defaults) + prefix_args):
                         continue
                     matches = True
                     for k, v in defaults.items():
@@ -429,7 +435,7 @@ def reverse(viewname, urlconf=None, args=None, kwargs=None, prefix=None, current
     if prefix is None:
         prefix = get_script_prefix()
 
-    if not isinstance(viewname, string_types):
+    if not isinstance(viewname, six.string_types):
         view = viewname
     else:
         parts = viewname.split(':')

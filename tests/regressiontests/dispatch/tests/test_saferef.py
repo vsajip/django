@@ -1,6 +1,7 @@
 from django.dispatch.saferef import safeRef
+from django.utils import six
+from django.utils.six.moves import xrange
 from django.utils import unittest
-from django.utils.py3 import xrange, PY3
 
 class Test1(object):
     def x(self):
@@ -54,11 +55,11 @@ class SaferefTests(unittest.TestCase):
             sd[s] = 1
         for t in self.ts:
             if hasattr(t, 'x'):
-                if not PY3:
+                if not six.PY3:
                     self.assertTrue(sd.has_key(safeRef(t.x)))
                 self.assertTrue(safeRef(t.x) in sd)
             else:
-                if not PY3:
+                if not six.PY3:
                     self.assertTrue(sd.has_key(safeRef(t)))
                 self.assertTrue(safeRef(t) in sd)
 

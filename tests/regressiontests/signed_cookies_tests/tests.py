@@ -5,13 +5,13 @@ import time
 from django.core import signing
 from django.http import HttpRequest, HttpResponse
 from django.test import TestCase
-from django.utils.py3 import n
+from django.utils import six
 
 class SignedCookieTest(TestCase):
 
     def test_can_set_and_read_signed_cookies(self):
         response = HttpResponse()
-        response.set_signed_cookie(n('c'), 'hello')
+        response.set_signed_cookie(six.n('c'), 'hello')
         self.assertIn('c', response.cookies)
         self.assertTrue(response.cookies['c'].value.startswith('hello:'))
         request = HttpRequest()
@@ -21,7 +21,7 @@ class SignedCookieTest(TestCase):
 
     def test_can_use_salt(self):
         response = HttpResponse()
-        response.set_signed_cookie(n('a'), 'hello', salt='one')
+        response.set_signed_cookie(six.n('a'), 'hello', salt='one')
         request = HttpRequest()
         request.COOKIES['a'] = response.cookies['a'].value
         value = request.get_signed_cookie('a', salt='one')
@@ -31,7 +31,7 @@ class SignedCookieTest(TestCase):
 
     def test_detects_tampering(self):
         response = HttpResponse()
-        response.set_signed_cookie(n('c'), 'hello')
+        response.set_signed_cookie(six.n('c'), 'hello')
         request = HttpRequest()
         request.COOKIES['c'] = response.cookies['c'].value[:-2] + '$$'
         self.assertRaises(signing.BadSignature,
@@ -39,7 +39,7 @@ class SignedCookieTest(TestCase):
 
     def test_default_argument_supresses_exceptions(self):
         response = HttpResponse()
-        response.set_signed_cookie(n('c'), 'hello')
+        response.set_signed_cookie(six.n('c'), 'hello')
         request = HttpRequest()
         request.COOKIES['c'] = response.cookies['c'].value[:-2] + '$$'
         self.assertEqual(request.get_signed_cookie('c', default=None), None)
@@ -50,7 +50,7 @@ class SignedCookieTest(TestCase):
         time.time = lambda: 123456789
         try:
             response = HttpResponse()
-            response.set_signed_cookie(n('c'), value)
+            response.set_signed_cookie(six.n('c'), value)
             request = HttpRequest()
             request.COOKIES['c'] = response.cookies['c'].value
             self.assertEqual(request.get_signed_cookie('c'), value)
