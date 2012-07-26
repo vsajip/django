@@ -1661,8 +1661,8 @@ class Query(object):
                 # from the model on which the lookup failed.
                 raise
             else:
-                names = sorted(opts.get_all_field_names() + self.extra.keys()
-                               + self.aggregate_select.keys())
+                names = sorted(opts.get_all_field_names() + six.dictkeys(self.extra)
+                               + six.dictkeys(self.aggregate_select))
                 raise FieldError("Cannot resolve keyword %r into field. "
                                  "Choices are: %s" % (name, ", ".join(names)))
         self.remove_inherited_models()

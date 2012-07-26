@@ -1,8 +1,8 @@
 import copy
 import warnings
 from types import GeneratorType
-
 from django.utils import six
+
 
 class MergeDict(object):
     """
@@ -32,38 +32,48 @@ class MergeDict(object):
         except KeyError:
             return default
 
+    # This is used by MergeDicts of MultiValueDicts.
     def getlist(self, key):
         for dict_ in self.dicts:
-            if key in dict_.keys():
+            if key in dict_:
                 return dict_.getlist(key)
         return []
 
-    def iteritems(self):
+    def _iteritems(self):
         seen = set()
         for dict_ in self.dicts:
             for item in six.iteritems(dict_):
-                k, v = item
+                k = item[0]
                 if k in seen:
                     continue
                 seen.add(k)
                 yield item
 
-    def iterkeys(self):
-        for k, v in six.iteritems(self):
+    def _iterkeys(self):
+        for k, v in self._iteritems():
             yield k
 
-    def itervalues(self):
-        for k, v in six.iteritems(self):
+    def _itervalues(self):
+        for k, v in self._iteritems():
             yield v
 
-    def items(self):
-        return list(self.iteritems())
+    if six.PY3:
+        items = _iteritems
+        keys = _iterkeys
+        values = _itervalues
+    else:
+        iteritems = _iteritems
+        iterkeys = _iterkeys
+        itervalues = _itervalues
 
-    def keys(self):
-        return list(self.iterkeys())
+        def items(self):
+            return list(self.iteritems())
 
-    def values(self):
-        return list(self.itervalues())
+        def keys(self):
+            return list(self.iterkeys())
+
+        def values(self):
+            return list(self.itervalues())
 
     def has_key(self, key):
         for dict_ in self.dicts:
@@ -72,7 +82,8 @@ class MergeDict(object):
         return False
 
     __contains__ = has_key
-    __iter__ = iterkeys
+
+    __iter__ = _iterkeys
 
     def copy(self):
         """Returns a copy of this object."""
@@ -118,7 +129,7 @@ class SortedDict(dict):
             data = list(data)
         super(SortedDict, self).__init__(data)
         if isinstance(data, dict):
-            self.keyOrder = six.dictkeys(data)
+            self.keyOrder = list(six.iterkeys(data))
         else:
             self.keyOrder = []
             seen = set()
@@ -163,28 +174,35 @@ class SortedDict(dict):
         self.keyOrder.remove(result[0])
         return result
 
-    def items(self):
-        return zip(self.keyOrder, self.values())
-
-    def iteritems(self):
+    def _iteritems(self):
         for key in self.keyOrder:
             yield key, self[key]
 
-    def keys(self):
-        return self.keyOrder[:]
+    def _iterkeys(self):
+        for key in self.keyOrder:
+            yield key
 
-    def iterkeys(self):
-        return iter(self.keyOrder)
-
-    def values(self):
-        if not six.PY3:
-            return six.lmap(self.__getitem__, self.keyOrder)
-        else:
-            return map(self.__getitem__, self.keyOrder)
-
-    def itervalues(self):
+    def _itervalues(self):
         for key in self.keyOrder:
             yield self[key]
+
+    if six.PY3:
+        items = _iteritems
+        keys = _iterkeys
+        values = _itervalues
+    else:
+        iteritems = _iteritems
+        iterkeys = _iterkeys
+        itervalues = _itervalues
+
+        def items(self):
+            return list(self.iteritems())
+
+        def keys(self):
+            return list(self.iterkeys())
+
+        def values(self):
+            return list(self.itervalues())
 
     def update(self, dict_):
         for k, v in six.iteritems(dict_):
@@ -200,14 +218,18 @@ class SortedDict(dict):
         # This, and insert() are deprecated because they cannot be implemented
         # using collections.OrderedDict (Python 2.7 and up), which we'll
         # eventually switch to
-        warnings.warn(PendingDeprecationWarning,
-            "SortedDict.value_for_index is deprecated", stacklevel=2)
+        warnings.warn(
+            "SortedDict.value_for_index is deprecated", PendingDeprecationWarning,
+            stacklevel=2
+        )
         return self[self.keyOrder[index]]
 
     def insert(self, index, key, value):
         """Inserts the key, value pair before the item with the given index."""
-        warnings.warn(PendingDeprecationWarning,
-            "SortedDict.insert is deprecated", stacklevel=2)
+        warnings.warn(
+            "SortedDict.insert is deprecated", PendingDeprecationWarning,
+            stacklevel=2
+        )
         if key in self.keyOrder:
             n = self.keyOrder.index(key)
             del self.keyOrder[n]
@@ -228,7 +250,7 @@ class SortedDict(dict):
         Replaces the normal dict.__repr__ with a version that returns the keys
         in their sorted order.
         """
-        return '{%s}' % ', '.join(['%r: %r' % (k, v) for k, v in self.items()])
+        return '{%s}' % ', '.join(['%r: %r' % (k, v) for k, v in six.iteritems(self)])
 
     def clear(self):
         super(SortedDict, self).clear()
@@ -341,7 +363,8 @@ class MultiValueDict(dict):
     def setdefault(self, key, default=None):
         if key not in self:
             self[key] = default
-            return default
+            # Do not return default here because __setitem__() may store
+            # another value -- QueryDict.__setitem__() does. Look it up.
         return self[key]
 
     def setlistdefault(self, key, default_list=None):
@@ -349,43 +372,48 @@ class MultiValueDict(dict):
             if default_list is None:
                 default_list = []
             self.setlist(key, default_list)
+            # Do not return default_list here because setlist() may store
+            # another value -- QueryDict.setlist() does. Look it up.
         return self.getlist(key)
 
     def appendlist(self, key, value):
         """Appends an item to the internal list associated with key."""
         self.setlistdefault(key).append(value)
 
-    def items(self):
-        """
-        Returns a list of (key, value) pairs, where value is the last item in
-        the list associated with the key.
-        """
-        return [(key, self[key]) for key in self.keys()]
-
-    def iteritems(self):
+    def _iteritems(self):
         """
         Yields (key, value) pairs, where value is the last item in the list
         associated with the key.
         """
-        for key in self.keys():
-            yield (key, self[key])
+        for key in self:
+            yield key, self[key]
 
-    def lists(self):
-        """Returns a list of (key, list) pairs."""
-        return six.dictitems(super(MultiValueDict, self))
-
-    def iterlists(self):
+    def _iterlists(self):
         """Yields (key, list) pairs."""
         return six.iteritems(super(MultiValueDict, self))
 
-    def values(self):
-        """Returns a list of the last value on every key list."""
-        return [self[key] for key in self.keys()]
-
-    def itervalues(self):
+    def _itervalues(self):
         """Yield the last value on every key list."""
-        for key in self.iterkeys():
+        for key in self:
             yield self[key]
+
+    if six.PY3:
+        items = iteritems = _iteritems
+        iterlists = _iterlists
+        values = itervalues = _itervalues
+    else:
+        iteritems = _iteritems
+        iterlists = _iterlists
+        itervalues = _itervalues
+
+        def items(self):
+            return list(self.iteritems())
+
+        def values(self):
+            return list(self.itervalues())
+
+    def lists(self):
+        return list(self._iterlists())
 
     def copy(self):
         """Returns a shallow copy of this object."""
