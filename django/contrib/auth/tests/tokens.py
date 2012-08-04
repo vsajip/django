@@ -4,7 +4,8 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.test import TestCase
-
+from django.utils import six
+from django.utils.unittest import skipIf
 
 class TokenGeneratorTest(TestCase):
 
@@ -51,6 +52,8 @@ class TokenGeneratorTest(TestCase):
         p2 = Mocked(date.today() + timedelta(settings.PASSWORD_RESET_TIMEOUT_DAYS + 1))
         self.assertFalse(p2.check_token(user, tk1))
 
+    @skipIf(six.PY3, 'Skipped on Python 3 as overflow checks are only made on '
+                     'Python 2')
     def test_date_length(self):
         """
         Make sure we don't allow overly long dates, causing a potential DoS.

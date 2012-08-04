@@ -12,6 +12,8 @@ from django.utils.html import escape
 from django.utils.http import urlquote
 from django.test import TestCase
 from django.test.utils import override_settings
+from django.utils import six
+from django.utils.unittest import skipIf
 
 from django.contrib.auth import SESSION_KEY, REDIRECT_FIELD_NAME
 from django.contrib.auth.forms import (AuthenticationForm, PasswordChangeForm,
@@ -131,6 +133,8 @@ class PasswordResetTest(AuthViewsTestCase):
         response = self.client.get('/reset/123456-1-1/')
         self.assertContains(response, "The password reset link was invalid")
 
+    @skipIf(six.PY3, 'Skipped on Python 3 as overflow checks are only made on '
+                     'Python 2')
     def test_confirm_overflow_user(self):
         # Ensure that we get a 200 response for a base36 user id that overflows int
         response = self.client.get('/reset/zzzzzzzzzzzzz-1-1/')
